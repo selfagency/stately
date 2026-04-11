@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: critical
 created_at: 2026-04-11T00:35:00Z
-updated_at: 2026-04-11T14:44:54Z
+updated_at: 2026-04-11T14:47:00Z
 parent: stately-a7ci
 ---
 
@@ -16,5 +16,5 @@ Implement pull-request CI and npm-library release automation.
 ## Todo
 
 - [x] Add CI workflow for validation.
-- [ ] Add release workflow for npm publish.
+- [x] Add release workflow for npm publish.
 - [ ] Add release-management support files and docs.
