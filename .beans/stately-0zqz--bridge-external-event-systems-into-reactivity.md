@@ -1,14 +1,14 @@
 ---
 # stately-0zqz
 title: Bridge external event systems into reactivity
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-11T00:13:38Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T03:29:36Z
 parent: stately-2rnr
 blocked_by:
-  - stately-doyt
+    - stately-doyt
 ---
 
 ## Todo
