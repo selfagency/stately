@@ -10,7 +10,11 @@ export const useAsyncCounterStore = defineStore('example-plugin-async', {
 					'abort',
 					() => {
 						clearTimeout(timeout);
-						reject(new DOMException('Aborted', 'AbortError'));
+						reject(
+							typeof DOMException !== 'undefined'
+								? new DOMException('Aborted', 'AbortError')
+								: Object.assign(new Error('Aborted'), { name: 'AbortError' })
+						);
 					},
 					{ once: true }
 				);

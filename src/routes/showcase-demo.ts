@@ -14,6 +14,48 @@ import type { SyncMessage, SyncTransport } from '../lib/sync/types.js';
 
 let nextShowcaseId = 1;
 
+const SHOWCASE_STORE_ID = 'showcase-counter';
+const _showcasePersistence = createInspectablePersistence(SHOWCASE_STORE_ID);
+
+const _useShowcaseStore = defineStore(SHOWCASE_STORE_ID, {
+	state: () => ({ count: 0, note: 'Fresh demo state' }),
+	getters: {
+		doubleCount(state: { count: number }) {
+			return state.count * 2;
+		}
+	},
+	actions: {
+		increment(this: { count: number; note: string }, amount = 1) {
+			this.count += amount;
+			this.note = amount === 1 ? 'Incremented by one' : `Incremented by ${amount}`;
+		},
+		async loadCount(this: { count: number; note: string }, signal: AbortSignal, target: number) {
+			this.note = `Loading ${target}`;
+			await wait(225, signal);
+			this.count = target;
+			this.note = `Loaded ${target}`;
+			return target;
+		}
+	},
+	persist: {
+		adapter: _showcasePersistence.adapter,
+		key: _showcasePersistence.key,
+		version: 1
+	},
+	history: {
+		limit: 12
+	}
+} as {
+	state: () => { count: number; note: string };
+	getters: { doubleCount(state: { count: number }): number };
+	actions: {
+		increment(amount?: number): void;
+		loadCount(signal: AbortSignal, target: number): Promise<number>;
+	};
+	persist: { adapter: PersistenceAdapter; key: string; version: number };
+	history: { limit: number };
+});
+
 function createAbortError(): Error {
 	if (typeof DOMException !== 'undefined') {
 		return new DOMException('The operation was aborted.', 'AbortError');
@@ -97,53 +139,13 @@ function createInspectablePersistence(storeId: string) {
 
 export function createShowcaseDemo() {
 	const instanceId = nextShowcaseId++;
-	const storeId = `showcase-counter-${instanceId}`;
-	const persistence = createInspectablePersistence(storeId);
 	const syncBus = createSyncBus<SyncMessage<{ count: number; note: string }>>();
-	const useShowcaseStore = defineStore(storeId, {
-		state: () => ({ count: 0, note: 'Fresh demo state' }),
-		getters: {
-			doubleCount(state: { count: number }) {
-				return state.count * 2;
-			}
-		},
-		actions: {
-			increment(this: { count: number; note: string }, amount = 1) {
-				this.count += amount;
-				this.note = amount === 1 ? 'Incremented by one' : `Incremented by ${amount}`;
-			},
-			async loadCount(this: { count: number; note: string }, signal: AbortSignal, target: number) {
-				this.note = `Loading ${target}`;
-				await wait(225, signal);
-				this.count = target;
-				this.note = `Loaded ${target}`;
-				return target;
-			}
-		},
-		persist: {
-			adapter: persistence.adapter,
-			key: persistence.key,
-			version: 1
-		},
-		history: {
-			limit: 12
-		}
-	} as {
-		state: () => { count: number; note: string };
-		getters: { doubleCount(state: { count: number }): number };
-		actions: {
-			increment(amount?: number): void;
-			loadCount(signal: AbortSignal, target: number): Promise<number>;
-		};
-		persist: { adapter: PersistenceAdapter; key: string; version: number };
-		history: { limit: number };
-	});
 	const primaryManager = createStateManager()
 		.use(createPersistencePlugin())
 		.use(createHistoryPlugin())
 		.use(
 			createSyncPlugin({
-				origin: `${storeId}:primary`,
+				origin: `${SHOWCASE_STORE_ID}:primary:${instanceId}`,
 				transports: [syncBus.createTransport()]
 			})
 		)
@@ -158,17 +160,17 @@ export function createShowcaseDemo() {
 		);
 	const peerManager = createStateManager().use(
 		createSyncPlugin({
-			origin: `${storeId}:peer`,
+			origin: `${SHOWCASE_STORE_ID}:peer:${instanceId}`,
 			transports: [syncBus.createTransport()]
 		})
 	);
-	const primary = useShowcaseStore(primaryManager);
-	const peer = useShowcaseStore(peerManager);
+	const primary = _useShowcaseStore(primaryManager);
+	const peer = _useShowcaseStore(peerManager);
 
 	return {
 		primary,
 		peer,
-		persistence,
+		persistence: _showcasePersistence,
 		loadCount(target: number) {
 			return (primary.loadCount as unknown as (target: number) => Promise<number>)(target);
 		},
