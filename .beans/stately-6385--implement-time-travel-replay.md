@@ -1,14 +1,14 @@
 ---
 # stately-6385
 title: Implement time-travel replay
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-04-11T00:13:19Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T04:08:15Z
 parent: stately-f14e
 blocked_by:
-  - stately-ffo3
+    - stately-ffo3
 ---
 
 ## Todo
