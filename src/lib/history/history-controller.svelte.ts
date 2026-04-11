@@ -29,7 +29,14 @@ export function createHistoryController<State extends Record<string, unknown>>(c
 		batchDepth: 0,
 		pendingSnapshot: undefined as State | undefined
 	});
-	const limit = Math.max(config.limit ?? 50, 1);
+	const configuredLimit = config.limit;
+	const limit =
+		typeof configuredLimit === 'number' &&
+		Number.isFinite(configuredLimit) &&
+		Number.isInteger(configuredLimit) &&
+		configuredLimit >= 1
+			? configuredLimit
+			: 50;
 
 	const trim = () => {
 		while (state.entries.length > limit) {
@@ -66,11 +73,18 @@ export function createHistoryController<State extends Record<string, unknown>>(c
 				return false;
 			}
 
+			const previousIndex = state.index;
 			state.replaying = true;
 			state.index = index;
-			config.applySnapshot(state.entries[state.index].snapshot);
-			state.replaying = false;
-			return true;
+			try {
+				config.applySnapshot(state.entries[state.index].snapshot);
+				return true;
+			} catch (error) {
+				state.index = previousIndex;
+				throw error;
+			} finally {
+				state.replaying = false;
+			}
 		},
 		undo() {
 			return this.goTo(state.index - 1);

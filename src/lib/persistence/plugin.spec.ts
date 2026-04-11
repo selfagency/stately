@@ -53,4 +53,63 @@ describe('createPersistencePlugin', () => {
 		await counter.$persist.clear();
 		expect(storage.has('counter')).toBe(false);
 	});
+
+	it('serializes queued writes so stale snapshots cannot overwrite newer persisted state', async () => {
+		const storage = new Map<string, string>();
+		let releaseFirstWrite: (() => void) | undefined;
+		const firstWrite = new Promise<void>((resolve) => {
+			releaseFirstWrite = resolve;
+		});
+		const adapter = {
+			async getItem(key: string) {
+				return storage.get(key) ?? null;
+			},
+			async setItem(key: string, value: string) {
+				if (value.includes('"count":1')) {
+					await firstWrite;
+				}
+				storage.set(key, value);
+			},
+			async removeItem(key: string) {
+				storage.delete(key);
+			}
+		};
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useCounterStore = defineStore('queued-counter', {
+			state: () => ({ count: 0 }),
+			persist: {
+				adapter,
+				version: 1
+			}
+		});
+		const counter = useCounterStore(manager);
+
+		counter.count = 1;
+		const firstFlush = counter.$persist.flush();
+		counter.count = 2;
+		const secondFlush = counter.$persist.flush();
+
+		releaseFirstWrite?.();
+		await Promise.all([firstFlush, secondFlush]);
+
+		expect(storage.get('queued-counter')).toBe(JSON.stringify({ version: 1, state: { count: 2 } }));
+	});
+
+	it('throws a clear error for invalid persist version configuration', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useCounterStore = defineStore('invalid-persist-counter', {
+			state: () => ({ count: 0 }),
+			persist: {
+				adapter: {
+					async getItem() {
+						return null;
+					},
+					async setItem() {},
+					async removeItem() {}
+				}
+			}
+		} as never);
+
+		expect(() => useCounterStore(manager)).toThrow(/persist configuration: version/i);
+	});
 });

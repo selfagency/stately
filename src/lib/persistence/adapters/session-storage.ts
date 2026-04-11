@@ -9,26 +9,40 @@ interface StorageLike {
 	readonly length: number;
 }
 
-export function createSessionStorageAdapter(
-	storage: StorageLike = sessionStorage
-): PersistenceAdapter {
+function resolveSessionStorage(storage?: StorageLike): StorageLike {
+	if (storage) {
+		return storage;
+	}
+
+	if (typeof globalThis.sessionStorage === 'undefined') {
+		throw new Error(
+			'sessionStorage is not available in this environment. Pass an explicit storage implementation.'
+		);
+	}
+
+	return globalThis.sessionStorage as StorageLike;
+}
+
+export function createSessionStorageAdapter(storage?: StorageLike): PersistenceAdapter {
+	const resolvedStorage = resolveSessionStorage(storage);
+
 	return {
 		async getItem(key) {
-			return storage.getItem(key);
+			return resolvedStorage.getItem(key);
 		},
 		async setItem(key, value) {
-			storage.setItem(key, value);
+			resolvedStorage.setItem(key, value);
 		},
 		async removeItem(key) {
-			storage.removeItem(key);
+			resolvedStorage.removeItem(key);
 		},
 		async clear() {
-			storage.clear();
+			resolvedStorage.clear();
 		},
 		async keys() {
-			return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter(
-				(value): value is string => value !== null
-			);
+			return Array.from({ length: resolvedStorage.length }, (_, index) =>
+				resolvedStorage.key(index)
+			).filter((value): value is string => value !== null);
 		}
 	};
 }

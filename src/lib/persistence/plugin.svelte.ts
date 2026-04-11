@@ -1,7 +1,7 @@
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
-import type { PersistController, PersistOptions } from './types.js';
+import type { PersistController, PersistOptions, PersistenceAdapter } from './types.js';
 
 interface PersistableStore<State = Record<string, unknown>> {
 	readonly $id: string;
@@ -25,6 +25,15 @@ function isPersistableStore(value: unknown): value is PersistableStore {
 	return isRecord(value) && '$state' in value && '$patch' in value && '$subscribe' in value;
 }
 
+function isPersistenceAdapter(value: unknown): value is PersistenceAdapter {
+	return (
+		isRecord(value) &&
+		typeof value.getItem === 'function' &&
+		typeof value.setItem === 'function' &&
+		typeof value.removeItem === 'function'
+	);
+}
+
 function isReplayActive(store: PersistableStore): boolean {
 	return (
 		'$timeTravel' in store &&
@@ -39,8 +48,18 @@ function readPersistOptions(value: unknown): PersistOptions | undefined {
 	}
 
 	const persist = value.persist;
-	if (!isRecord(persist) || !('adapter' in persist)) {
+	if (!isRecord(persist)) {
 		return undefined;
+	}
+
+	if (!isPersistenceAdapter(persist.adapter)) {
+		throw new Error(
+			'Invalid persist configuration: adapter must implement getItem, setItem, and removeItem.'
+		);
+	}
+
+	if (typeof persist.version !== 'number' || !Number.isFinite(persist.version)) {
+		throw new Error('Invalid persist configuration: version must be a finite number.');
 	}
 
 	return persist as unknown as PersistOptions;
@@ -64,6 +83,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		const compression = persist.compression;
 		let paused = false;
 		let rehydrating = false;
+		let flushQueue = Promise.resolve();
 
 		const flush = async () => {
 			if (paused || rehydrating || isReplayActive(store)) {
@@ -75,7 +95,14 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				version: persist.version,
 				state: snapshot
 			});
-			await persist.adapter.setItem(key, compression ? compression.compress(payload) : payload);
+			const encoded = compression ? compression.compress(payload) : payload;
+			const queuedWrite = flushQueue
+				.catch(() => undefined)
+				.then(async () => {
+					await persist.adapter.setItem(key, encoded);
+				});
+			flushQueue = queuedWrite;
+			return queuedWrite;
 		};
 
 		const rehydrate = async () => {
@@ -95,14 +122,17 @@ export function createPersistencePlugin(): StateManagerPlugin {
 			}
 
 			rehydrating = true;
-			store.$patch(parsed.state);
-			rehydrating = false;
-			return true;
+			try {
+				store.$patch(parsed.state);
+				return true;
+			} finally {
+				rehydrating = false;
+			}
 		};
 
 		const ready = rehydrate().then(() => undefined);
 		const unsubscribe = store.$subscribe(() => {
-			void flush();
+			void flush().catch(() => {});
 		});
 		const dispose = store.$dispose.bind(store);
 		Object.defineProperty(store, '$dispose', {

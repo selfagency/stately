@@ -79,4 +79,9 @@ describe('persistence adapters', () => {
 		await adapter.clear?.();
 		expect(await adapter.keys?.()).toEqual([]);
 	});
+
+	it('throws a clear error when browser storage globals are unavailable', () => {
+		expect(() => createLocalStorageAdapter()).toThrow(/localstorage is not available/i);
+		expect(() => createSessionStorageAdapter()).toThrow(/sessionstorage is not available/i);
+	});
 });

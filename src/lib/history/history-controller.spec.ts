@@ -28,4 +28,22 @@ describe('createHistoryController', () => {
 		controller.redo();
 		expect(applied.at(-1)).toEqual({ count: 4 });
 	});
+
+	it('resets replay mode if snapshot application throws', () => {
+		const controller = createHistoryController({
+			initialSnapshot: { count: 0 },
+			applySnapshot() {
+				throw new Error('boom');
+			}
+		});
+
+		controller.record({ count: 1 });
+
+		expect(() => controller.goTo(0)).toThrow(/boom/i);
+		expect(controller.isReplaying).toBe(false);
+		expect(controller.currentIndex).toBe(1);
+
+		controller.record({ count: 2 });
+		expect(controller.entries.map((entry) => entry.snapshot.count)).toEqual([0, 1, 2]);
+	});
 });
