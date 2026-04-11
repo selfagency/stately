@@ -32,6 +32,18 @@ function isSyncStore(value: unknown): value is SyncStore {
 	return typeof value === 'object' && value !== null && '$subscribe' in value && '$patch' in value;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+function isReplayActive(store: SyncStore): boolean {
+	return (
+		'$timeTravel' in store &&
+		isRecord(store.$timeTravel) &&
+		Reflect.get(store.$timeTravel, 'isReplaying') === true
+	);
+}
+
 export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 	options: SyncPluginOptions<Message> = {}
 ): StateManagerPlugin {
@@ -86,7 +98,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 		);
 
 		const unsubscribeStore = store.$subscribe(() => {
-			if (applyingRemote) {
+			if (applyingRemote || isReplayActive(store)) {
 				return;
 			}
 

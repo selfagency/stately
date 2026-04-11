@@ -6,6 +6,8 @@ describe('public entrypoint', () => {
 		expect(stately).toMatchObject({
 			createAsyncPlugin: expect.any(Function),
 			createExternalSubscriber: expect.any(Function),
+			createHistoryPlugin: expect.any(Function),
+			createPersistencePlugin: expect.any(Function),
 			createStateManager: expect.any(Function),
 			createSyncPlugin: expect.any(Function),
 			getDefaultStateManager: expect.any(Function),
