@@ -43,4 +43,23 @@ describe('createDevtoolsTimelineRecorder', () => {
 		});
 		expect(entries[1].duration).toBeGreaterThanOrEqual(0);
 	});
+
+	it('trims entries when maxEntries is exceeded', () => {
+		let count = 0;
+		const timeline = createDevtoolsTimelineRecorder({
+			storeId: 'capped',
+			readSnapshot: () => ({ count }),
+			maxEntries: 3
+		});
+
+		for (let i = 0; i < 5; i++) {
+			count = i;
+			timeline.recordMutation({ label: `m${i}`, payload: { i } });
+		}
+
+		const entries = timeline.read();
+		expect(entries).toHaveLength(3);
+		expect(entries[0].label).toBe('m2');
+		expect(entries[2].label).toBe('m4');
+	});
 });

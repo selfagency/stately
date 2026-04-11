@@ -29,9 +29,7 @@ describe('async runtime', () => {
 				async loadCount(context: { signal: AbortSignal }, target: number) {
 					if (target === 1) {
 						return await new Promise<number>((resolve, reject) => {
-							context.signal.addEventListener('abort', () =>
-								reject(new DOMException('Aborted', 'AbortError'))
-							);
+							context.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
 							first.promise.then(resolve);
 						});
 					}

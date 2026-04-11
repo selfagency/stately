@@ -1,4 +1,5 @@
 import type { StateManagerPlugin } from '../root/types.js';
+import { SvelteSet } from 'svelte/reactivity';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
@@ -23,9 +24,7 @@ export interface SyncPluginOptions<Message extends SyncMessage = SyncMessage> {
 }
 
 function createOrigin(): string {
-	return (
-		globalThis.crypto?.randomUUID?.() ?? `sync-${Date.now()}-${Math.random().toString(36).slice(2)}`
-	);
+	return globalThis.crypto?.randomUUID?.() ?? `sync-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function isSyncStore(value: unknown): value is SyncStore {
@@ -38,9 +37,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isReplayActive(store: SyncStore): boolean {
 	return (
-		'$timeTravel' in store &&
-		isRecord(store.$timeTravel) &&
-		Reflect.get(store.$timeTravel, 'isReplaying') === true
+		'$timeTravel' in store && isRecord(store.$timeTravel) && Reflect.get(store.$timeTravel, 'isReplaying') === true
 	);
 }
 
@@ -71,29 +68,53 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 		let applyingRemote = false;
 		let lastSeenMutationId = 0;
 
+		const knownStateKeys = new SvelteSet(Object.keys(store.$state));
+
+		function filterToKnownKeys(remote: Record<string, unknown>): Record<string, unknown> | undefined {
+			const filtered: Record<string, unknown> = {};
+			let hasKnownKey = false;
+			for (const key of Object.keys(remote)) {
+				if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+				if (knownStateKeys.has(key)) {
+					filtered[key] = remote[key];
+					hasKnownKey = true;
+				}
+			}
+			return hasKnownKey ? filtered : undefined;
+		}
+
 		const unsubscribeRemote = transports.map((transport) =>
 			transport.subscribe((message) => {
-				const parsed = parseSyncMessage(message);
-				if (!parsed) {
-					return;
-				}
+				try {
+					const parsed = parseSyncMessage(message);
+					if (!parsed) {
+						return;
+					}
 
-				if (parsed.storeId !== store.$id || parsed.origin === origin) {
-					return;
-				}
+					if (parsed.storeId !== store.$id || parsed.origin === origin) {
+						return;
+					}
 
-				if (parsed.version !== version) {
-					return;
-				}
+					if (parsed.version !== version) {
+						return;
+					}
 
-				if (parsed.mutationId <= lastSeenMutationId) {
-					return;
-				}
+					if (parsed.mutationId <= lastSeenMutationId) {
+						return;
+					}
 
-				lastSeenMutationId = parsed.mutationId;
-				applyingRemote = true;
-				store.$patch(parsed.state);
-				applyingRemote = false;
+					const validatedState = filterToKnownKeys(parsed.state);
+					if (!validatedState) {
+						return;
+					}
+
+					lastSeenMutationId = parsed.mutationId;
+					applyingRemote = true;
+					store.$patch(validatedState);
+					applyingRemote = false;
+				} catch {
+					applyingRemote = false;
+				}
 			})
 		);
 
@@ -114,7 +135,11 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			} as Message;
 
 			for (const transport of transports) {
-				transport.publish(message);
+				try {
+					transport.publish(message);
+				} catch {
+					// Non-serializable or transport failure — skip silently
+				}
 			}
 		});
 

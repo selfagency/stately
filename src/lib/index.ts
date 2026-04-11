@@ -10,11 +10,7 @@ export { createLzStringCompression } from './persistence/compression/lz-string.j
 export { createPersistencePlugin } from './persistence/plugin.svelte.js';
 export { storeToRefs } from './pinia-like/store-to-refs.svelte.js';
 export { createStateManager, getDefaultStateManager } from './root/create-state-manager.js';
-export {
-	getStateManager,
-	initializeStateManagerContext,
-	setStateManager
-} from './root/state-manager-context.js';
+export { getStateManager, initializeStateManagerContext, setStateManager } from './root/state-manager-context.js';
 export { createSyncPlugin } from './sync/plugin.svelte.js';
 
 export type { ConcurrencyMode } from './async/concurrency.js';

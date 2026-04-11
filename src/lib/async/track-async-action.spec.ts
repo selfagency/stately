@@ -42,9 +42,7 @@ describe('trackAsyncAction', () => {
 			(async ({ signal }: { signal: AbortSignal }, value: number) => {
 				if (value === 1) {
 					return await new Promise<number>((resolve, reject) => {
-						signal.addEventListener('abort', () =>
-							reject(new DOMException('Aborted', 'AbortError'))
-						);
+						signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
 						firstRequest.promise.then(resolve);
 					});
 				}
@@ -84,31 +82,31 @@ describe('trackAsyncAction', () => {
 		expect(directlyAbortable.state.isLoading).toBe(false);
 		expect(String(directlyAbortable.state.error)).toContain('AbortError');
 	});
-});
 
-it('keeps isLoading true while multiple parallel requests are in flight', async () => {
-	const first = deferred<number>();
-	const second = deferred<number>();
-	const tracked = trackAsyncAction(async (which: number) => {
-		if (which === 1) return first.promise;
-		return second.promise;
+	it('keeps isLoading true while multiple parallel requests are in flight', async () => {
+		const first = deferred<number>();
+		const second = deferred<number>();
+		const tracked = trackAsyncAction(async (which: number) => {
+			if (which === 1) return first.promise;
+			return second.promise;
+		});
+
+		const p1 = tracked.run(1);
+		expect(tracked.state.isLoading).toBe(true);
+
+		const p2 = tracked.run(2);
+		expect(tracked.state.isLoading).toBe(true);
+
+		// Resolve the second request first
+		second.resolve(20);
+		await p2;
+		// First is still in flight, so isLoading should remain true
+		expect(tracked.state.isLoading).toBe(true);
+
+		// Resolve the first request
+		first.resolve(10);
+		await p1;
+		// Now all requests are done
+		expect(tracked.state.isLoading).toBe(false);
 	});
-
-	const p1 = tracked.run(1);
-	expect(tracked.state.isLoading).toBe(true);
-
-	const p2 = tracked.run(2);
-	expect(tracked.state.isLoading).toBe(true);
-
-	// Resolve the second request first
-	second.resolve(20);
-	await p2;
-	// First is still in flight, so isLoading should remain true
-	expect(tracked.state.isLoading).toBe(true);
-
-	// Resolve the first request
-	first.resolve(10);
-	await p1;
-	// Now all requests are done
-	expect(tracked.state.isLoading).toBe(false);
 });

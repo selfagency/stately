@@ -18,11 +18,11 @@ type ActionSubscriber<Store extends object> = (
 	context: StoreActionHookContext<Store, string, unknown[], unknown>
 ) => void;
 
-export function createSubscriptions<
-	Id extends string,
-	State extends StoreState,
-	Store extends object
->(config: { storeId: Id; state: () => State; store: () => Store }) {
+export function createSubscriptions<Id extends string, State extends StoreState, Store extends object>(config: {
+	storeId: Id;
+	state: () => State;
+	store: () => Store;
+}) {
 	const mutationSubscribers = new Set<MutationSubscriber<Id, State, Store>>();
 	const actionSubscribers = new Set<ActionSubscriber<Store>>();
 
@@ -59,19 +59,11 @@ export function createSubscriptions<
 				callback(mutation, config.state());
 			}
 		},
-		wrapAction<Name extends string, Action extends AnyFunction>(
-			name: Name,
-			action: Action
-		): Action {
+		wrapAction<Name extends string, Action extends AnyFunction>(name: Name, action: Action): Action {
 			const wrapped = function (this: unknown, ...args: Parameters<Action>): ReturnType<Action> {
 				const afterCallbacks: Array<(result: unknown) => void> = [];
 				const errorCallbacks: Array<(error: unknown) => void> = [];
-				const context: StoreActionHookContext<
-					Store,
-					Name,
-					Parameters<Action>,
-					Awaited<ReturnType<Action>>
-				> = {
+				const context: StoreActionHookContext<Store, Name, Parameters<Action>, Awaited<ReturnType<Action>>> = {
 					name,
 					store: config.store(),
 					args,

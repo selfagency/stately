@@ -80,8 +80,13 @@ describe('persistence adapters', () => {
 		expect(await adapter.keys?.()).toEqual([]);
 	});
 
-	it('throws a clear error when browser storage globals are unavailable', () => {
-		expect(() => createLocalStorageAdapter()).toThrow(/localstorage is not available/i);
-		expect(() => createSessionStorageAdapter()).toThrow(/sessionstorage is not available/i);
+	it('returns no-op adapters when browser storage globals are unavailable', async () => {
+		const local = createLocalStorageAdapter();
+		const session = createSessionStorageAdapter();
+
+		await local.setItem('key', 'value');
+		expect(await local.getItem('key')).toBeNull();
+		await session.setItem('key', 'value');
+		expect(await session.getItem('key')).toBeNull();
 	});
 });

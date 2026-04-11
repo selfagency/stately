@@ -19,9 +19,7 @@ export function createSetupStore<Store extends AnyRecord, Id extends string>(
 	const result = setup();
 
 	if (!isRecord(result)) {
-		throw new Error(
-			`Invalid setup store definition for "${id}". Setup stores must return an object.`
-		);
+		throw new Error(`Invalid setup store definition for "${id}". Setup stores must return an object.`);
 	}
 
 	const state = $state({} as Record<string, unknown>);

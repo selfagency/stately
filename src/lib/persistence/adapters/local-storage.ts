@@ -9,40 +9,54 @@ interface StorageLike {
 	readonly length: number;
 }
 
-function resolveLocalStorage(storage?: StorageLike): StorageLike {
+function resolveLocalStorage(storage?: StorageLike): StorageLike | undefined {
 	if (storage) {
 		return storage;
 	}
 
-	if (typeof globalThis.localStorage === 'undefined') {
-		throw new Error(
-			'localStorage is not available in this environment. Pass an explicit storage implementation.'
-		);
+	if (typeof globalThis.localStorage !== 'undefined') {
+		return globalThis.localStorage as StorageLike;
 	}
 
-	return globalThis.localStorage as StorageLike;
+	return undefined;
 }
 
 export function createLocalStorageAdapter(storage?: StorageLike): PersistenceAdapter {
-	const resolvedStorage = resolveLocalStorage(storage);
+	const explicitStorage = storage;
+
+	function getStorage(): StorageLike | undefined {
+		return resolveLocalStorage(explicitStorage);
+	}
 
 	return {
 		async getItem(key) {
-			return resolvedStorage.getItem(key);
+			return getStorage()?.getItem(key) ?? null;
 		},
 		async setItem(key, value) {
-			resolvedStorage.setItem(key, value);
+			const s = getStorage();
+			if (!s) return;
+			try {
+				s.setItem(key, value);
+			} catch (error) {
+				if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+					console.warn(`[stately] localStorage quota exceeded for key "${key}".`);
+					return;
+				}
+				throw error;
+			}
 		},
 		async removeItem(key) {
-			resolvedStorage.removeItem(key);
+			getStorage()?.removeItem(key);
 		},
 		async clear() {
-			resolvedStorage.clear();
+			getStorage()?.clear();
 		},
 		async keys() {
-			return Array.from({ length: resolvedStorage.length }, (_, index) =>
-				resolvedStorage.key(index)
-			).filter((value): value is string => value !== null);
+			const s = getStorage();
+			if (!s) return [];
+			return Array.from({ length: s.length }, (_, index) => s.key(index)).filter(
+				(value): value is string => value !== null
+			);
 		}
 	};
 }

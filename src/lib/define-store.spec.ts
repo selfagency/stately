@@ -47,12 +47,13 @@ describe('defineStore', () => {
 		expect(secondStore.items).toEqual([]);
 	});
 
-	it('rejects duplicate store ids across definitions', () => {
-		defineStore('duplicate-store', { state: () => ({ count: 0 }) });
+	it('rejects duplicate store ids on the same manager', () => {
+		const manager = createStateManager();
+		const useFirst = defineStore('duplicate-store', { state: () => ({ count: 0 }) });
+		const useSecond = defineStore('duplicate-store', { state: () => ({ count: 1 }) });
 
-		expect(() => defineStore('duplicate-store', { state: () => ({ count: 1 }) })).toThrow(
-			/duplicate/i
-		);
+		useFirst(manager);
+		expect(() => useSecond(manager)).toThrow(/duplicate/i);
 	});
 
 	it('rejects invalid option store definitions', () => {

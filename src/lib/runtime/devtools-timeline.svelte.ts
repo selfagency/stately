@@ -12,12 +12,22 @@ export interface DevtoolsTimelineEntry {
 	status: 'completed' | 'errored';
 }
 
+const DEFAULT_MAX_ENTRIES = 500;
+
 export function createDevtoolsTimelineRecorder(config: {
 	storeId: string;
 	readSnapshot: () => unknown;
+	maxEntries?: number;
 }) {
+	const maxEntries = config.maxEntries ?? DEFAULT_MAX_ENTRIES;
 	const entries = $state([] as DevtoolsTimelineEntry[]);
 	let nextId = 1;
+
+	function trimEntries(): void {
+		while (entries.length > maxEntries) {
+			entries.shift();
+		}
+	}
 
 	return {
 		recordMutation(input: { label: string; payload?: unknown }) {
@@ -34,6 +44,7 @@ export function createDevtoolsTimelineRecorder(config: {
 				snapshot: config.readSnapshot(),
 				status: 'completed'
 			});
+			trimEntries();
 		},
 		startAction(input: { label: string; payload?: unknown }) {
 			const id = nextId++;
@@ -54,6 +65,7 @@ export function createDevtoolsTimelineRecorder(config: {
 						result,
 						status: 'completed'
 					});
+					trimEntries();
 				},
 				fail(error: unknown) {
 					const endedAt = Date.now();
@@ -70,6 +82,7 @@ export function createDevtoolsTimelineRecorder(config: {
 						result: error,
 						status: 'errored'
 					});
+					trimEntries();
 				}
 			};
 		},

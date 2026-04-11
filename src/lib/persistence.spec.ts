@@ -29,15 +29,11 @@ describe('persistence runtime', () => {
 		await store.$persist.ready;
 		store.count = 2;
 		await store.$persist.flush();
-		expect(storage.get('persistence-runtime')).toBe(
-			JSON.stringify({ version: 1, state: { count: 2 } })
-		);
+		expect(storage.get('persistence-runtime')).toBe(JSON.stringify({ version: 1, state: { count: 2 } }));
 
 		store.$persist.pause();
 		store.count = 7;
-		expect(storage.get('persistence-runtime')).toBe(
-			JSON.stringify({ version: 1, state: { count: 2 } })
-		);
+		expect(storage.get('persistence-runtime')).toBe(JSON.stringify({ version: 1, state: { count: 2 } }));
 
 		await store.$persist.rehydrate();
 		store.$persist.resume();
@@ -45,5 +41,71 @@ describe('persistence runtime', () => {
 
 		await store.$persist.clear();
 		expect(storage.has('persistence-runtime')).toBe(false);
+	});
+
+	it('survives a QuotaExceededError from the storage adapter without crashing the store', async () => {
+		const storage = new Map<string, string>();
+		let shouldThrow = false;
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('persistence-quota', {
+			state: () => ({ count: 0 }),
+			persist: {
+				version: 1,
+				adapter: {
+					async getItem(key: string) {
+						return storage.get(key) ?? null;
+					},
+					async setItem(_key: string, _value: string) {
+						if (shouldThrow) {
+							throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+						}
+						storage.set(_key, _value);
+					},
+					async removeItem(key: string) {
+						storage.delete(key);
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+		await store.$persist.ready;
+
+		store.count = 1;
+		await store.$persist.flush();
+		expect(storage.get('persistence-quota')).toBe(JSON.stringify({ version: 1, state: { count: 1 } }));
+
+		shouldThrow = true;
+		store.count = 2;
+		await expect(store.$persist.flush()).rejects.toThrow('Storage quota exceeded');
+
+		expect(store.count).toBe(2);
+		expect(storage.get('persistence-quota')).toBe(JSON.stringify({ version: 1, state: { count: 1 } }));
+	});
+
+	it('handles corrupted storage data gracefully on rehydrate', async () => {
+		const storage = new Map<string, string>();
+		storage.set('persistence-corrupt', '<<<NOT JSON>>>');
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('persistence-corrupt', {
+			state: () => ({ count: 42 }),
+			persist: {
+				version: 1,
+				adapter: {
+					async getItem(key: string) {
+						return storage.get(key) ?? null;
+					},
+					async setItem(key: string, value: string) {
+						storage.set(key, value);
+					},
+					async removeItem(key: string) {
+						storage.delete(key);
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+		await store.$persist.ready;
+
+		expect(store.count).toBe(42);
 	});
 });

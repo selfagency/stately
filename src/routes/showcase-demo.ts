@@ -117,14 +117,10 @@ function createInspectablePersistence(storeId: string) {
 			return browser ? createLocalStorageAdapter().getItem(targetKey) : fallback.getItem(targetKey);
 		},
 		setItem(targetKey, value) {
-			return browser
-				? createLocalStorageAdapter().setItem(targetKey, value)
-				: fallback.setItem(targetKey, value);
+			return browser ? createLocalStorageAdapter().setItem(targetKey, value) : fallback.setItem(targetKey, value);
 		},
 		removeItem(targetKey) {
-			return browser
-				? createLocalStorageAdapter().removeItem(targetKey)
-				: fallback.removeItem(targetKey);
+			return browser ? createLocalStorageAdapter().removeItem(targetKey) : fallback.removeItem(targetKey);
 		}
 	};
 

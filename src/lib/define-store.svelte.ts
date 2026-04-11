@@ -1,4 +1,3 @@
-import { SvelteMap } from 'svelte/reactivity';
 import type {
 	DefineStoreOptionsBase,
 	StoreDefinition as PublicStoreDefinition,
@@ -40,15 +39,11 @@ export interface DefineStoreOptions<
 	>
 > {
 	state: () => State;
-	getters?: Getters &
-		ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
-	actions?: Actions &
-		ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	getters?: Getters & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	actions?: Actions & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
 }
 
 type SetupStoreFactory<Store extends AnyRecord> = () => Store;
-
-const registeredDefinitionIds = new SvelteMap<string, StoreDefinition>();
 
 function isRecord(value: unknown): value is AnyRecord {
 	return typeof value === 'object' && value !== null;
@@ -81,23 +76,11 @@ function assertValidStoreDefinition(
 	| DefineStoreOptions<AnyRecord, GetterTree<AnyRecord>, ActionTree>
 	| SetupStoreFactory<AnyRecord>
 	| DefineSetupStoreOptions<AnyRecord> {
-	if (
-		!isOptionStoreDefinition(definition) &&
-		!isFunction(definition) &&
-		!isSetupStoreOptions(definition)
-	) {
+	if (!isOptionStoreDefinition(definition) && !isFunction(definition) && !isSetupStoreOptions(definition)) {
 		throw new Error(
 			`Invalid store definition for "${id}". Expected an options object, a setup function, or a setup options object.`
 		);
 	}
-}
-
-function registerDefinition(definition: StoreDefinition): void {
-	const existing = registeredDefinitionIds.get(definition.$id);
-	if (existing) {
-		throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
-	}
-	registeredDefinitionIds.set(definition.$id, definition);
 }
 
 export function defineStore<
@@ -122,9 +105,7 @@ export function defineStore<Id extends string, Store extends AnyRecord>(
 	StoreState<Store>,
 	StoreGetters<Record<never, never>>,
 	StoreActions<{
-		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction
-			? Store[K]
-			: never;
+		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;
 	}>
 >;
 export function defineStore<Id extends string, Store extends AnyRecord>(
@@ -135,9 +116,7 @@ export function defineStore<Id extends string, Store extends AnyRecord>(
 	StoreState<Store>,
 	StoreGetters<Record<never, never>>,
 	StoreActions<{
-		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction
-			? Store[K]
-			: never;
+		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;
 	}>
 >;
 export function defineStore(id: string, definition: unknown) {
@@ -146,13 +125,8 @@ export function defineStore(id: string, definition: unknown) {
 
 	const storeDefinition: StoreDefinition = {
 		$id: id,
-		options:
-			isOptionStoreDefinition(definition) || isSetupStoreOptions(definition)
-				? definition
-				: undefined
+		options: isOptionStoreDefinition(definition) || isSetupStoreOptions(definition) ? definition : undefined
 	};
-
-	registerDefinition(storeDefinition);
 
 	const useStore = (manager: StateManager = getDefaultStateManager()) =>
 		manager.createStore(storeDefinition, () => {

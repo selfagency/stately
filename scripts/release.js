@@ -31,13 +31,7 @@ async function readJson(path) {
 }
 
 async function assertReleaseArtifacts() {
-	for (const requiredPath of [
-		'package.json',
-		'README.md',
-		'CHANGELOG.md',
-		'LICENSE.md',
-		'stately.svg'
-	]) {
+	for (const requiredPath of ['package.json', 'README.md', 'CHANGELOG.md', 'LICENSE.md', 'stately.svg']) {
 		await access(resolve(DIST, requiredPath), constants.R_OK);
 	}
 }

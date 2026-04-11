@@ -36,9 +36,7 @@ function isPersistenceAdapter(value: unknown): value is PersistenceAdapter {
 
 function isReplayActive(store: PersistableStore): boolean {
 	return (
-		'$timeTravel' in store &&
-		isRecord(store.$timeTravel) &&
-		Reflect.get(store.$timeTravel, 'isReplaying') === true
+		'$timeTravel' in store && isRecord(store.$timeTravel) && Reflect.get(store.$timeTravel, 'isReplaying') === true
 	);
 }
 
@@ -53,9 +51,7 @@ function readPersistOptions(value: unknown): PersistOptions | undefined {
 	}
 
 	if (!isPersistenceAdapter(persist.adapter)) {
-		throw new Error(
-			'Invalid persist configuration: adapter must implement getItem, setItem, and removeItem.'
-		);
+		throw new Error('Invalid persist configuration: adapter must implement getItem, setItem, and removeItem.');
 	}
 
 	if (typeof persist.version !== 'number' || !Number.isFinite(persist.version)) {
@@ -78,8 +74,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 
 		const key = persist.key ?? store.$id;
 		const serialize = persist.serialize ?? serializePersistedState;
-		const deserialize =
-			persist.deserialize ?? ((raw: string) => deserializePersistedState(raw, persist));
+		const customDeserialize = persist.deserialize;
 		const compression = persist.compression;
 		let paused = false;
 		let rehydrating = false;
@@ -95,7 +90,15 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				version: persist.version,
 				state: snapshot
 			});
-			const encoded = compression ? compression.compress(payload) : payload;
+
+			let encoded: string;
+			try {
+				encoded = compression ? compression.compress(payload) : payload;
+			} catch {
+				console.warn(`[stately] Compression failed for store "${store.$id}". Falling back to uncompressed.`);
+				encoded = payload;
+			}
+
 			const queuedWrite = flushQueue
 				.catch(() => undefined)
 				.then(async () => {
@@ -111,19 +114,41 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				return false;
 			}
 
-			const source = compression ? compression.decompress(raw) : raw;
+			let source: string | undefined;
+			try {
+				source = compression ? compression.decompress(raw) : raw;
+			} catch {
+				console.warn(`[stately] Decompression failed for store "${store.$id}".`);
+				return false;
+			}
+
 			if (!source) {
 				return false;
 			}
 
-			const parsed = deserialize(source);
-			if (!parsed) {
+			if (customDeserialize) {
+				const parsed = customDeserialize(source);
+				if (!parsed) {
+					return false;
+				}
+				rehydrating = true;
+				try {
+					store.$patch(parsed.state);
+					return true;
+				} finally {
+					rehydrating = false;
+				}
+			}
+
+			const result = deserializePersistedState(source, persist);
+			if (!result.ok) {
+				console.warn(`[stately] Rehydration failed for store "${store.$id}": ${result.error}`);
 				return false;
 			}
 
 			rehydrating = true;
 			try {
-				store.$patch(parsed.state);
+				store.$patch(result.envelope.state);
 				return true;
 			} finally {
 				rehydrating = false;
