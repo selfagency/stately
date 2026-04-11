@@ -1,0 +1,70 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { normalizePath, type Plugin } from 'vite';
+import {
+	cleanInspectorUrl,
+	VIRTUAL_STATELY_INSPECTOR_LOADER_ID,
+	VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID,
+	VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX
+} from './virtual.js';
+
+const viteClientPattern = /vite\/dist\/client\/client\.mjs(?:\?|$)/;
+
+export interface StatelyInspectorVitePluginOptions {
+	enabled?: boolean;
+}
+
+function getInspectorRuntimePath(): string {
+	return normalizePath(path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'runtime'));
+}
+
+export function createStatelyInspectorVitePlugin(options: StatelyInspectorVitePluginOptions = {}): Plugin {
+	const runtimePath = getInspectorRuntimePath();
+	const enabled = options.enabled ?? true;
+
+	return {
+		name: 'vite-plugin-stately-inspector',
+		apply: 'serve',
+		enforce: 'pre',
+		resolveId(id) {
+			if (!enabled) {
+				return;
+			}
+
+			if (id === VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID) {
+				return id;
+			}
+
+			if (id.startsWith(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX) && !id.includes('..')) {
+				return id.replace(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX, `${runtimePath}/`);
+			}
+		},
+		load(id) {
+			if (!enabled) {
+				return;
+			}
+
+			if (id === VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID) {
+				return `export default ${JSON.stringify({ enabled })}`;
+			}
+
+			if (id.startsWith(runtimePath)) {
+				const file = cleanInspectorUrl(id);
+				if (fs.existsSync(file)) {
+					return fs.readFileSync(file, 'utf8');
+				}
+			}
+		},
+		transform(code, id, transformOptions) {
+			if (!enabled || transformOptions?.ssr || !viteClientPattern.test(id)) {
+				return;
+			}
+
+			return {
+				code: `${code}\nimport('${VIRTUAL_STATELY_INSPECTOR_LOADER_ID}')`,
+				map: null
+			};
+		}
+	};
+}

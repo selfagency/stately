@@ -17,9 +17,9 @@ branch: feature/qwur-stately-inspector-vite-plugin
 - [x] Phase 2: add failing drawer and live-update tests
 - [x] Phase 2: implement drawer state, formatter, component, and bootstrap client
 - [x] Phase 2: run targeted browser tests and commit when green
-- [ ] Phase 3: add failing Vite plugin and virtual-module tests
-- [ ] Phase 3: implement virtual ids, loader, and Vite dev-client transform
-- [ ] Phase 3: run targeted Vite/plugin tests and commit when green
+- [x] Phase 3: add failing Vite plugin and virtual-module tests
+- [x] Phase 3: implement virtual ids, loader, and Vite dev-client transform
+- [x] Phase 3: run targeted Vite/plugin tests and commit when green
 - [ ] Phase 4: add exports, dogfood in vite config, and write docs
 - [ ] Phase 4: run build and docs checks and commit when green
 - [ ] Phase 5: add final regression coverage for startup capture, no-history stores, and replay controls
@@ -32,3 +32,4 @@ branch: feature/qwur-stately-inspector-vite-plugin
 - Added regression coverage for store registration, live snapshot reads, inert no-hook behavior, and unregister-on-dispose.
 - Added the phase 2 drawer UI, formatter, reactive drawer state, and client bootstrap.
 - Added browser coverage for live state updates and history replay controls in the drawer.
+- Added the phase 3 Vite plugin, virtual ids, runtime loader, and dev-client transform coverage.
