@@ -2,30 +2,191 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    tags: ['v*']
   workflow_dispatch:
-
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3)'
+        required: true
+        type: string
 
 permissions:
   contents: read
+  actions: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  release:
-    name: Version or publish package
+  detect-tag:
+    name: Detect release tag and readiness
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 5
     permissions:
       contents: write
-      pull-requests: write
+      actions: read
+
+    outputs:
+      release_tag: ${{ steps.tag.outputs.release_tag }}
+      ready: ${{ steps.tag.outputs.ready }}
+
+    steps:
+      - name: Resolve tag and verify CI readiness
+        id: tag
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            let tagName;
+
+            if (context.eventName === 'workflow_dispatch') {
+              const versionInput = '${{ inputs.version }}'.trim();
+              if (!versionInput) {
+                core.setFailed('version input is required for workflow_dispatch.');
+                return;
+              }
+              tagName = versionInput.startsWith('v') ? versionInput : `v${versionInput}`;
+
+              const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+              const mainSha = main.data.commit.sha;
+
+              core.info(`Creating tag ${tagName} at ${mainSha}...`);
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/tags/${tagName}`,
+                sha: mainSha,
+              });
+              core.info(`Tag ${tagName} created.`);
+            } else {
+              tagName = context.ref.replace('refs/tags/', '');
+            }
+
+            if (!tagName || !tagName.startsWith('v')) {
+              core.info(`Ref '${context.ref}' is not a release tag; skipping.`);
+              core.setOutput('release_tag', '');
+              core.setOutput('ready', 'false');
+              return;
+            }
+
+            const refData = await github.rest.git.getRef({
+              owner,
+              repo,
+              ref: `tags/${tagName}`,
+            });
+
+            const refObj = refData.data.object;
+            const taggedSha =
+              refObj.type === 'tag'
+                ? (await github.rest.git.getTag({ owner, repo, tag_sha: refObj.sha })).data.object.sha
+                : refObj.sha;
+            const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+            const mainSha = main.data.commit.sha;
+
+            if (taggedSha !== mainSha) {
+              core.setFailed(
+                `Release blocked: tag ${tagName} points to ${taggedSha}, but latest main is ${mainSha}.`
+              );
+              return;
+            }
+
+            const requiredWorkflows = ['Test & Build'];
+
+            for (const workflowName of requiredWorkflows) {
+              const workflowsResp = await github.rest.actions.listRepoWorkflows({
+                owner,
+                repo,
+                per_page: 100,
+              });
+
+              const workflow = workflowsResp.data.workflows.find(w => w.name === workflowName);
+              if (!workflow) {
+                core.setFailed(`Release blocked: required workflow '${workflowName}' not found.`);
+                return;
+              }
+
+              const runsResp = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: workflow.id,
+                branch: 'main',
+                head_sha: mainSha,
+                status: 'completed',
+                per_page: 10,
+              });
+
+              const run = runsResp.data.workflow_runs[0];
+              if (!run) {
+                core.setFailed(
+                  `Release blocked: required workflow '${workflowName}' has no completed run for ${mainSha}.`
+                );
+                return;
+              }
+              if (run.conclusion !== 'success') {
+                core.setFailed(
+                  `Release blocked: workflow '${workflowName}' concluded with '${run.conclusion}' on ${mainSha}.`
+                );
+                return;
+              }
+            }
+
+            core.info(`Release tag detected: ${tagName} on latest main commit ${mainSha}; all checks passed.`);
+            core.setOutput('release_tag', tagName);
+            core.setOutput('ready', 'true');
+
+  release:
+    name: Build and publish
+    needs: detect-tag
+    if: needs.detect-tag.outputs.release_tag != '' && needs.detect-tag.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
       id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.detect-tag.outputs.release_tag }}
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: changelog_notes
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const currentTag = '${{ needs.detect-tag.outputs.release_tag }}';
+
+            const tagsResp = await github.rest.repos.listTags({ owner, repo, per_page: 100 });
+            const index = tagsResp.data.findIndex(t => t.name === currentTag);
+            const previousTag =
+              index >= 0
+                ? (tagsResp.data.slice(index + 1).find(t => t.name.startsWith('v'))?.name ?? '')
+                : '';
+
+            const notesResponse = await github.rest.repos.generateReleaseNotes({
+              owner,
+              repo,
+              tag_name: currentTag,
+              ...(previousTag ? { previous_tag_name: previousTag } : {}),
+              target_commitish: 'main',
+            });
+
+            core.setOutput('previous_tag', previousTag);
+            core.setOutput('notes', notesResponse.data.body ?? '');
+
+      - name: Write release notes to file
+        run: printf '%s' "$RELEASE_NOTES" > release-notes.md
+        env:
+          RELEASE_NOTES: ${{ steps.changelog_notes.outputs.notes }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
@@ -49,44 +210,32 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
       - name: Enable Corepack
         run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run type and Svelte checks
-        run: pnpm run check
-
-      - name: Run lint checks
-        run: pnpm run lint
-
-      - name: Run unit and browser tests
-        run: pnpm run test
-
-      - name: Build package and verify publish output
+      - name: Build package
         run: pnpm run build
 
-      - name: Create release pull request or publish to npm
-        uses: changesets/action@57dd5be9ba8852146913fabe3c122b219bb90fa2 # v1.4.9
+      - name: Pack npm tarball
+        run: npm pack ./dist --pack-destination .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
-          version: pnpm run release:version
-          publish: pnpm run release
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
+          tag_name: ${{ needs.detect-tag.outputs.release_tag }}
+          body_path: release-notes.md
+          files: '*.tgz'
+          draft: false
+          prerelease: ${{ contains(needs.detect-tag.outputs.release_tag, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: pnpm run release
+        env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
