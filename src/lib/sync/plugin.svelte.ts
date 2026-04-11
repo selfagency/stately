@@ -82,7 +82,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			for (const key of Object.keys(remote)) {
 				if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
 				if (knownStateKeys.has(key)) {
-					filtered[key] = sanitizeValue(Reflect.get(remote, key) as unknown);
+					filtered[key] = sanitizeValue(Reflect.get(remote, key));
 					hasKnownKey = true;
 				}
 			}

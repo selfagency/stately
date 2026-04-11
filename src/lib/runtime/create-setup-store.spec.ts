@@ -151,7 +151,7 @@ describe('createSetupStore', () => {
 		expect(store.count).toBe(10);
 		expect(store.label).toBe('hello');
 
-		store.$patch((state: S) => {
+		store.$patch((state) => {
 			state.count += 1;
 		});
 		expect(store.count).toBe(11);
