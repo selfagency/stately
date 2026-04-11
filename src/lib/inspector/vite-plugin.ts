@@ -62,7 +62,7 @@ export function createStatelyInspectorVitePlugin(options: StatelyInspectorVitePl
 			}
 
 			return {
-				code: `${code}\nimport('${VIRTUAL_STATELY_INSPECTOR_LOADER_ID}')`,
+				code: `${code}\n;import('${VIRTUAL_STATELY_INSPECTOR_LOADER_ID}')`,
 				map: null
 			};
 		}

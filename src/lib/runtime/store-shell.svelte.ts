@@ -1,7 +1,4 @@
 import type { StoreActionHookContext, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
-import { getStatelyInspectorHook } from '../inspector/hook.js';
-import { createStatelyInspectorStoreAdapter } from '../inspector/store-adapter.svelte.js';
-import { statelyInspectorAdapterKey } from '../inspector/types.js';
 import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';
@@ -122,7 +119,6 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		state: () => shellStore.$state,
 		store: () => shellStore
 	});
-	let inspectorAdapter: ReturnType<typeof createStatelyInspectorStoreAdapter<State>> | undefined;
 	let unregisterInspectorStore: (() => void) | undefined;
 
 	subscriptions.onAction(({ name, args, after, onError }) => {
@@ -317,7 +313,6 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 				}
 				disposed = true;
 				unregisterInspectorStore?.();
-				inspectorAdapter?.dispose();
 				subscriptions.clear();
 				config.onDispose?.();
 			}
@@ -347,19 +342,12 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		}
 	});
 
-	const inspectorHook = getStatelyInspectorHook();
-	if (inspectorHook) {
-		inspectorAdapter = createStatelyInspectorStoreAdapter({
-			store: shellStore,
-			timeline
-		});
-		unregisterInspectorStore = inspectorHook.registerStore(inspectorAdapter);
-		Object.defineProperty(shellStore, statelyInspectorAdapterKey, {
-			value: inspectorAdapter,
-			enumerable: false,
-			configurable: true,
-			writable: false
-		});
+	const statelyInspectorHookKey = Symbol.for('stately.inspector.hook');
+	const globalHook = Reflect.get(globalThis, statelyInspectorHookKey) as
+		| { register?: (store: object, timeline: object) => () => void }
+		| undefined;
+	if (globalHook?.register) {
+		unregisterInspectorStore = globalHook.register(shellStore, timeline);
 	}
 
 	return {

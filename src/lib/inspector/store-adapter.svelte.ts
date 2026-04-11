@@ -1,30 +1,22 @@
-import type { StoreActionHookContext, StoreState } from '../pinia-like/store-types.js';
-import type { DevtoolsTimelineEntry } from '../runtime/devtools-timeline.svelte.js';
+import type {
+	InspectableStore,
+	StatelyInspectorHistoryCapableStore,
+	StatelyInspectorStoreAdapter,
+	TimelineReader
+} from './types.js';
 import { SvelteSet } from 'svelte/reactivity';
-import type { StatelyInspectorHistoryCapableStore, StatelyInspectorStoreAdapter } from './types.js';
-
-interface InspectableStore<State extends StoreState = StoreState> {
-	readonly $id: string;
-	readonly $state: State;
-	$subscribe(callback: () => void, options?: { detached?: boolean }): () => void;
-	$onAction(callback: (context: StoreActionHookContext<object, string, unknown[], unknown>) => void): () => void;
-}
-
-interface TimelineReader {
-	read(): DevtoolsTimelineEntry[];
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
-function hasHistory<State extends StoreState>(
+function hasHistory<State extends Record<string, unknown>>(
 	store: InspectableStore<State>
 ): store is InspectableStore<State> & StatelyInspectorHistoryCapableStore<State> {
 	return '$history' in store && '$timeTravel' in store && isRecord(store.$history) && isRecord(store.$timeTravel);
 }
 
-export function createStatelyInspectorStoreAdapter<State extends StoreState>(config: {
+export function createStatelyInspectorStoreAdapter<State extends Record<string, unknown>>(config: {
 	store: InspectableStore<State>;
 	timeline: TimelineReader;
 }): StatelyInspectorStoreAdapter<State> {

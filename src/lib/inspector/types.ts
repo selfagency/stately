@@ -24,8 +24,25 @@ export interface StatelyInspectorStoreAdapter<State = unknown> {
 	dispose(): void;
 }
 
+export interface InspectableStore<State extends Record<string, unknown> = Record<string, unknown>> {
+	readonly $id: string;
+	readonly $state: State;
+	$subscribe(callback: () => void, options?: { detached?: boolean }): () => void;
+	$onAction(
+		callback: (context: {
+			after(cb: (result: unknown) => void): void;
+			onError(cb: (error: unknown) => void): void;
+		}) => void
+	): () => void;
+}
+
+export interface TimelineReader {
+	read(): DevtoolsTimelineEntry[];
+}
+
 export interface StatelyInspectorHook {
 	registerStore(adapter: StatelyInspectorStoreAdapter): () => void;
+	register(store: InspectableStore, timeline: TimelineReader): () => void;
 	listStores(): StatelyInspectorStoreAdapter[];
 	subscribe(callback: () => void): () => void;
 }

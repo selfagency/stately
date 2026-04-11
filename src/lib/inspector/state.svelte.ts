@@ -3,10 +3,14 @@ import type { StatelyInspectorHook, StatelyInspectorStoreAdapter, StatelyInspect
 function noop(): void {}
 
 export function createInspectorDrawerState(config: { hook: StatelyInspectorHook }) {
-	const state = $state({
-		stores: config.hook.listStores() as StatelyInspectorStoreAdapter[],
+	const state = $state<{
+		stores: StatelyInspectorStoreAdapter[];
+		selectedStoreId: string | null;
+		snapshot: StatelyInspectorStoreSnapshot | null;
+	}>({
+		stores: config.hook.listStores(),
 		selectedStoreId: config.hook.listStores()[0]?.id ?? null,
-		snapshot: config.hook.listStores()[0]?.read() as StatelyInspectorStoreSnapshot | null
+		snapshot: config.hook.listStores()[0]?.read() ?? null
 	});
 
 	let unsubscribeSelectedStore = noop;

@@ -1,4 +1,6 @@
-import type { StatelyInspectorHook, StatelyInspectorStoreAdapter } from './types.js';
+import { createStatelyInspectorStoreAdapter } from './store-adapter.svelte.js';
+import type { InspectableStore, StatelyInspectorHook, StatelyInspectorStoreAdapter, TimelineReader } from './types.js';
+import { statelyInspectorAdapterKey } from './types.js';
 
 const statelyInspectorHookKey = Symbol.for('stately.inspector.hook');
 
@@ -12,7 +14,7 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 	const stores = new Map<string, StatelyInspectorStoreAdapter>();
 	const listeners = new Set<() => void>();
 
-	return {
+	const hook: StatelyInspectorHook = {
 		registerStore(adapter) {
 			stores.set(adapter.id, adapter);
 			notify(listeners);
@@ -25,6 +27,21 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 				notify(listeners);
 			};
 		},
+		register(store: InspectableStore, timeline: TimelineReader) {
+			const adapter = createStatelyInspectorStoreAdapter({ store, timeline });
+			Object.defineProperty(store, statelyInspectorAdapterKey, {
+				value: adapter,
+				enumerable: false,
+				configurable: true,
+				writable: false
+			});
+			const unregister = hook.registerStore(adapter);
+			return () => {
+				unregister();
+				adapter.dispose();
+				Reflect.deleteProperty(store as object, statelyInspectorAdapterKey);
+			};
+		},
 		listStores() {
 			return [...stores.values()];
 		},
@@ -35,6 +52,8 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 			};
 		}
 	};
+
+	return hook;
 }
 
 export function getStatelyInspectorHook(): StatelyInspectorHook | undefined {
