@@ -1,0 +1,36 @@
+.markdownlint.yaml
+  c4b3e32ecb1fbe21 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "9cc2c5a9862ff903e67fd198a9e7f59c3de4c6ed",
+  "prompts": {
+    "a896631b9bb5103e": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775924963398",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "c4b3e32ecb1fbe21": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775925048850",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
