@@ -149,7 +149,8 @@ export function createStoreShell<
 	const defineAction = (key: PropertyKey, action: AnyFunction): void => {
 		Object.defineProperty(shellStore, key, {
 			enumerable: true,
-			configurable: false,
+			configurable: true,
+			writable: true,
 			value: subscriptions.wrapAction(String(key), action.bind(shellStore))
 		});
 	};
