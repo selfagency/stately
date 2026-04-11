@@ -1,8 +1,12 @@
-import type { StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
+import type {
+	StoreActionHookContext,
+	StoreMutationContext,
+	StoreState
+} from '../pinia-like/store-types.js';
+import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';
 
-type AnyRecord = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
@@ -11,8 +15,12 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
 	$state: State;
 	$patch(partial: Partial<State> | ((state: State) => void)): void;
 	$reset(): void;
-	$subscribe(callback: StoreSubscriptionCallback<Id, State, Store>): () => void;
-	$onAction(callback: StoreActionSubscriber<Store>): () => void;
+	$subscribe(
+		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void
+	): () => void;
+	$onAction(
+		callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void
+	): () => void;
 	$dispose(): void;
 }
 
@@ -22,6 +30,7 @@ export interface StoreShellBuilder<
 	Store extends object
 > {
 	store: Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
+	timeline: ReturnType<typeof createDevtoolsTimelineRecorder>;
 	defineStateProperty<Key extends keyof State>(key: Key): void;
 	defineGetter<Key extends PropertyKey>(key: Key, getter: () => unknown): void;
 	defineAction<Key extends PropertyKey>(key: Key, action: AnyFunction): void;
@@ -60,10 +69,29 @@ export function createStoreShell<
 	const initialState = cloneState(config.state);
 	const shellStore = config.store as Store &
 		StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
+	const timeline = createDevtoolsTimelineRecorder({
+		storeId: config.id,
+		readSnapshot: () => cloneState(config.state)
+	});
 	const subscriptions = createSubscriptions({
 		storeId: config.id,
 		state: () => shellStore.$state,
 		store: () => shellStore
+	});
+
+	subscriptions.onAction(({ name, args, after, onError }) => {
+		const action = timeline.startAction({
+			label: `${config.id}:${name}`,
+			payload: { args }
+		});
+
+		after((result) => {
+			action.finish(result);
+		});
+
+		onError((error) => {
+			action.fail(error);
+		});
 	});
 
 	const notifyMutation = (
@@ -79,7 +107,13 @@ export function createStoreShell<
 
 	const mutationQueue = createMutationQueue({
 		storeId: config.id,
-		notify: notifyMutation
+		notify(type, payload) {
+			notifyMutation(type, payload);
+			timeline.recordMutation({
+				label: `${config.id}:${type}`,
+				payload
+			});
+		}
 	});
 
 	const setStateValue = <Key extends keyof State>(key: Key, value: State[Key]): void => {
@@ -203,6 +237,7 @@ export function createStoreShell<
 
 	return {
 		store: shellStore,
+		timeline,
 		defineStateProperty,
 		defineGetter,
 		defineAction,
