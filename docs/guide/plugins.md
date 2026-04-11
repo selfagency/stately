@@ -9,12 +9,13 @@ and how the pieces fit together in a real app.
 
 ## Which plugin should I use?
 
-| Need                                           | Use                         |
-| ---------------------------------------------- | --------------------------- |
-| Keep state after reloads                       | `createPersistencePlugin()` |
-| Support undo and redo                          | `createHistoryPlugin()`     |
-| Sync state across tabs                         | `createSyncPlugin()`        |
-| Track loading and error state on async actions | `createAsyncPlugin()`       |
+| Need                                           | Use                                  |
+| ---------------------------------------------- | ------------------------------------ |
+| Keep state after reloads                       | `createPersistencePlugin()`          |
+| Support undo and redo                          | `createHistoryPlugin()`              |
+| Sync state across tabs                         | `createSyncPlugin()`                 |
+| Track loading and error state on async actions | `createAsyncPlugin()`                |
+| Inspect stores in a browser drawer during dev  | `createStatelyInspectorVitePlugin()` |
 
 ## Persistence
 
@@ -114,3 +115,12 @@ const manager = createStateManager().use(
 If you pass an `AbortSignal` into your actions, the restartable policy can cancel active work before starting the next request.
 
 See [Examples and recipes](/guide/examples) for end-to-end usage patterns that combine multiple plugins.
+
+## Inspector
+
+The inspector is a dev-only Vite integration rather than a manager plugin.
+Use it when you want a browser drawer that lists active stores, shows live
+snapshots, renders timeline entries, and replays history snapshots through the
+existing time-travel controller.
+
+See [Inspector](/guide/inspector) for setup and caveats.

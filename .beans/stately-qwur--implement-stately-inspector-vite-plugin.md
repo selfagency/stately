@@ -20,10 +20,10 @@ branch: feature/qwur-stately-inspector-vite-plugin
 - [x] Phase 3: add failing Vite plugin and virtual-module tests
 - [x] Phase 3: implement virtual ids, loader, and Vite dev-client transform
 - [x] Phase 3: run targeted Vite/plugin tests and commit when green
-- [ ] Phase 4: add exports, dogfood in vite config, and write docs
-- [ ] Phase 4: run build and docs checks and commit when green
-- [ ] Phase 5: add final regression coverage for startup capture, no-history stores, and replay controls
-- [ ] Phase 5: run check, lint, test, build, and docs:build
+- [x] Phase 4: add exports, dogfood in vite config, and write docs
+- [x] Phase 4: run build and docs checks and commit when green
+- [x] Phase 5: add final regression coverage for startup capture, no-history stores, and replay controls
+- [x] Phase 5: run check, lint, test, build, and docs:build
 - [ ] Open PR and record PR number
 
 ## Summary of Changes
@@ -31,5 +31,7 @@ branch: feature/qwur-stately-inspector-vite-plugin
 - Added the phase 1 runtime inspector bridge: global hook, store adapter, hidden store-shell registration, and disposal cleanup.
 - Added regression coverage for store registration, live snapshot reads, inert no-hook behavior, and unregister-on-dispose.
 - Added the phase 2 drawer UI, formatter, reactive drawer state, and client bootstrap.
-- Added browser coverage for live state updates and history replay controls in the drawer.
+- Added browser coverage for live state updates, no-history fallback UI, history replay controls, and bootstrap mount/dispose behavior.
 - Added the phase 3 Vite plugin, virtual ids, runtime loader, and dev-client transform coverage.
+- Added public `./inspector` and `./inspector/vite` package exports, local dev dogfooding in `vite.config.ts`, and dedicated guide/reference documentation.
+- Verified the branch with `pnpm run check`, `pnpm run lint`, `pnpm run test`, `pnpm run build`, and `pnpm run docs:build`.

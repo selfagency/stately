@@ -4,7 +4,7 @@ Stately gives you a Pinia-style store API adapted for Svelte 5 runes and SvelteK
 Use this guide to get from install to production-ready store patterns quickly.
 
 If you already know the basics, the most useful next reads are
-[Define stores](/guide/define-store), [Plugins](/guide/plugins), and
+[Define stores](/guide/define-store), [Plugins](/guide/plugins), [Inspector](/guide/inspector), and
 [Examples and recipes](/guide/examples).
 
 ## Install the package
@@ -47,5 +47,6 @@ counter.increment();
 - [Define stores](/guide/define-store) for option stores, setup stores, and store helpers.
 - [SSR and SvelteKit](/guide/ssr-and-sveltekit) for request-scoped manager patterns.
 - [Plugins](/guide/plugins) for persistence, history, sync, and async orchestration.
+- [Inspector](/guide/inspector) for the dev-only drawer and Vite integration.
 - [Examples and recipes](/guide/examples) for advanced usage patterns you can copy into real stores.
 - [Testing and releases](/guide/testing-and-releases) for local validation and release automation.

@@ -41,14 +41,3 @@ export function disposeStatelyInspector(): void {
 
 	document.getElementById(statelyInspectorHostId)?.remove();
 }
-
-if (typeof document !== 'undefined') {
-	mountStatelyInspector();
-}
-
-if (import.meta.hot) {
-	import.meta.hot.accept();
-	import.meta.hot.dispose(() => {
-		disposeStatelyInspector();
-	});
-}

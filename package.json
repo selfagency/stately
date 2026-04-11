@@ -13,7 +13,9 @@
 		"history",
 		"time travel",
 		"sync",
-		"collaboration"
+		"collaboration",
+		"inspector",
+		"vite-plugin"
 	],
 	"homepage": "https://stately.self.agency/",
 	"bugs": {
@@ -48,6 +50,14 @@
 		"./async": {
 			"types": "./dist/async/plugin.svelte.d.ts",
 			"svelte": "./dist/async/plugin.svelte.js"
+		},
+		"./inspector": {
+			"types": "./dist/inspector/index.d.ts",
+			"svelte": "./dist/inspector/index.js"
+		},
+		"./inspector/vite": {
+			"types": "./dist/inspector/vite-plugin.d.ts",
+			"svelte": "./dist/inspector/vite-plugin.js"
 		}
 	},
 	"svelte": "./dist/index.js",
