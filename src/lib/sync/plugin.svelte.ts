@@ -1,4 +1,5 @@
 import type { StateManagerPlugin } from '../root/types.js';
+import { SvelteSet } from 'svelte/reactivity';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
@@ -67,13 +68,14 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 		let applyingRemote = false;
 		let lastSeenMutationId = 0;
 
-		const knownStateKeys = Object.fromEntries(Object.keys(store.$state).map((k) => [k, true])) as Record<string, true>;
+		const knownStateKeys = new SvelteSet(Object.keys(store.$state));
 
 		function filterToKnownKeys(remote: Record<string, unknown>): Record<string, unknown> | undefined {
 			const filtered: Record<string, unknown> = {};
 			let hasKnownKey = false;
 			for (const key of Object.keys(remote)) {
-				if (key in knownStateKeys) {
+				if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+				if (knownStateKeys.has(key)) {
 					filtered[key] = remote[key];
 					hasKnownKey = true;
 				}

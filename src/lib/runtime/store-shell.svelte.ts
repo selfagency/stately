@@ -14,7 +14,7 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
 	$subscribe(callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void): () => void;
 	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
-	subscribe(callback: (value: State) => void): () => void;
+	subscribe(run: (value: State) => void, invalidate?: (value?: State) => void): () => void;
 	set(value: State): void;
 }
 
@@ -221,11 +221,12 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		subscribe: {
 			enumerable: false,
 			configurable: false,
-			value(callback: (value: State) => void): () => void {
-				callback(cloneState(config.state));
+			value(run: (value: State) => void, invalidate?: (value?: State) => void): () => void {
+				run(cloneState(config.state));
 
 				return subscriptions.subscribe(() => {
-					callback(cloneState(config.state));
+					invalidate?.();
+					run(cloneState(config.state));
 				});
 			}
 		},

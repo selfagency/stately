@@ -43,7 +43,7 @@ export interface StoreShellMethods<Id extends string, State extends StoreState, 
 	): () => void;
 	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
-	subscribe(callback: (value: State) => void): () => void;
+	subscribe(run: (value: State) => void, invalidate?: (value?: State) => void): () => void;
 	set(value: State): void;
 }
 
