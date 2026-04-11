@@ -10,9 +10,11 @@ parent: stately-ruuz
 ---
 
 ## Goal
+
 Implement persistence plugin core, storage adapters, and optional compression.
 
 ## Todo
+
 - [ ] Implement persistence plugin core.
 - [ ] Implement local, session, memory, and IndexedDB adapters.
 - [ ] Add optional LZ compression support.

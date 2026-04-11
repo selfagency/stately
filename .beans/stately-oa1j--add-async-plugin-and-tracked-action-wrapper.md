@@ -8,10 +8,11 @@ created_at: 2026-04-11T00:13:38Z
 updated_at: 2026-04-11T00:14:08Z
 parent: stately-2rnr
 blocked_by:
-    - stately-d5b6
+  - stately-d5b6
 ---
 
 ## Todo
+
 - [ ] Create `src/lib/async/plugin.svelte.ts`.
 - [ ] Create `src/lib/async/track-async-action.svelte.ts`.
 - [ ] Expose `isLoading`, `error`, `lastSuccessAt`, `lastFailureAt`, and `abort` state per tracked action.

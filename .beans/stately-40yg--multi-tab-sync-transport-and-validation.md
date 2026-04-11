@@ -10,8 +10,10 @@ parent: stately-uu8l
 ---
 
 ## Goal
+
 Implement cross-tab synchronization with validation and self-event filtering.
 
 ## Todo
+
 - [ ] Implement BroadcastChannel and storage-event transports.
 - [ ] Validate inbound sync payloads before patching.

@@ -10,8 +10,10 @@ parent: stately-uxdm
 ---
 
 ## Goal
+
 Run final validation commands and clear release blockers.
 
 ## Todo
+
 - [ ] Run check, lint, test, and build.
 - [ ] Fix packaging, export, and release-blocking issues.

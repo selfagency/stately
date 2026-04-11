@@ -8,10 +8,11 @@ created_at: 2026-04-11T00:13:52Z
 updated_at: 2026-04-11T00:14:08Z
 parent: stately-2nan
 blocked_by:
-    - stately-bf6a
+  - stately-bf6a
 ---
 
 ## Todo
+
 - [ ] Create `src/lib/examples/option-store` examples.
 - [ ] Create `src/lib/examples/setup-store` examples.
 - [ ] Add persistence, history, sync, and async focused examples.

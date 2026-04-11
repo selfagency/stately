@@ -10,8 +10,10 @@ parent: stately-uxdm
 ---
 
 ## Goal
+
 Build the showcase page and validate it with browser tests.
 
 ## Todo
+
 - [ ] Build the interactive showcase page.
 - [ ] Add browser integration tests.

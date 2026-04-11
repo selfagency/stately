@@ -10,9 +10,11 @@ parent: stately-uxdm
 ---
 
 ## Goal
+
 Add unit coverage, README documentation, and packaged examples.
 
 ## Todo
+
 - [ ] Add unit test coverage.
 - [ ] Update README and migration guidance.
 - [ ] Add packaged example source files.

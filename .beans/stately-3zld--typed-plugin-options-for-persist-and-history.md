@@ -10,9 +10,11 @@ parent: stately-ruuz
 ---
 
 ## Goal
+
 Expose typed store options for persistence and history plugins.
 
 ## Todo
+
 - [ ] Add typed `persist` options.
 - [ ] Add typed `history` options.
 - [ ] Ensure both store syntaxes accept plugin options.

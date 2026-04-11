@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"git": {
+			"command": "npx",
+			"args": ["-y", "@selfagency/git-mcp", "--repo-path", "${workspaceFolder}"]
+		},
+		"svelte": {
+			"type": "http",
+			"url": "https://mcp.svelte.dev/mcp"
+		}
+	}
+}

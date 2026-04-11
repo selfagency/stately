@@ -8,8 +8,8 @@ created_at: 2026-04-11T00:35:00Z
 updated_at: 2026-04-11T00:35:00Z
 parent: stately-d2vp
 blocked_by:
-    - stately-m6vp
-    - stately-n7dc
+  - stately-m6vp
+  - stately-n7dc
 ---
 
 ## Todo
