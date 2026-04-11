@@ -16,7 +16,11 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
 	$dispose(): void;
 }
 
-export interface StoreShellBuilder<Id extends string, State extends StoreState, Store extends object> {
+export interface StoreShellBuilder<
+	Id extends string,
+	State extends StoreState,
+	Store extends object
+> {
 	store: Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
 	defineStateProperty<Key extends keyof State>(key: Key): void;
 	defineGetter<Key extends PropertyKey>(key: Key, getter: () => unknown): void;
@@ -41,7 +45,11 @@ function syncState<State extends StoreState>(target: State, next: Partial<State>
 	}
 }
 
-export function createStoreShell<Id extends string, State extends StoreState, Store extends object>(config: {
+export function createStoreShell<
+	Id extends string,
+	State extends StoreState,
+	Store extends object
+>(config: {
 	id: Id;
 	store: Store;
 	state: State;
@@ -50,14 +58,18 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 	let suppressDirectMutation = false;
 	let disposed = false;
 	const initialState = cloneState(config.state);
-	const shellStore = config.store as Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
+	const shellStore = config.store as Store &
+		StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
 	const subscriptions = createSubscriptions({
 		storeId: config.id,
 		state: () => shellStore.$state,
 		store: () => shellStore
 	});
 
-	const notifyMutation = (type: StoreMutationContext<Id, Store>['type'], payload?: unknown): void => {
+	const notifyMutation = (
+		type: StoreMutationContext<Id, Store>['type'],
+		payload?: unknown
+	): void => {
 		if (disposed) {
 			return;
 		}
@@ -161,7 +173,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		$subscribe: {
 			enumerable: false,
 			configurable: false,
-			value(callback: Parameters<typeof subscriptions.subscribe>[0], options?: Parameters<typeof subscriptions.subscribe>[1]) {
+			value(
+				callback: Parameters<typeof subscriptions.subscribe>[0],
+				options?: Parameters<typeof subscriptions.subscribe>[1]
+			) {
 				return subscriptions.subscribe(callback, options);
 			}
 		},

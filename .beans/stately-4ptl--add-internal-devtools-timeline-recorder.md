@@ -1,11 +1,11 @@
 ---
 # stately-4ptl
 title: Add internal devtools timeline recorder
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-04-11T00:13:08Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T02:29:36Z
 parent: stately-thq4
 blocked_by:
     - stately-d5b6
