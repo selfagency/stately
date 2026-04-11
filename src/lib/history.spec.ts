@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { defineStore } from './define-store.svelte.js';
 import { createHistoryPlugin } from './history/plugin.svelte.js';
 import { createPersistencePlugin } from './persistence/plugin.svelte.js';
-import { defineStore } from './define-store.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
 import { createSyncPlugin } from './sync/plugin.svelte.js';
 

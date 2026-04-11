@@ -7,8 +7,8 @@ import {
 	createSyncPlugin,
 	defineStore
 } from '../lib/index.js';
-import { createMemoryStorageAdapter } from '../lib/persistence/adapters/memory-storage.js';
 import { createLocalStorageAdapter } from '../lib/persistence/adapters/local-storage.js';
+import { createMemoryStorageAdapter } from '../lib/persistence/adapters/memory-storage.js';
 import type { PersistenceAdapter } from '../lib/persistence/types.js';
 import type { SyncMessage, SyncTransport } from '../lib/sync/types.js';
 

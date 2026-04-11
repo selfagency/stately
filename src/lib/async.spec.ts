@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { defineStore } from './define-store.svelte.js';
 import { createAsyncPlugin } from './async/plugin.svelte.js';
+import { defineStore } from './define-store.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
 
 function deferred<T>() {
