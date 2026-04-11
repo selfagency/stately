@@ -1,0 +1,21 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "24b1c0fe6091fbb93acb461dfef93fa016b44d0b",
+  "prompts": {
+    "e5182e005eacaad8": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775936069868",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
