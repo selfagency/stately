@@ -51,7 +51,8 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 
 			const tracked = trackAsyncAction(value.bind(store), {
 				createTimestamp: options.createTimestamp,
-				policy: options.policies?.[key] ?? options.policy
+				policy: options.policies?.[key] ?? options.policy,
+				injectSignal: options.injectSignal
 			});
 			registry[key] = tracked.state;
 			store[key] = tracked.run;

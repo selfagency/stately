@@ -27,10 +27,12 @@ export function trackAsyncAction<Args extends unknown[], Result>(
 	});
 	const createTimestamp = options.createTimestamp ?? (() => Date.now());
 	const requestController = createRequestController();
+	let activeRequestCount = 0;
 	const concurrency = createConcurrencyController(
 		options.policy ?? 'parallel',
 		(...args: Args) => {
 			const request = requestController.begin();
+			activeRequestCount += 1;
 			metadata.isLoading = true;
 			metadata.error = undefined;
 			const actionArgs = (
@@ -40,7 +42,6 @@ export function trackAsyncAction<Args extends unknown[], Result>(
 			return action(...actionArgs)
 				.then((value) => {
 					if (requestController.isCurrent(request.token)) {
-						metadata.isLoading = false;
 						metadata.lastSuccessAt = createTimestamp();
 						metadata.error = undefined;
 					}
@@ -48,13 +49,16 @@ export function trackAsyncAction<Args extends unknown[], Result>(
 				})
 				.catch((error) => {
 					if (requestController.isCurrent(request.token)) {
-						metadata.isLoading = false;
 						metadata.error = error;
 						metadata.lastFailureAt = createTimestamp();
 					}
 					throw error;
 				})
 				.finally(() => {
+					activeRequestCount -= 1;
+					if (activeRequestCount === 0) {
+						metadata.isLoading = false;
+					}
 					requestController.clear(request.token);
 				});
 		},

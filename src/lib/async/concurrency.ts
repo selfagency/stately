@@ -18,9 +18,6 @@ export function createConcurrencyController<Args extends unknown[], Result>(
 		activeCount += 1;
 		const execution = Promise.resolve(runner(...args)).finally(() => {
 			activeCount -= 1;
-			if (options.key) {
-				activeByKey.delete(options.key(...args));
-			}
 		});
 		return execution;
 	};
@@ -49,13 +46,19 @@ export function createConcurrencyController<Args extends unknown[], Result>(
 					return next;
 				}
 				case 'dedupe': {
-					const key = options.key?.(...args) ?? JSON.stringify(args);
+					let key: string;
+					try {
+						key = options.key?.(...args) ?? JSON.stringify(args);
+					} catch {
+						key = `__dedupe_unstringifiable_${Math.random()}`;
+					}
 					const existing = activeByKey.get(key);
 					if (existing) {
 						return existing;
 					}
 					const execution = start(...args);
 					activeByKey.set(key, execution);
+					execution.finally(() => activeByKey.delete(key));
 					return execution;
 				}
 			}

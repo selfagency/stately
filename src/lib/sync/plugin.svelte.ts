@@ -70,6 +70,10 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 					return;
 				}
 
+				if (parsed.version !== version) {
+					return;
+				}
+
 				if (parsed.mutationId <= lastSeenMutationId) {
 					return;
 				}
@@ -86,12 +90,13 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 				return;
 			}
 
-			lastSeenMutationId += 1;
+			const mutationId = options.createId ? createId() : lastSeenMutationId + 1;
+			lastSeenMutationId = mutationId;
 			const message = {
 				storeId: store.$id,
 				origin,
 				version,
-				mutationId: options.createId ? createId() : lastSeenMutationId,
+				mutationId,
 				timestamp: createTimestamp(),
 				state: $state.snapshot(store.$state)
 			} as Message;
@@ -114,8 +119,8 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 				dispose();
 			},
 			enumerable: false,
-			configurable: false,
-			writable: false
+			configurable: true,
+			writable: true
 		});
 		return undefined;
 	};

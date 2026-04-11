@@ -81,4 +81,40 @@ describe('createConcurrencyController', () => {
 			'dedupe:b'
 		]);
 	});
+
+	it('dedupe cleans up activeByKey after settlement and handles non-serializable args safely', async () => {
+		const calls: string[] = [];
+		const first = deferred<string>();
+		const second = deferred<string>();
+		const dedupe = createConcurrencyController(
+			'dedupe',
+			(value: string) => {
+				calls.push(value);
+				if (value === 'a') return first.promise;
+				if (value === 'b') return second.promise;
+				return Promise.resolve(value);
+			},
+			{ key: (value) => value }
+		);
+
+		const p1 = dedupe.run('a');
+		const p1Again = dedupe.run('a');
+		expect(calls).toEqual(['a']);
+
+		first.resolve('done-a');
+		await expect(p1).resolves.toBe('done-a');
+		await expect(p1Again).resolves.toBe('done-a');
+
+		// After settlement the key should be cleared, so a new call starts fresh
+		const p2 = dedupe.run('a');
+		second.resolve('done-b');
+		const p3 = dedupe.run('b');
+		await expect(p2).resolves.toBe('done-a');
+		await expect(p3).resolves.toBe('done-b');
+		expect(calls).toEqual(['a', 'a', 'b']);
+
+		// Non-serializable args (BigInt) should not throw; they produce unique keys
+		const nonSerializable = createConcurrencyController('dedupe', async (n: bigint) => String(n));
+		await expect(nonSerializable.run(BigInt(1))).resolves.toBe('1');
+	});
 });

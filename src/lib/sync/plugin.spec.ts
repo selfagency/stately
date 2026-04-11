@@ -71,4 +71,81 @@ describe('createSyncPlugin', () => {
 
 		expect(counter.count).toBe(7);
 	});
+
+	it('rejects inbound messages with a mismatched version', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => {
+					listeners.delete(listener);
+				};
+			},
+			destroy() {
+				listeners.clear();
+			}
+		};
+		const manager = createStateManager().use(
+			createSyncPlugin({ origin: 'local', version: 2, transports: [transport] })
+		);
+		const useStore = defineStore('ver-check-store', { state: () => ({ count: 0 }) });
+		const store = useStore(manager);
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'ver-check-store',
+				origin: 'remote',
+				mutationId: 1,
+				timestamp: 1,
+				version: 1,
+				state: { count: 99 }
+			});
+		}
+		expect(store.count).toBe(0);
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'ver-check-store',
+				origin: 'remote',
+				mutationId: 2,
+				timestamp: 2,
+				version: 2,
+				state: { count: 42 }
+			});
+		}
+		expect(store.count).toBe(42);
+	});
+
+	it('leaves $dispose configurable so multiple plugins can chain cleanup', () => {
+		const destroyed: string[] = [];
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe() {
+				return () => {};
+			},
+			destroy() {
+				destroyed.push('transport');
+			}
+		};
+		const manager = createStateManager().use(
+			createSyncPlugin({ origin: 'local', transports: [transport] })
+		);
+		const useStore = defineStore('dispose-chain-store', { state: () => ({ v: 0 }) });
+		const store = useStore(manager);
+
+		const previousDispose = store.$dispose.bind(store);
+		Object.defineProperty(store, '$dispose', {
+			value() {
+				destroyed.push('outer');
+				previousDispose();
+			},
+			configurable: true,
+			writable: true,
+			enumerable: false
+		});
+
+		store.$dispose();
+		expect(destroyed).toEqual(['outer', 'transport']);
+	});
 });
