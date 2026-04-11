@@ -1,11 +1,11 @@
 ---
 # stately-qwur
 title: 'Implement stately inspector vite plugin'
-status: completed
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-11T19:19:57Z
-updated_at: 2026-04-11T19:19:57Z
+updated_at: 2026-04-11T19:55:14Z
 branch: feature/qwur-stately-inspector-vite-plugin
 pr: 10
 ---
@@ -26,6 +26,9 @@ pr: 10
 - [x] Phase 5: add final regression coverage for startup capture, no-history stores, and replay controls
 - [x] Phase 5: run check, lint, test, build, and docs:build
 - [x] Open PR and record PR number
+- [x] Add failing demo-build inspector coverage
+- [x] Make the showcase build include both state functionality and the inspector
+- [x] Run targeted tests plus build validation and update PR #10
 
 ## Summary of Changes
 
@@ -35,5 +38,7 @@ pr: 10
 - Added browser coverage for live state updates, no-history fallback UI, history replay controls, and bootstrap mount/dispose behavior.
 - Added the phase 3 Vite plugin, virtual ids, runtime loader, and dev-client transform coverage.
 - Added public `./inspector` and `./inspector/vite` package exports, local dev dogfooding in `vite.config.ts`, and dedicated guide/reference documentation.
-- Verified the branch with `pnpm run check`, `pnpm run lint`, `pnpm run test`, `pnpm run build`, and `pnpm run docs:build`.
+- Added showcase coverage proving the built demo includes the inspector and that inspector state stays in sync with the showcase store.
+- Wired the showcase page to install the inspector hook before client-side store creation and render the drawer after mount so production preview builds support e2e testing.
+- Verified the updated demo flow with `pnpm run check`, targeted browser tests for the showcase and inspector, and `pnpm run build`.
 - Opened PR #10: https://github.com/selfagency/stately/pull/10

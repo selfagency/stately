@@ -14,6 +14,7 @@
 	background: rgba(255, 255, 255, 0.98);
 	box-shadow: 0 16px 48px rgba(15, 23, 42, 0.16);
 	z-index: 100000;
+	pointer-events: none;
 	font:
 		0.875rem/1.5 system-ui,
 		sans-serif;
@@ -26,6 +27,7 @@
 
 button {
 	cursor: pointer;
+	pointer-events: auto;
 }
 
 pre {

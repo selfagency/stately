@@ -131,12 +131,23 @@ ol {
 </style>
 
 <script lang="ts">
+import { browser } from '$app/environment';
 import { onMount } from 'svelte';
+import InspectorDrawer from '../lib/inspector/InspectorDrawer.svelte';
+import {
+	createStatelyInspectorHook,
+	getStatelyInspectorHook,
+	installStatelyInspectorHook
+} from '../lib/inspector/hook.js';
 import { createShowcaseDemo } from './showcase-demo.js';
 
+const inspectorHook = browser
+	? installStatelyInspectorHook(getStatelyInspectorHook() ?? createStatelyInspectorHook())
+	: undefined;
 const demo = createShowcaseDemo();
 const primary = demo.primary;
 const peer = demo.peer;
+let showInspector = $state(false);
 let savedSnapshot = $state('No manually saved snapshot yet.');
 let persistenceMode = $state<'live' | 'paused'>('live');
 let activity = $state('Ready for experimentation.');
@@ -273,9 +284,11 @@ function cancelPendingAsyncLoad() {
 }
 
 onMount(() => {
+	showInspector = true;
 	void refreshSavedSnapshot();
 
 	return () => {
+		showInspector = false;
 		demo.destroy();
 	};
 });
@@ -398,4 +411,7 @@ onMount(() => {
 
 		<p aria-live="polite" role="status" class="activity">{activity}</p>
 	</div>
+	{#if showInspector && inspectorHook}
+		<InspectorDrawer hook={inspectorHook} />
+	{/if}
 </svelte:boundary>
