@@ -1,6 +1,7 @@
 {
 	"name": "@selfagency/stately",
 	"version": "0.1.0",
+	"description": "Pinia-inspired state management for Svelte 5 and SvelteKit with persistence, history, sync, and async orchestration.",
 	"private": false,
 	"keywords": [
 		"svelte",
@@ -53,11 +54,12 @@
 		"format": "eslint . --fix && prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "eslint . && prettier --check .",
-		"prepack": "svelte-kit sync && svelte-package && publint",
+		"prepack": "svelte-kit sync && svelte-package && node scripts/write-dist-package.js && publint",
 		"prepare": "svelte-kit sync || echo ''",
 		"preview": "vite preview",
-		"release": "changeset publish",
-		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && pnpm changeset status --verbose",
+		"release": "node scripts/release.js",
+		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && node scripts/release.js --dry-run",
+		"release:version": "changeset version",
 		"test": "npm run test:unit -- --run",
 		"test:coverage": "vitest --coverage",
 		"test:unit": "vitest",
@@ -66,6 +68,7 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.30.0",
+		"@changesets/changelog-git": "^0.2.1",
 		"@codecov/vite-plugin": "^1.9.1",
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
@@ -81,7 +84,6 @@
 		"globals": "^17.4.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.4.0",
-		"lz-string": "^1.5.0",
 		"playwright": "^1.59.1",
 		"prettier": "^3.8.2",
 		"prettier-plugin-svelte": "^3.5.1",
@@ -94,6 +96,9 @@
 		"vitepress": "^1.6.4",
 		"vitest": "^4.1.4",
 		"vitest-browser-svelte": "^2.1.0"
+	},
+	"dependencies": {
+		"lz-string": "^1.5.0"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0"
