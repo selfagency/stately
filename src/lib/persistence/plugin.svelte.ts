@@ -52,6 +52,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		const key = persist.key ?? store.$id;
 		const serialize = persist.serialize ?? serializePersistedState;
 		const deserialize = persist.deserialize ?? ((raw: string) => deserializePersistedState(raw, persist));
+		const compression = persist.compression;
 		let paused = false;
 		let rehydrating = false;
 
@@ -65,7 +66,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				version: persist.version,
 				state: snapshot
 			});
-			await persist.adapter.setItem(key, payload);
+			await persist.adapter.setItem(key, compression ? compression.compress(payload) : payload);
 		};
 
 		const rehydrate = async () => {
@@ -74,7 +75,12 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				return false;
 			}
 
-			const parsed = deserialize(raw);
+			const source = compression ? compression.decompress(raw) : raw;
+			if (!source) {
+				return false;
+			}
+
+			const parsed = deserialize(source);
 			if (!parsed) {
 				return false;
 			}

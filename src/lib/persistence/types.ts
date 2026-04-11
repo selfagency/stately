@@ -18,9 +18,15 @@ export interface PersistDeserializeOptions<State> {
 	migrate?: (state: Record<string, unknown>, fromVersion: number) => State;
 }
 
+export interface PersistCompression {
+	compress(value: string): string;
+	decompress(value: string): string | undefined;
+}
+
 export interface PersistOptions<State = Record<string, unknown>> extends PersistDeserializeOptions<State> {
 	adapter: PersistenceAdapter;
 	key?: string;
+	compression?: PersistCompression;
 	serialize?: (envelope: PersistEnvelope<State>) => string;
 	deserialize?: (raw: string) => PersistEnvelope<Record<string, unknown>> | undefined;
 }
