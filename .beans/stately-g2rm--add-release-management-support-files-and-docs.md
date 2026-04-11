@@ -1,19 +1,25 @@
 ---
 # stately-g2rm
 title: Add release management support files and docs
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-04-11T00:35:00Z
-updated_at: 2026-04-11T00:35:00Z
+updated_at: 2026-04-11T14:50:52Z
 parent: stately-b8rl
 blocked_by:
-  - stately-f1rl
+    - stately-f1rl
 ---
 
 ## Todo
 
-- [ ] Add `.changeset/` or the chosen release-management configuration.
-- [ ] Update package publish metadata as needed for npm delivery.
-- [ ] Document the release flow for maintainers.
-- [ ] Validate that a dry-run release path is deterministic.
+- [x] Add `.changeset/` or the chosen release-management configuration.
+- [x] Update package publish metadata as needed for npm delivery.
+- [x] Document the release flow for maintainers.
+- [x] Validate that a dry-run release path is deterministic.
+
+## Summary of Changes
+
+- Added Changesets configuration, a starter release-intent file, and maintainer release documentation.
+- Updated `package.json` with repository, homepage, bug tracker, provenance-aware publish metadata, and release-management scripts.
+- Verified the release dry-run path with `pnpm release:dry-run`, including full validation, build, packaging, and Changesets status output.
