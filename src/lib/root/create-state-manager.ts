@@ -6,8 +6,11 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function applyDescriptorAugmentation(target: object, source: object): void {
 	const descriptors = Object.getOwnPropertyDescriptors(source);
-	for (const [key, descriptor] of Object.entries(descriptors)) {
-		Object.defineProperty(target, key, descriptor);
+	for (const key of Reflect.ownKeys(descriptors)) {
+		const descriptor = descriptors[key as keyof typeof descriptors];
+		if (descriptor) {
+			Object.defineProperty(target, key, descriptor);
+		}
 	}
 }
 

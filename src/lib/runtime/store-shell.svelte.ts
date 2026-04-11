@@ -32,7 +32,7 @@ function cloneState<State extends StoreState>(state: State): State {
 	return $state.snapshot(state) as State;
 }
 
-function isStateEqual(left: unknown, right: unknown): boolean {
+function isStateEqual(left: unknown, right: unknown, visited = new WeakSet<object>()): boolean {
 	if (Object.is(left, right)) {
 		return true;
 	}
@@ -46,8 +46,13 @@ function isStateEqual(left: unknown, right: unknown): boolean {
 			return false;
 		}
 
+		if (visited.has(left)) {
+			return true;
+		}
+		visited.add(left);
+
 		for (let index = 0; index < left.length; index += 1) {
-			if (!isStateEqual(left[index], right[index])) {
+			if (!isStateEqual(Reflect.get(left, index), Reflect.get(right, index), visited)) {
 				return false;
 			}
 		}
@@ -56,6 +61,11 @@ function isStateEqual(left: unknown, right: unknown): boolean {
 	}
 
 	if (typeof left === 'object' && left !== null && typeof right === 'object' && right !== null) {
+		if (visited.has(left)) {
+			return true;
+		}
+		visited.add(left);
+
 		const leftKeys = Object.keys(left);
 		const rightKeys = Object.keys(right);
 		if (leftKeys.length !== rightKeys.length) {
@@ -66,7 +76,7 @@ function isStateEqual(left: unknown, right: unknown): boolean {
 			if (!Reflect.has(right, key)) {
 				return false;
 			}
-			if (!isStateEqual(Reflect.get(left, key), Reflect.get(right, key))) {
+			if (!isStateEqual(Reflect.get(left, key), Reflect.get(right, key), visited)) {
 				return false;
 			}
 		}
@@ -195,6 +205,8 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			try {
 				const result = action.apply(shellStore, args);
 				if (typeof (result as { then?: unknown })?.then === 'function') {
+					// Emit synchronous mutations immediately, before the first await.
+					queueMicrotask(flushInferredDirectMutation);
 					void (result as Promise<unknown>).then(
 						() => {
 							flushInferredDirectMutation();

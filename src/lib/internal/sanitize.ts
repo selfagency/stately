@@ -1,4 +1,5 @@
 const blockedKeys = new Set(['__proto__', 'constructor', 'prototype']);
+const MAX_DEPTH = 32;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	if (typeof value !== 'object' || value === null) {
@@ -9,9 +10,13 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return prototype === Object.prototype || prototype === null;
 }
 
-export function sanitizeValue<T>(value: T): T {
+export function sanitizeValue<T>(value: T, depth = 0): T {
+	if (depth > MAX_DEPTH) {
+		return {} as T;
+	}
+
 	if (Array.isArray(value)) {
-		return value.map((item) => sanitizeValue(item)) as T;
+		return value.map((item) => sanitizeValue(item, depth + 1)) as T;
 	}
 
 	if (!isPlainObject(value)) {
@@ -23,7 +28,7 @@ export function sanitizeValue<T>(value: T): T {
 		if (blockedKeys.has(key)) {
 			continue;
 		}
-		sanitized[key] = sanitizeValue(nestedValue);
+		sanitized[key] = sanitizeValue(nestedValue, depth + 1);
 	}
 
 	return sanitized as T;
