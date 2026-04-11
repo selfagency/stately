@@ -1,12 +1,13 @@
 ---
 # stately-qwur
 title: 'Implement stately inspector vite plugin'
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-11T19:19:57Z
 updated_at: 2026-04-11T19:19:57Z
 branch: feature/qwur-stately-inspector-vite-plugin
+pr: 10
 ---
 
 ## Todo
@@ -24,7 +25,7 @@ branch: feature/qwur-stately-inspector-vite-plugin
 - [x] Phase 4: run build and docs checks and commit when green
 - [x] Phase 5: add final regression coverage for startup capture, no-history stores, and replay controls
 - [x] Phase 5: run check, lint, test, build, and docs:build
-- [ ] Open PR and record PR number
+- [x] Open PR and record PR number
 
 ## Summary of Changes
 
@@ -35,3 +36,4 @@ branch: feature/qwur-stately-inspector-vite-plugin
 - Added the phase 3 Vite plugin, virtual ids, runtime loader, and dev-client transform coverage.
 - Added public `./inspector` and `./inspector/vite` package exports, local dev dogfooding in `vite.config.ts`, and dedicated guide/reference documentation.
 - Verified the branch with `pnpm run check`, `pnpm run lint`, `pnpm run test`, `pnpm run build`, and `pnpm run docs:build`.
+- Opened PR #10: https://github.com/selfagency/stately/pull/10
