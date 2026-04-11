@@ -1,11 +1,11 @@
 ---
 # stately-dh46
 title: Implement store shell helpers
-status: todo
+status: in-progress
 type: task
 priority: critical
 created_at: 2026-04-11T00:13:04Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T02:14:38Z
 parent: stately-3rjd
 blocked_by:
     - stately-ep9j
