@@ -1,5 +1,6 @@
 import type { StateManagerPlugin } from '../root/types.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
+import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
 import type { SyncMessage, SyncTransport } from './types.js';
 
@@ -58,17 +59,22 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 
 		const unsubscribeRemote = transports.map((transport) =>
 			transport.subscribe((message) => {
-				if (message.storeId !== store.$id || message.origin === origin) {
+				const parsed = parseSyncMessage(message);
+				if (!parsed) {
 					return;
 				}
 
-				if (message.mutationId <= lastSeenMutationId) {
+				if (parsed.storeId !== store.$id || parsed.origin === origin) {
 					return;
 				}
 
-				lastSeenMutationId = message.mutationId;
+				if (parsed.mutationId <= lastSeenMutationId) {
+					return;
+				}
+
+				lastSeenMutationId = parsed.mutationId;
 				applyingRemote = true;
-				store.$patch(message.state);
+				store.$patch(parsed.state);
 				applyingRemote = false;
 			})
 		);

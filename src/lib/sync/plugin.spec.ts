@@ -54,5 +54,18 @@ describe('createSyncPlugin', () => {
 		}
 
 		expect(counter.count).toBe(7);
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'counter-sync',
+				origin: 'remote-origin',
+				mutationId: 3,
+				timestamp: 789,
+				version: 1,
+				state: null
+			});
+		}
+
+		expect(counter.count).toBe(7);
 	});
 });
