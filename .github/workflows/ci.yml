@@ -48,3 +48,6 @@ jobs:
 
       - name: Build package and verify publish output
         run: pnpm run build
+
+      - name: Build VitePress documentation site
+        run: pnpm run docs:build

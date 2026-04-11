@@ -8,7 +8,7 @@ export default defineConfig({
 	title,
 	description,
 	lang: 'en-US',
-	base: '/stately/',
+	base: '/',
 	cleanUrls: true,
 	lastUpdated: true,
 	head: [['meta', { name: 'theme-color', content: '#2563eb' }]],
