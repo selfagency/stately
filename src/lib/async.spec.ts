@@ -29,7 +29,9 @@ describe('async runtime', () => {
 				async loadCount(context: { signal: AbortSignal }, target: number) {
 					if (target === 1) {
 						return await new Promise<number>((resolve, reject) => {
-							context.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+							context.signal.addEventListener('abort', () =>
+								reject(new DOMException('Aborted', 'AbortError'))
+							);
 							first.promise.then(resolve);
 						});
 					}
@@ -40,11 +42,12 @@ describe('async runtime', () => {
 			}
 		});
 		const store = useStore(manager);
+		const loadCount = store.loadCount as unknown as (target: number) => Promise<number>;
 
-		const initial = store.loadCount(1);
+		const initial = loadCount(1);
 		expect(store.$async.loadCount.isLoading).toBe(true);
 
-		const latest = store.loadCount(2);
+		const latest = loadCount(2);
 		first.resolve(1);
 
 		await expect(initial).rejects.toThrow(/aborted/i);

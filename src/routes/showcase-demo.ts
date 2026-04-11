@@ -6,11 +6,11 @@ import {
 	createStateManager,
 	createSyncPlugin,
 	defineStore
-} from '$lib';
-import { createMemoryStorageAdapter } from '$lib/persistence/adapters/memory-storage.js';
-import { createLocalStorageAdapter } from '$lib/persistence/adapters/local-storage.js';
-import type { PersistenceAdapter } from '$lib/persistence/types.js';
-import type { SyncMessage, SyncTransport } from '$lib/sync/types.js';
+} from '../lib/index.js';
+import { createMemoryStorageAdapter } from '../lib/persistence/adapters/memory-storage.js';
+import { createLocalStorageAdapter } from '../lib/persistence/adapters/local-storage.js';
+import type { PersistenceAdapter } from '../lib/persistence/types.js';
+import type { SyncMessage, SyncTransport } from '../lib/sync/types.js';
 
 let nextShowcaseId = 1;
 
@@ -103,16 +103,16 @@ export function createShowcaseDemo() {
 	const useShowcaseStore = defineStore(storeId, {
 		state: () => ({ count: 0, note: 'Fresh demo state' }),
 		getters: {
-			doubleCount(state) {
+			doubleCount(state: { count: number }) {
 				return state.count * 2;
 			}
 		},
 		actions: {
-			increment(amount = 1) {
+			increment(this: { count: number; note: string }, amount = 1) {
 				this.count += amount;
 				this.note = amount === 1 ? 'Incremented by one' : `Incremented by ${amount}`;
 			},
-			async loadCount(signal: AbortSignal, target: number) {
+			async loadCount(this: { count: number; note: string }, signal: AbortSignal, target: number) {
 				this.note = `Loading ${target}`;
 				await wait(225, signal);
 				this.count = target;
@@ -128,6 +128,15 @@ export function createShowcaseDemo() {
 		history: {
 			limit: 12
 		}
+	} as {
+		state: () => { count: number; note: string };
+		getters: { doubleCount(state: { count: number }): number };
+		actions: {
+			increment(amount?: number): void;
+			loadCount(signal: AbortSignal, target: number): Promise<number>;
+		};
+		persist: { adapter: PersistenceAdapter; key: string; version: number };
+		history: { limit: number };
 	});
 	const primaryManager = createStateManager()
 		.use(createPersistencePlugin())
@@ -142,7 +151,7 @@ export function createShowcaseDemo() {
 			createAsyncPlugin({
 				include: ['loadCount'],
 				policies: { loadCount: 'restartable' },
-				injectSignal(signal, args) {
+				injectSignal(signal: AbortSignal, args: unknown[]) {
 					return [signal, ...args];
 				}
 			})
@@ -160,6 +169,9 @@ export function createShowcaseDemo() {
 		primary,
 		peer,
 		persistence,
+		loadCount(target: number) {
+			return (primary.loadCount as unknown as (target: number) => Promise<number>)(target);
+		},
 		destroy() {
 			primary.$dispose();
 			peer.$dispose();

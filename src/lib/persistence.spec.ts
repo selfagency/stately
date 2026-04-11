@@ -29,11 +29,15 @@ describe('persistence runtime', () => {
 		await store.$persist.ready;
 		store.count = 2;
 		await store.$persist.flush();
-		expect(storage.get('persistence-runtime')).toBe(JSON.stringify({ version: 1, state: { count: 2 } }));
+		expect(storage.get('persistence-runtime')).toBe(
+			JSON.stringify({ version: 1, state: { count: 2 } })
+		);
 
 		store.$persist.pause();
 		store.count = 7;
-		expect(storage.get('persistence-runtime')).toBe(JSON.stringify({ version: 1, state: { count: 2 } }));
+		expect(storage.get('persistence-runtime')).toBe(
+			JSON.stringify({ version: 1, state: { count: 2 } })
+		);
 
 		await store.$persist.rehydrate();
 		store.$persist.resume();

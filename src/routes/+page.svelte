@@ -38,9 +38,13 @@
 		active: boolean;
 	};
 
+	type CountSnapshotEntry = {
+		snapshot: { count: number };
+	};
+
 	const timelineEntries = $derived(
-		primary.$history.entries.map<TimelineEntry>(
-			(entry: { snapshot: { count: number } }, index: number) => ({
+		(primary.$history.entries as unknown as CountSnapshotEntry[]).map<TimelineEntry>(
+			(entry, index) => ({
 				index,
 				count: entry.snapshot.count,
 				active: index === primary.$timeTravel.currentIndex
@@ -122,7 +126,7 @@
 	async function loadAsyncTarget(target: number) {
 		activity = `Loading ${target} asynchronously.`;
 		try {
-			await primary.loadCount(target);
+			await demo.loadCount(target);
 			activity = `Loaded ${target} asynchronously.`;
 		} catch (error) {
 			if (error instanceof Error && error.name === 'AbortError') {
@@ -162,8 +166,8 @@
 				<p class="eyebrow">Pinia-style state for Svelte 5</p>
 				<h1>Stately showcase</h1>
 				<p class="lede">
-					Exercise persistence, undo/redo, time travel, multi-tab sync, and async cancellation
-					from one polished demo page.
+					Exercise persistence, undo/redo, time travel, multi-tab sync, and async cancellation from
+					one polished demo page.
 				</p>
 			</div>
 			<div class="hero-stats">
@@ -224,8 +228,8 @@
 			<article class="card section-block">
 				<h2>History and time travel</h2>
 				<p>
-					Batching collapses multiple direct mutations into one logical undo step, while time
-					travel replays snapshots locally.
+					Batching collapses multiple direct mutations into one logical undo step, while time travel
+					replays snapshots locally.
 				</p>
 				<div class="button-row">
 					<button type="button" onclick={batchAddFive}>Batch add five</button>
@@ -238,7 +242,7 @@
 					<button type="button" onclick={jumpToFirstSnapshot}>Jump to first snapshot</button>
 				</div>
 				<ol>
-					{#each timelineEntries as entry}
+					{#each timelineEntries as entry (entry.index)}
 						<li class:active={entry.active}>Snapshot {entry.index}: count {entry.count}</li>
 					{/each}
 				</ol>
@@ -282,7 +286,13 @@
 	:global(body) {
 		margin: 0;
 		font-family:
-			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			Inter,
+			ui-sans-serif,
+			system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			sans-serif;
 		background:
 			radial-gradient(circle at top, rgb(37 99 235 / 0.16), transparent 32%),
 			linear-gradient(180deg, #07111f 0%, #0f172a 100%);
