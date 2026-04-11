@@ -11,9 +11,9 @@ branch: feature/qwur-stately-inspector-vite-plugin
 
 ## Todo
 
-- [ ] Phase 1: add failing runtime registration and disposal tests
-- [ ] Phase 1: implement inspector hook, types, store adapter, and store-shell wiring
-- [ ] Phase 1: run targeted runtime tests and commit when green
+- [x] Phase 1: add failing runtime registration and disposal tests
+- [x] Phase 1: implement inspector hook, types, store adapter, and store-shell wiring
+- [x] Phase 1: run targeted runtime tests and commit when green
 - [ ] Phase 2: add failing drawer and live-update tests
 - [ ] Phase 2: implement drawer state, formatter, component, and bootstrap client
 - [ ] Phase 2: run targeted browser tests and commit when green
@@ -28,4 +28,5 @@ branch: feature/qwur-stately-inspector-vite-plugin
 
 ## Summary of Changes
 
-- Pending
+- Added the phase 1 runtime inspector bridge: global hook, store adapter, hidden store-shell registration, and disposal cleanup.
+- Added regression coverage for store registration, live snapshot reads, inert no-hook behavior, and unregister-on-dispose.
