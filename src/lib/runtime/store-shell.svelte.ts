@@ -225,7 +225,7 @@ export function createStoreShell<
 		},
 		$dispose: {
 			enumerable: false,
-			configurable: false,
+			configurable: true,
 			value() {
 				if (disposed) {
 					return;
