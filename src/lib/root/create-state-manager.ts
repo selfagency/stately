@@ -1,0 +1,101 @@
+import type {
+	StateManager,
+	StateManagerPlugin,
+	StateManagerPluginContext,
+	StoreDefinition
+} from './types.js';
+
+function isObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+export function createStateManager(): StateManager {
+	const plugins: StateManagerPlugin[] = [];
+	const definitions = new Map<string, StoreDefinition>();
+	const stores = new Map<string, unknown>();
+
+	const manager: StateManager = {
+		get plugins() {
+			return Object.freeze([...plugins]);
+		},
+		use(plugin) {
+			plugins.push(plugin);
+			return manager;
+		},
+		register(definition) {
+			const existing = definitions.get(definition.$id);
+
+			if (existing) {
+				throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
+			}
+
+			definitions.set(definition.$id, definition);
+		},
+		hasDefinition(id) {
+			return definitions.has(id);
+		},
+		getDefinition<Definition extends StoreDefinition = StoreDefinition>(id: string) {
+			return definitions.get(id) as Definition | undefined;
+		},
+		hasStore(id) {
+			return stores.has(id);
+		},
+		getStore<Store = unknown>(id: string) {
+			return stores.get(id) as Store | undefined;
+		},
+		createStore(definition, factory) {
+			const existing = stores.get(definition.$id);
+			if (existing) {
+				return existing as ReturnType<typeof factory>;
+			}
+
+			if (!definitions.has(definition.$id)) {
+				manager.register(definition);
+			}
+
+			const store = factory();
+
+			for (const plugin of plugins) {
+				const context: StateManagerPluginContext<typeof definition, typeof store> = {
+					manager,
+					definition,
+					options: definition.options,
+					store
+				};
+				const augmentation = plugin(context);
+				if (isObject(store) && isObject(augmentation)) {
+					Object.assign(store, augmentation);
+				}
+			}
+
+			stores.set(definition.$id, store);
+			return store;
+		},
+		deleteStore(id) {
+			return stores.delete(id);
+		},
+		clear() {
+			stores.clear();
+			definitions.clear();
+		}
+	};
+
+	return manager;
+}
+
+let defaultStateManager: StateManager | undefined;
+
+/**
+ * SPA-only convenience for consumers that do not need request-scoped state.
+ * In SvelteKit SSR, prefer `createStateManager()` per request and provide it through context.
+ */
+export function getDefaultStateManager(): StateManager {
+	defaultStateManager ??= createStateManager();
+	return defaultStateManager;
+}
+
+export function resetDefaultStateManager(): void {
+	defaultStateManager = undefined;
+}
+
+export type { StateManager, StateManagerPlugin, StoreDefinition } from './types.js';
