@@ -1,0 +1,23 @@
+package.json
+  ca4ea70d5022c772 6,8-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "b1858e17b2744a34719d2af0a1442675a86f489d",
+  "prompts": {
+    "ca4ea70d5022c772": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775919801134",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    }
+  }
+}
