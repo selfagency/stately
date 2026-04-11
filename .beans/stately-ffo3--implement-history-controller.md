@@ -8,8 +8,8 @@ created_at: 2026-04-11T00:13:19Z
 updated_at: 2026-04-11T04:08:15Z
 parent: stately-f14e
 blocked_by:
-    - stately-pz6d
-    - stately-f700
+  - stately-pz6d
+  - stately-f700
 ---
 
 ## Todo
