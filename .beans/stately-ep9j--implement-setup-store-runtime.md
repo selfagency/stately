@@ -1,11 +1,11 @@
 ---
 # stately-ep9j
 title: Implement setup-store runtime
-status: todo
+status: in-progress
 type: task
 priority: critical
 created_at: 2026-04-11T00:13:00Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T02:11:21Z
 parent: stately-r76a
 blocked_by:
     - stately-vcn2

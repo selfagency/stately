@@ -1,11 +1,11 @@
 ---
 # stately-r76a
 title: Option and setup store instantiation
-status: todo
+status: in-progress
 type: feature
 priority: critical
 created_at: 2026-04-11T00:12:14Z
-updated_at: 2026-04-11T00:12:14Z
+updated_at: 2026-04-11T02:11:03Z
 parent: stately-5ddl
 ---
 
@@ -13,5 +13,6 @@ parent: stately-5ddl
 Implement runtime instantiation for option stores and setup stores.
 
 ## Todo
-- [ ] Implement option-store runtime.
+
+- [x] Implement option-store runtime.
 - [ ] Implement setup-store runtime.
