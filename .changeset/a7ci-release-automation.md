@@ -1,5 +1,5 @@
 ---
-'stately': patch
+'@selfagency/stately': patch
 ---
 
 # Release summary

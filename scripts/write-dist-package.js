@@ -37,6 +37,16 @@ async function copyReleaseAssets() {
 	}
 }
 
+function rewriteDistPaths(value) {
+	if (typeof value === 'string') {
+		return value.startsWith('./dist/') ? './' + value.slice('./dist/'.length) : value;
+	}
+	if (value && typeof value === 'object' && !Array.isArray(value)) {
+		return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, rewriteDistPaths(v)]));
+	}
+	return value;
+}
+
 async function writeDistPackage() {
 	const rawPackage = await readFile(resolve(ROOT, 'package.json'), 'utf8');
 	const packageJson = JSON.parse(rawPackage);
@@ -71,9 +81,9 @@ async function writeDistPackage() {
 		type,
 		main: './index.js',
 		module: './index.js',
-		svelte,
-		types,
-		exports,
+		svelte: rewriteDistPaths(svelte),
+		types: rewriteDistPaths(types),
+		exports: rewriteDistPaths(exports),
 		sideEffects,
 		publishConfig
 	};

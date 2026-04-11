@@ -1,6 +1,6 @@
 # Changesets
 
-This directory stores release intent files for the `stately` package.
+This directory stores release intent files for the `@selfagency/stately` package.
 Create a new changeset whenever a pull request should produce a new npm version or changelog entry.
 
 When versioning runs, Changesets updates the root `CHANGELOG.md`.

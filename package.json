@@ -55,7 +55,7 @@
 		"format:check": "prettier --check .",
 		"lint": "eslint . && prettier --check .",
 		"prepack": "svelte-kit sync && svelte-package && node scripts/write-dist-package.js && publint",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "husky && svelte-kit sync || echo ''",
 		"preview": "vite preview",
 		"release": "node scripts/release.js",
 		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && node scripts/release.js --dry-run",
