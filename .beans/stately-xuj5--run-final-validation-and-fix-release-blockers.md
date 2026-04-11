@@ -8,10 +8,10 @@ created_at: 2026-04-11T00:13:57Z
 updated_at: 2026-04-11T05:16:29Z
 parent: stately-nzwm
 blocked_by:
-    - stately-jij6
-    - stately-1g3n
-    - stately-bf6a
-    - stately-nxp3
+  - stately-jij6
+  - stately-1g3n
+  - stately-bf6a
+  - stately-nxp3
 ---
 
 ## Todo

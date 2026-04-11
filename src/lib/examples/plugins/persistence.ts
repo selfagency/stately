@@ -1,7 +1,7 @@
 import {
-	createMemoryStorageAdapter,
 	createLocalStorageAdapter,
 	createLzStringCompression,
+	createMemoryStorageAdapter,
 	createPersistencePlugin,
 	createStateManager,
 	defineStore
