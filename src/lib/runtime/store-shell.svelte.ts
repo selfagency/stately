@@ -1,19 +1,10 @@
-import { SvelteSet } from 'svelte/reactivity';
-import type { StoreActionHookContext, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
+import type { StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
+import { createSubscriptions } from './subscriptions.js';
 
 type AnyRecord = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
-
-type StoreSubscriptionCallback<Id extends string, State extends StoreState, Store extends object> = (
-	mutation: StoreMutationContext<Id, Store>,
-	state: State
-) => void;
-
-type StoreActionSubscriber<Store extends object> = (
-	context: StoreActionHookContext<Store, string, unknown[], unknown>
-) => void;
 
 export interface StoreShell<Id extends string, State extends StoreState, Store extends object> {
 	readonly $id: Id;
@@ -56,28 +47,22 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 	state: State;
 	onDispose?: () => void;
 }): StoreShellBuilder<Id, State, Store> {
-	const mutationSubscribers = new SvelteSet<StoreSubscriptionCallback<Id, State, Store>>();
-	const actionSubscribers = new SvelteSet<StoreActionSubscriber<Store>>();
 	let suppressDirectMutation = false;
 	let disposed = false;
 	const initialState = cloneState(config.state);
 	const shellStore = config.store as Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
+	const subscriptions = createSubscriptions({
+		storeId: config.id,
+		state: () => shellStore.$state,
+		store: () => shellStore
+	});
 
 	const notifyMutation = (type: StoreMutationContext<Id, Store>['type'], payload?: unknown): void => {
 		if (disposed) {
 			return;
 		}
 
-		const mutation = {
-			storeId: config.id,
-			store: shellStore,
-			type,
-			payload
-		} satisfies StoreMutationContext<Id, Store & StoreShell<Id, State, Store>>;
-
-		for (const callback of mutationSubscribers) {
-			callback(mutation, shellStore.$state);
-		}
+		subscriptions.notifyMutation(type, payload);
 	};
 
 	const mutationQueue = createMutationQueue({
@@ -114,60 +99,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 	};
 
 	const defineAction = (key: PropertyKey, action: AnyFunction): void => {
-		const wrapped = (...args: unknown[]) => {
-			const afterCallbacks: Array<(result: unknown) => void> = [];
-			const errorCallbacks: Array<(error: unknown) => void> = [];
-			const context: StoreActionHookContext<Store & StoreShell<Id, State, Store>, string, unknown[], unknown> = {
-				name: String(key),
-				store: shellStore,
-				args,
-				after(callback) {
-					afterCallbacks.push(callback);
-				},
-				onError(callback) {
-					errorCallbacks.push(callback);
-				}
-			};
-
-			for (const callback of actionSubscribers) {
-				callback(context as StoreActionHookContext<Store, string, unknown[], unknown>);
-			}
-
-			try {
-				const result = action.apply(shellStore, args);
-				if (result instanceof Promise) {
-					return result
-						.then((resolved) => {
-							for (const callback of afterCallbacks) {
-								callback(resolved);
-							}
-							return resolved;
-						})
-						.catch((error) => {
-							for (const callback of errorCallbacks) {
-								callback(error);
-							}
-							throw error;
-						});
-				}
-
-				for (const callback of afterCallbacks) {
-					callback(result);
-				}
-
-				return result;
-			} catch (error) {
-				for (const callback of errorCallbacks) {
-					callback(error);
-				}
-				throw error;
-			}
-		};
-
 		Object.defineProperty(shellStore, key, {
 			enumerable: true,
 			configurable: false,
-			value: wrapped
+			value: subscriptions.wrapAction(String(key), action.bind(shellStore))
 		});
 	};
 
@@ -226,21 +161,15 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		$subscribe: {
 			enumerable: false,
 			configurable: false,
-			value(callback: StoreSubscriptionCallback<Id, State, Store>) {
-				mutationSubscribers.add(callback);
-				return () => {
-					mutationSubscribers.delete(callback);
-				};
+			value(callback: Parameters<typeof subscriptions.subscribe>[0], options?: Parameters<typeof subscriptions.subscribe>[1]) {
+				return subscriptions.subscribe(callback, options);
 			}
 		},
 		$onAction: {
 			enumerable: false,
 			configurable: false,
-			value(callback: StoreActionSubscriber<Store>) {
-				actionSubscribers.add(callback);
-				return () => {
-					actionSubscribers.delete(callback);
-				};
+			value(callback: Parameters<typeof subscriptions.onAction>[0]) {
+				return subscriptions.onAction(callback);
 			}
 		},
 		$dispose: {
@@ -251,8 +180,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 					return;
 				}
 				disposed = true;
-				mutationSubscribers.clear();
-				actionSubscribers.clear();
+				subscriptions.clear();
 				config.onDispose?.();
 			}
 		}
