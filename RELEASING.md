@@ -1,16 +1,17 @@
 # Releasing Stately
 
-This repository uses Changesets to manage npm versions and release pull requests.
+This repository uses Changesets to manage npm versions and changelog entries.
 The published npm artifact comes from `dist/`, not from the workspace root package manifest.
 
 ## Normal maintainer flow
 
 1. Add or update a changeset with `pnpm changeset` while preparing a user-visible package change.
-2. Merge the pull request into `main`.
-3. Let `.github/workflows/release.yml` create or update the versioning pull request.
-4. Review and merge that version pull request.
-5. Let the same workflow rebuild the package, generate the release-only `dist/package.json`, copy `README.md`,
-   `CHANGELOG.md`, `LICENSE.md`, and `stately.svg`, and publish `./dist` to npm.
+2. Merge the pull request into `main` and wait for the GitHub checks to pass.
+3. Let Changesets update the version and changelog on `main`.
+4. Create and push the release tag from the maintainer machine once the release commit is ready.
+5. Run `pnpm release` locally to build `dist/` and publish `./dist` to npm.
+6. Let `.github/workflows/release.yml` validate the tag, verify the tested
+   `main` commit, and create the GitHub Release assets.
 
 ## Release package shape
 
@@ -39,10 +40,13 @@ the changelog and release assets, and performs an `npm publish --dry-run` agains
 
 ## Publishing requirements
 
-The release workflow expects one of these setups:
+The local release command expects one of these setups:
 
-- npm Trusted Publishing configured for this repository, with GitHub OIDC enabled
-- `NPM_TOKEN` configured in repository secrets as a fallback
+- `npm login` already run on the maintainer machine
+- `NPM_TOKEN` configured in the local shell or npm config as a fallback
 
-For provenance-enabled publishing, keep the `repository` metadata and `publishConfig.provenance` values in `package.json`
-accurate.
+The GitHub workflow does not publish to npm. It only validates the tagged
+release, rebuilds the package, and creates the GitHub Release artifacts.
+
+For provenance-enabled publishing, keep the `repository` metadata and
+`publishConfig.provenance` values in `package.json` accurate.

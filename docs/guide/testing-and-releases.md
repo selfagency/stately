@@ -22,13 +22,17 @@ That keeps staged-file feedback fast while still running Svelte checks and the t
 ## Release flow
 
 Stately uses Changesets for npm versioning and release pull requests.
-The release workflow reruns repository validation before versioning or publishing, then publishes the prepared `dist/` directory instead of the workspace root.
+The GitHub release workflow reruns repository validation on the tagged commit,
+then prepares the GitHub Release assets. It does not publish to npm.
+
+Publishing happens locally from the maintainer machine after the release commit
+has landed on `main` and the GitHub checks have passed.
 
 That release build:
 
 - writes a stripped `dist/package.json`
 - copies `README.md`, `CHANGELOG.md`, `LICENSE.md`, and `stately.svg`
 - removes generated test-only files from `dist/`
-- publishes `./dist` with provenance-aware npm settings
+- publishes `./dist` from the local release command with provenance-aware npm settings
 
 Read [`RELEASING.md`](https://github.com/selfagency/stately/blob/main/RELEASING.md) for the full maintainer flow.

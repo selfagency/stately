@@ -3,12 +3,6 @@ name: Release
 on:
   push:
     tags: ['v*']
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g. 1.2.3)'
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -19,12 +13,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  detect-tag:
-    name: Detect release tag and readiness
+  verify-tag:
+    name: Verify release tag and readiness
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
       actions: read
 
     outputs:
@@ -41,30 +35,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            let tagName;
-
-            if (context.eventName === 'workflow_dispatch') {
-              const versionInput = '${{ inputs.version }}'.trim();
-              if (!versionInput) {
-                core.setFailed('version input is required for workflow_dispatch.');
-                return;
-              }
-              tagName = versionInput.startsWith('v') ? versionInput : `v${versionInput}`;
-
-              const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
-              const mainSha = main.data.commit.sha;
-
-              core.info(`Creating tag ${tagName} at ${mainSha}...`);
-              await github.rest.git.createRef({
-                owner,
-                repo,
-                ref: `refs/tags/${tagName}`,
-                sha: mainSha,
-              });
-              core.info(`Tag ${tagName} created.`);
-            } else {
-              tagName = context.ref.replace('refs/tags/', '');
-            }
+            const tagName = context.ref.replace('refs/tags/', '');
 
             if (!tagName || !tagName.startsWith('v')) {
               core.info(`Ref '${context.ref}' is not a release tag; skipping.`);
@@ -139,20 +110,19 @@ jobs:
             core.setOutput('ready', 'true');
 
   release:
-    name: Build and publish
-    needs: detect-tag
-    if: needs.detect-tag.outputs.release_tag != '' && needs.detect-tag.outputs.ready == 'true'
+    name: Build GitHub Release
+    needs: verify-tag
+    if: needs.verify-tag.outputs.release_tag != '' && needs.verify-tag.outputs.ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: write
-      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ needs.detect-tag.outputs.release_tag }}
+          ref: ${{ needs.verify-tag.outputs.release_tag }}
           fetch-depth: 0
 
       - name: Generate release notes
@@ -163,7 +133,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const currentTag = '${{ needs.detect-tag.outputs.release_tag }}';
+            const currentTag = '${{ needs.verify-tag.outputs.release_tag }}';
 
             const tagsResp = await github.rest.repos.listTags({ owner, repo, per_page: 100 });
             const index = tagsResp.data.findIndex(t => t.name === currentTag);
@@ -195,7 +165,6 @@ jobs:
         uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
 
       - name: Resolve pnpm store path
         id: pnpm-store
@@ -217,8 +186,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build package
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: pnpm run build
 
       - name: Pack npm tarball
@@ -227,17 +194,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
-          tag_name: ${{ needs.detect-tag.outputs.release_tag }}
+          tag_name: ${{ needs.verify-tag.outputs.release_tag }}
           body_path: release-notes.md
           files: '*.tgz'
           draft: false
-          prerelease: ${{ contains(needs.detect-tag.outputs.release_tag, '-') }}
+          prerelease: ${{ contains(needs.verify-tag.outputs.release_tag, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to npm
-        run: pnpm run release
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
