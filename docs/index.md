@@ -9,6 +9,9 @@ hero:
   name: Stately
   text: Pinia-inspired state for Svelte 5 and SvelteKit
   tagline: Direct-mutation stores with SSR-safe managers and opt-in persistence, history, sync, and async orchestration.
+  image:
+    src: /stately.svg
+    alt: Stately logo
   actions:
     - theme: brand
       text: Get started

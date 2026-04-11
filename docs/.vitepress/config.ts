@@ -11,8 +11,13 @@ export default defineConfig({
 	base: '/',
 	cleanUrls: true,
 	lastUpdated: true,
-	head: [['meta', { name: 'theme-color', content: '#2563eb' }]],
+	head: [
+		['meta', { name: 'theme-color', content: '#2563eb' }],
+		['link', { rel: 'icon', type: 'image/svg+xml', href: '/stately.svg' }],
+		['link', { rel: 'apple-touch-icon', href: '/stately.svg' }]
+	],
 	themeConfig: {
+		logo: '/stately.svg',
 		nav: [
 			{ text: 'Guide', link: '/guide/' },
 			{ text: 'Reference', link: '/reference/api' },
