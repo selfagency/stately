@@ -175,13 +175,11 @@ type CountSnapshotEntry = {
 };
 
 const timelineEntries = $derived(
-	(primary.$history.entries as unknown as CountSnapshotEntry[]).map<TimelineEntry>(
-		(entry, index) => ({
-			index,
-			count: entry.snapshot.count,
-			active: index === primary.$timeTravel.currentIndex
-		})
-	)
+	(primary.$history.entries as unknown as CountSnapshotEntry[]).map<TimelineEntry>((entry, index) => ({
+		index,
+		count: entry.snapshot.count,
+		active: index === primary.$timeTravel.currentIndex
+	}))
 );
 
 const ssrPattern = `const manager = createStateManager()\n\t.use(createPersistencePlugin())\n\t.use(createHistoryPlugin());\n\nsetStateManager(manager); // request-scoped in context`;
@@ -297,8 +295,8 @@ onMount(() => {
 				<p class="eyebrow">Pinia-style state for Svelte 5</p>
 				<h1>Stately showcase</h1>
 				<p class="lede">
-					Exercise persistence, undo/redo, time travel, multi-tab sync, and async cancellation from
-					one polished demo page.
+					Exercise persistence, undo/redo, time travel, multi-tab sync, and async cancellation from one polished demo
+					page.
 				</p>
 			</div>
 			<div class="hero-stats">
@@ -320,10 +318,7 @@ onMount(() => {
 		<section class="grid">
 			<article class="card section-block">
 				<h2>Synced tabs</h2>
-				<p>
-					Both panels use the same store definition in different managers bridged by the sync
-					plugin.
-				</p>
+				<p>Both panels use the same store definition in different managers bridged by the sync plugin.</p>
 				<div class="tab-grid">
 					<div class="panel">
 						<h3>Tab A</h3>
@@ -343,8 +338,7 @@ onMount(() => {
 			<article class="card section-block">
 				<h2>Persistence demo</h2>
 				<p>
-					Manual save plus a paused write mode makes the restore flow visible instead of quietly
-					overwriting itself.
+					Manual save plus a paused write mode makes the restore flow visible instead of quietly overwriting itself.
 				</p>
 				<p><strong>Persistence mode:</strong> {persistenceMode}</p>
 				<div class="button-row">
@@ -359,8 +353,8 @@ onMount(() => {
 			<article class="card section-block">
 				<h2>History and time travel</h2>
 				<p>
-					Batching collapses multiple direct mutations into one logical undo step, while time travel
-					replays snapshots locally.
+					Batching collapses multiple direct mutations into one logical undo step, while time travel replays snapshots
+					locally.
 				</p>
 				<div class="button-row">
 					<button type="button" onclick={batchAddFive}>Batch add five</button>
@@ -381,17 +375,11 @@ onMount(() => {
 
 			<article class="card section-block">
 				<h2>Async orchestration</h2>
-				<p>
-					The async plugin tracks loading state and lets the latest request replace the previous
-					one.
-				</p>
+				<p>The async plugin tracks loading state and lets the latest request replace the previous one.</p>
 				<div class="button-row">
 					<button type="button" onclick={() => loadAsyncTarget(12)}>Load 12 asynchronously</button>
 					<button type="button" onclick={() => loadAsyncTarget(24)}>Load 24 asynchronously</button>
-					<button
-						type="button"
-						onclick={cancelPendingAsyncLoad}
-						disabled={!primary.$async.loadCount.isLoading}>
+					<button type="button" onclick={cancelPendingAsyncLoad} disabled={!primary.$async.loadCount.isLoading}>
 						Cancel pending async load
 					</button>
 				</div>

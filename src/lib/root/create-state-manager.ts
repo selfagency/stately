@@ -1,9 +1,4 @@
-import type {
-	StateManager,
-	StateManagerPlugin,
-	StateManagerPluginContext,
-	StoreDefinition
-} from './types.js';
+import type { StateManager, StateManagerPlugin, StateManagerPluginContext, StoreDefinition } from './types.js';
 
 function isObject(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
@@ -44,13 +39,15 @@ export function createStateManager(): StateManager {
 			return stores.get(id) as Store | undefined;
 		},
 		createStore(definition, factory) {
+			if (!definitions.has(definition.$id)) {
+				manager.register(definition);
+			} else if (definitions.get(definition.$id) !== definition) {
+				throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
+			}
+
 			const existing = stores.get(definition.$id);
 			if (existing) {
 				return existing as ReturnType<typeof factory>;
-			}
-
-			if (!definitions.has(definition.$id)) {
-				manager.register(definition);
 			}
 
 			const store = factory();
@@ -88,8 +85,18 @@ let defaultStateManager: StateManager | undefined;
 /**
  * SPA-only convenience for consumers that do not need request-scoped state.
  * In SvelteKit SSR, prefer `createStateManager()` per request and provide it through context.
+ *
+ * @throws {Error} When called during SSR (no `window` global). Use `createStateManager()` with
+ * Svelte context instead.
  */
 export function getDefaultStateManager(): StateManager {
+	if (typeof window === 'undefined') {
+		throw new Error(
+			'getDefaultStateManager() is not available during SSR. ' +
+				'Use createStateManager() with Svelte context for request-scoped state. ' +
+				'See: https://svelte.dev/docs/svelte/svelte-context'
+		);
+	}
 	defaultStateManager ??= createStateManager();
 	return defaultStateManager;
 }

@@ -22,10 +22,7 @@ export function createOptionStore<
 	Getters extends GetterTree<State>,
 	Actions extends ActionTree,
 	Id extends string
->(
-	id: Id,
-	options: DefineStoreOptions<State, Getters, Actions>
-): StoreFromOptions<State, Getters, Actions, Id> {
+>(id: Id, options: DefineStoreOptions<State, Getters, Actions>): StoreFromOptions<State, Getters, Actions, Id> {
 	const state = $state(options.state());
 	const store = {} as State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions;
 	const shell = createStoreShell({ id, store, state });
@@ -34,15 +31,12 @@ export function createOptionStore<
 		shell.defineStateProperty(key);
 	}
 
-	for (const [key, getter] of Object.entries(options.getters ?? {}) as Array<
-		[keyof Getters, Getters[keyof Getters]]
-	>) {
-		shell.defineGetter(key, () => getter.call(shell.store, state));
+	for (const [key, getter] of Object.entries(options.getters ?? {}) as Array<[keyof Getters, Getters[keyof Getters]]>) {
+		const derived = $derived.by(() => getter.call(shell.store, state));
+		shell.defineGetter(key, () => derived);
 	}
 
-	for (const [key, action] of Object.entries(options.actions ?? {}) as Array<
-		[keyof Actions, Actions[keyof Actions]]
-	>) {
+	for (const [key, action] of Object.entries(options.actions ?? {}) as Array<[keyof Actions, Actions[keyof Actions]]>) {
 		shell.defineAction(key, action);
 	}
 

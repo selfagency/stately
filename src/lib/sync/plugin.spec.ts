@@ -128,9 +128,7 @@ describe('createSyncPlugin', () => {
 				destroyed.push('transport');
 			}
 		};
-		const manager = createStateManager().use(
-			createSyncPlugin({ origin: 'local', transports: [transport] })
-		);
+		const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
 		const useStore = defineStore('dispose-chain-store', { state: () => ({ v: 0 }) });
 		const store = useStore(manager);
 

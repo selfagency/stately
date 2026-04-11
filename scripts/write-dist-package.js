@@ -96,11 +96,7 @@ async function writeDistPackage() {
 		distPackage.peerDependencies = peerDependencies;
 	}
 
-	await writeFile(
-		resolve(DIST, 'package.json'),
-		`${JSON.stringify(distPackage, null, 2)}\n`,
-		'utf8'
-	);
+	await writeFile(resolve(DIST, 'package.json'), `${JSON.stringify(distPackage, null, 2)}\n`, 'utf8');
 }
 
 async function main() {

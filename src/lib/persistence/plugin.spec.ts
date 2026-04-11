@@ -25,10 +25,7 @@ describe('createPersistencePlugin', () => {
 				return value.startsWith('c:') ? value.slice(2) : undefined;
 			}
 		};
-		storage.set(
-			'counter',
-			compression.compress(JSON.stringify({ version: 1, state: { count: 4 } }))
-		);
+		storage.set('counter', compression.compress(JSON.stringify({ version: 1, state: { count: 4 } })));
 		const manager = createStateManager().use(createPersistencePlugin());
 		const useCounterStore = defineStore('counter', {
 			state: () => ({ count: 0 }),

@@ -1,11 +1,7 @@
 import type { StateManagerPlugin } from '../root/types.js';
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import type { ConcurrencyMode } from './concurrency.js';
-import {
-	trackAsyncAction,
-	type AsyncActionState,
-	type TrackAsyncActionOptions
-} from './track-async-action.svelte.js';
+import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
 
 export interface AsyncActionRegistry {
 	[actionName: string]: AsyncActionState;
@@ -22,9 +18,7 @@ declare module '../pinia-like/store-types.js' {
 	}
 }
 
-function isAsyncTrackableStore(
-	value: unknown
-): value is StoreCustomProperties & Record<string, unknown> {
+function isAsyncTrackableStore(value: unknown): value is StoreCustomProperties & Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 

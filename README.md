@@ -6,7 +6,7 @@ history, sync, and async orchestration.
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
-	<img src="./stately.svg" alt="Stately logo" width="220" />
+  <img src="./stately.svg" alt="Stately logo" width="220" />
 </p>
 <!-- markdownlint-enable MD033 -->
 ## Read the docs

@@ -39,13 +39,6 @@ describe('createAsyncPlugin', () => {
 
 		await expect(store.fail()).rejects.toThrow('nope');
 		expect(store.$async.fail.lastFailureAt).toBe(1003);
-		expect(events).toEqual([
-			'start:load',
-			'after:2',
-			'start:load',
-			'after:5',
-			'start:fail',
-			'error:Error: nope'
-		]);
+		expect(events).toEqual(['start:load', 'after:2', 'start:load', 'after:5', 'start:fail', 'error:Error: nope']);
 	});
 });

@@ -32,6 +32,22 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
+		},
+		"./persistence": {
+			"types": "./dist/persistence/plugin.svelte.d.ts",
+			"svelte": "./dist/persistence/plugin.svelte.js"
+		},
+		"./history": {
+			"types": "./dist/history/plugin.svelte.d.ts",
+			"svelte": "./dist/history/plugin.svelte.js"
+		},
+		"./sync": {
+			"types": "./dist/sync/plugin.svelte.d.ts",
+			"svelte": "./dist/sync/plugin.svelte.js"
+		},
+		"./async": {
+			"types": "./dist/async/plugin.svelte.d.ts",
+			"svelte": "./dist/async/plugin.svelte.js"
 		}
 	},
 	"svelte": "./dist/index.js",

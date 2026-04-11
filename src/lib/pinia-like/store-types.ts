@@ -32,11 +32,7 @@ export interface StoreSubscribeOptions {
 	detached?: boolean;
 }
 
-export interface StoreShellMethods<
-	Id extends string,
-	State extends StoreState,
-	Store extends object
-> {
+export interface StoreShellMethods<Id extends string, State extends StoreState, Store extends object> {
 	readonly $id: Id;
 	$state: State;
 	$patch(partial: Partial<State> | ((state: State) => void)): void;
@@ -45,10 +41,10 @@ export interface StoreShellMethods<
 		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
 		options?: StoreSubscribeOptions
 	): () => void;
-	$onAction(
-		callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void
-	): () => void;
+	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
+	subscribe(callback: (value: State) => void): () => void;
+	set(value: State): void;
 }
 
 export type StoreInstance<
@@ -72,10 +68,7 @@ export interface StoreDefinition<
 	(manager?: StateManager): StoreInstance<Id, State, Getters, Actions>;
 }
 
-export interface StoreMutationContext<
-	Id extends string = string,
-	Store extends object = StoreInstance<Id>
-> {
+export interface StoreMutationContext<Id extends string = string, Store extends object = StoreInstance<Id>> {
 	readonly storeId: Id;
 	readonly store: Store;
 	readonly type: 'direct' | 'patch-object' | 'patch-function';

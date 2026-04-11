@@ -35,9 +35,7 @@ export function trackAsyncAction<Args extends unknown[], Result>(
 			activeRequestCount += 1;
 			metadata.isLoading = true;
 			metadata.error = undefined;
-			const actionArgs = (
-				options.injectSignal ? options.injectSignal(request.signal, args) : args
-			) as Args;
+			const actionArgs = (options.injectSignal ? options.injectSignal(request.signal, args) : args) as Args;
 
 			return action(...actionArgs)
 				.then((value) => {

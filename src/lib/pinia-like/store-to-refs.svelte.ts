@@ -8,11 +8,7 @@ export interface StoreRef<TValue> {
 }
 
 export type StoreRefs<Store extends AnyRecord> = {
-	[K in keyof Store as Store[K] extends AnyFunction
-		? never
-		: K extends `$${string}`
-			? never
-			: K]: StoreRef<Store[K]>;
+	[K in keyof Store as Store[K] extends AnyFunction ? never : K extends `$${string}` ? never : K]: StoreRef<Store[K]>;
 };
 
 export function storeToRefs<Store extends AnyRecord>(store: Store): StoreRefs<Store> {

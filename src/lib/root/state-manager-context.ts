@@ -8,9 +8,7 @@ export const [getStateManagerContext, setStateManagerContext] = createContext<St
  * SSR-safe helper for layout or component boundaries that need a request-scoped manager.
  * Prefer this over singleton state when rendering through SvelteKit on the server.
  */
-export function initializeStateManagerContext(
-	manager: StateManager = createStateManager()
-): StateManager {
+export function initializeStateManagerContext(manager: StateManager = createStateManager()): StateManager {
 	return setStateManagerContext(manager);
 }
 

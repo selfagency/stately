@@ -6,6 +6,17 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	test: {
 		expect: { requireAssertions: true },
+		coverage: {
+			provider: 'v8',
+			include: ['src/lib/**'],
+			exclude: ['src/lib/examples/**', 'src/lib/vitest-examples/**'],
+			thresholds: {
+				statements: 70,
+				branches: 70,
+				functions: 70,
+				lines: 70
+			}
+		},
 		projects: [
 			{
 				extends: './vite.config.ts',

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { createStateManager } from './create-state-manager.js';
+import { describe, expect, it, vi } from 'vitest';
+import { createStateManager, getDefaultStateManager } from './create-state-manager.js';
 
 interface ExampleDefinition {
 	$id: string;
@@ -38,5 +38,24 @@ describe('createStateManager', () => {
 		manager.register(definition);
 
 		expect(() => manager.register(definition)).toThrow(/duplicate/i);
+	});
+
+	it('rejects duplicate definitions through createStore when a different definition uses the same id', () => {
+		const manager = createStateManager();
+		const defA: ExampleDefinition = { $id: 'conflict' };
+		const defB: ExampleDefinition = { $id: 'conflict' };
+
+		manager.createStore(defA, () => ({ value: 1 }));
+		expect(() => manager.createStore(defB, () => ({ value: 2 }))).toThrow(/duplicate/i);
+	});
+
+	it('throws when getDefaultStateManager is called without a window global', () => {
+		const original = globalThis.window;
+		vi.stubGlobal('window', undefined);
+		try {
+			expect(() => getDefaultStateManager()).toThrow(/SSR/);
+		} finally {
+			vi.stubGlobal('window', original);
+		}
 	});
 });

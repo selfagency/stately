@@ -9,33 +9,25 @@ describe('persistence serialization', () => {
 		});
 
 		expect(JSON.parse(serialized)).toEqual({ version: 2, state: { count: 2 } });
-		expect(
-			deserializePersistedState<{ count: number }>(serialized, {
-				version: 2
-			})
-		).toEqual({ version: 2, state: { count: 2 } });
-		expect(
-			deserializePersistedState<{ count: number }>(
-				JSON.stringify({ version: 1, state: { count: 1 } }),
-				{
-					version: 2,
-					migrate(state, fromVersion) {
-						return {
-							count: (typeof state.count === 'number' ? state.count : 0) + fromVersion
-						};
-					}
-				}
-			)
-		).toEqual({ version: 2, state: { count: 2 } });
-		expect(
-			deserializePersistedState<{ count: number }>('not-json', {
-				version: 2
-			})
-		).toBeUndefined();
-		expect(
-			deserializePersistedState<{ count: number }>(JSON.stringify({ version: 2, state: null }), {
-				version: 2
-			})
-		).toBeUndefined();
+		const result = deserializePersistedState<{ count: number }>(serialized, { version: 2 });
+		expect(result).toEqual({ ok: true, envelope: { version: 2, state: { count: 2 } } });
+
+		const migrated = deserializePersistedState<{ count: number }>(JSON.stringify({ version: 1, state: { count: 1 } }), {
+			version: 2,
+			migrate(state, fromVersion) {
+				return {
+					count: (typeof state.count === 'number' ? state.count : 0) + fromVersion
+				};
+			}
+		});
+		expect(migrated).toEqual({ ok: true, envelope: { version: 2, state: { count: 2 } } });
+
+		const invalidJson = deserializePersistedState<{ count: number }>('not-json', { version: 2 });
+		expect(invalidJson).toEqual({ ok: false, error: expect.stringContaining('JSON') });
+
+		const nullState = deserializePersistedState<{ count: number }>(JSON.stringify({ version: 2, state: null }), {
+			version: 2
+		});
+		expect(nullState).toEqual({ ok: false, error: expect.stringMatching(/malformed/i) });
 	});
 });

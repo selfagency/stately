@@ -80,4 +80,40 @@ describe('store shell helpers', () => {
 		// No additional calls after dispose
 		expect(mutationSpy).toHaveBeenCalledTimes(1);
 	});
+
+	it('exposes subscribe() and set() for Svelte store contract interop', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('svelte-contract', {
+			state: () => ({ count: 0, label: 'hello' }),
+			actions: {
+				increment() {
+					this.count += 1;
+				}
+			}
+		});
+
+		const store = useStore(manager);
+		const values: Array<{ count: number; label: string }> = [];
+
+		const unsubscribe = store.subscribe((value) => {
+			values.push({ count: value.count, label: value.label });
+		});
+
+		expect(values).toHaveLength(1);
+		expect(values[0]).toEqual({ count: 0, label: 'hello' });
+
+		store.$patch({ count: 5 });
+		expect(values).toHaveLength(2);
+		expect(values[1]).toEqual({ count: 5, label: 'hello' });
+
+		store.set({ count: 42, label: 'updated' });
+		expect(store.count).toBe(42);
+		expect(store.label).toBe('updated');
+		expect(values).toHaveLength(3);
+		expect(values[2]).toEqual({ count: 42, label: 'updated' });
+
+		unsubscribe();
+		store.$patch({ count: 100 });
+		expect(values).toHaveLength(3);
+	});
 });

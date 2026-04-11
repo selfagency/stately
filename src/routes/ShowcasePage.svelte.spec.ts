@@ -7,9 +7,7 @@ describe('showcase page', () => {
 	it('demonstrates sync, persistence, history, time travel, and async orchestration from the user perspective', async () => {
 		render(ShowcasePage);
 
-		await expect
-			.element(page.getByRole('heading', { level: 1 }))
-			.toHaveTextContent('Stately showcase');
+		await expect.element(page.getByRole('heading', { level: 1 })).toHaveTextContent('Stately showcase');
 
 		await page.getByRole('button', { name: 'Increment tab A' }).click();
 		await expect.element(page.getByText('Tab A count: 1')).toBeInTheDocument();

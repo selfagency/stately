@@ -25,31 +25,16 @@ describe('store-types', () => {
 		expect(counter.count).toBe(0);
 
 		expectTypeOf(useCounterStore).toMatchTypeOf<
-			StoreDefinition<
-				'counter-types',
-				{ count: number },
-				{ doubleCount: number },
-				{ increment: () => void }
-			>
+			StoreDefinition<'counter-types', { count: number }, { doubleCount: number }, { increment: () => void }>
 		>();
 		expectTypeOf(counter).toMatchTypeOf<
-			StoreInstance<
-				'counter-types',
-				{ count: number },
-				{ doubleCount: number },
-				{ increment: () => void }
-			>
+			StoreInstance<'counter-types', { count: number }, { doubleCount: number }, { increment: () => void }>
 		>();
 	});
 
 	it('exposes typed action hook context helpers', () => {
 		type ExampleContext = StoreActionHookContext<
-			StoreInstance<
-				'sample',
-				{ count: number },
-				Record<never, never>,
-				{ increment: (amount: number) => number }
-			>,
+			StoreInstance<'sample', { count: number }, Record<never, never>, { increment: (amount: number) => number }>,
 			'increment',
 			[number],
 			number
@@ -57,9 +42,7 @@ describe('store-types', () => {
 
 		expectTypeOf<ExampleContext['name']>().toEqualTypeOf<'increment'>();
 		expectTypeOf<ExampleContext['args']>().toEqualTypeOf<[number]>();
-		expectTypeOf<Parameters<ExampleContext['after']>[0]>().toEqualTypeOf<
-			(result: number) => void
-		>();
+		expectTypeOf<Parameters<ExampleContext['after']>[0]>().toEqualTypeOf<(result: number) => void>();
 		expect(true).toBe(true);
 	});
 });

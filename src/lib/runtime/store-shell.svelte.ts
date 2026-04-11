@@ -1,8 +1,4 @@
-import type {
-	StoreActionHookContext,
-	StoreMutationContext,
-	StoreState
-} from '../pinia-like/store-types.js';
+import type { StoreActionHookContext, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';
@@ -15,20 +11,14 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
 	$state: State;
 	$patch(partial: Partial<State> | ((state: State) => void)): void;
 	$reset(): void;
-	$subscribe(
-		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void
-	): () => void;
-	$onAction(
-		callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void
-	): () => void;
+	$subscribe(callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void): () => void;
+	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
+	subscribe(callback: (value: State) => void): () => void;
+	set(value: State): void;
 }
 
-export interface StoreShellBuilder<
-	Id extends string,
-	State extends StoreState,
-	Store extends object
-> {
+export interface StoreShellBuilder<Id extends string, State extends StoreState, Store extends object> {
 	store: Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
 	timeline: ReturnType<typeof createDevtoolsTimelineRecorder>;
 	defineStateProperty<Key extends keyof State>(key: Key): void;
@@ -54,11 +44,7 @@ function syncState<State extends StoreState>(target: State, next: Partial<State>
 	}
 }
 
-export function createStoreShell<
-	Id extends string,
-	State extends StoreState,
-	Store extends object
->(config: {
+export function createStoreShell<Id extends string, State extends StoreState, Store extends object>(config: {
 	id: Id;
 	store: Store;
 	state: State;
@@ -67,8 +53,7 @@ export function createStoreShell<
 	let suppressDirectMutation = false;
 	let disposed = false;
 	const initialState = cloneState(config.state);
-	const shellStore = config.store as Store &
-		StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
+	const shellStore = config.store as Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
 	const timeline = createDevtoolsTimelineRecorder({
 		storeId: config.id,
 		readSnapshot: () => cloneState(config.state)
@@ -94,10 +79,7 @@ export function createStoreShell<
 		});
 	});
 
-	const notifyMutation = (
-		type: StoreMutationContext<Id, Store>['type'],
-		payload?: unknown
-	): void => {
+	const notifyMutation = (type: StoreMutationContext<Id, Store>['type'], payload?: unknown): void => {
 		if (disposed) {
 			return;
 		}
@@ -234,6 +216,28 @@ export function createStoreShell<
 				disposed = true;
 				subscriptions.clear();
 				config.onDispose?.();
+			}
+		},
+		subscribe: {
+			enumerable: false,
+			configurable: false,
+			value(callback: (value: State) => void): () => void {
+				callback(cloneState(config.state));
+
+				return subscriptions.subscribe(() => {
+					callback(cloneState(config.state));
+				});
+			}
+		},
+		set: {
+			enumerable: false,
+			configurable: false,
+			value(value: State) {
+				mutationQueue.run('patch-object', value, () => {
+					suppressDirectMutation = true;
+					syncState(config.state, value);
+					suppressDirectMutation = false;
+				});
 			}
 		}
 	});
