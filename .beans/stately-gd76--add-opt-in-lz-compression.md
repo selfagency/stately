@@ -1,14 +1,14 @@
 ---
 # stately-gd76
 title: Add opt-in LZ compression
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-11T00:13:15Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T04:03:04Z
 parent: stately-8rtd
 blocked_by:
-  - stately-l79m
+    - stately-l79m
 ---
 
 ## Todo
