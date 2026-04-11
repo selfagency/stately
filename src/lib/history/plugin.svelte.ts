@@ -1,6 +1,7 @@
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { createHistoryController, type HistoryController } from './history-controller.svelte.js';
+import { createTimeTravelController, type TimeTravelController } from './time-travel.svelte.js';
 
 interface HistoryStore<State = Record<string, unknown>> {
 	readonly $id: string;
@@ -16,6 +17,7 @@ interface HistoryOptions {
 declare module '../pinia-like/store-types.js' {
 	interface StoreCustomProperties {
 		$history: HistoryController<Record<string, unknown>>;
+		$timeTravel: TimeTravelController<Record<string, unknown>>;
 	}
 }
 
@@ -64,9 +66,11 @@ export function createHistoryPlugin(): StateManagerPlugin {
 			}
 			controller.record(snapshotOf(store));
 		});
+		const timeTravel = createTimeTravelController({ history: controller });
 
 		return {
 			$history: controller
+			,$timeTravel: timeTravel
 		} satisfies Partial<StoreCustomProperties>;
 	};
 }

@@ -1,15 +1,15 @@
 ---
 # stately-ck57
 title: Add typed plugin options
-status: todo
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-11T00:13:25Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T04:11:15Z
 parent: stately-3zld
 blocked_by:
-  - stately-f700
-  - stately-ffo3
+    - stately-f700
+    - stately-ffo3
 ---
 
 ## Todo

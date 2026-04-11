@@ -5,9 +5,11 @@ export interface HistoryEntry<State = Record<string, unknown>> {
 
 export interface HistoryController<State = Record<string, unknown>> {
 	readonly entries: HistoryEntry<State>[];
+	readonly currentIndex: number;
 	readonly canUndo: boolean;
 	readonly canRedo: boolean;
 	readonly isReplaying: boolean;
+	goTo(index: number): boolean;
 	undo(): boolean;
 	redo(): boolean;
 	record(snapshot: State): void;
@@ -47,6 +49,9 @@ export function createHistoryController<State extends Record<string, unknown>>(c
 		get entries() {
 			return state.entries;
 		},
+		get currentIndex() {
+			return state.index;
+		},
 		get canUndo() {
 			return state.index > 0;
 		},
@@ -56,27 +61,22 @@ export function createHistoryController<State extends Record<string, unknown>>(c
 		get isReplaying() {
 			return state.replaying;
 		},
-		undo() {
-			if (state.index === 0) {
+		goTo(index) {
+			if (index < 0 || index >= state.entries.length || index === state.index) {
 				return false;
 			}
 
 			state.replaying = true;
-			state.index -= 1;
+			state.index = index;
 			config.applySnapshot(state.entries[state.index].snapshot);
 			state.replaying = false;
 			return true;
 		},
+		undo() {
+			return this.goTo(state.index - 1);
+		},
 		redo() {
-			if (state.index >= state.entries.length - 1) {
-				return false;
-			}
-
-			state.replaying = true;
-			state.index += 1;
-			config.applySnapshot(state.entries[state.index].snapshot);
-			state.replaying = false;
-			return true;
+			return this.goTo(state.index + 1);
 		},
 		record(snapshot) {
 			if (state.replaying) {

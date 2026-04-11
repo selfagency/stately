@@ -25,6 +25,14 @@ function isPersistableStore(value: unknown): value is PersistableStore {
 	return isRecord(value) && '$state' in value && '$patch' in value && '$subscribe' in value;
 }
 
+function isReplayActive(store: PersistableStore): boolean {
+	return (
+		'$timeTravel' in store &&
+		isRecord(store.$timeTravel) &&
+		Reflect.get(store.$timeTravel, 'isReplaying') === true
+	);
+}
+
 function readPersistOptions(value: unknown): PersistOptions | undefined {
 	if (!isRecord(value) || !('persist' in value)) {
 		return undefined;
@@ -57,7 +65,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		let rehydrating = false;
 
 		const flush = async () => {
-			if (paused || rehydrating) {
+			if (paused || rehydrating || isReplayActive(store)) {
 				return;
 			}
 
@@ -102,8 +110,8 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				dispose();
 			},
 			enumerable: false,
-			configurable: false,
-			writable: false
+			configurable: true,
+			writable: true
 		});
 
 		return {

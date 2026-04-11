@@ -1,11 +1,11 @@
 ---
 # stately-3zld
 title: Typed plugin options for persist and history
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-11T00:12:29Z
-updated_at: 2026-04-11T00:12:29Z
+updated_at: 2026-04-11T04:11:15Z
 parent: stately-ruuz
 ---
 
