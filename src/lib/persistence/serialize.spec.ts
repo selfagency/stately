@@ -29,5 +29,21 @@ describe('persistence serialization', () => {
 			version: 2
 		});
 		expect(nullState).toEqual({ ok: false, error: expect.stringMatching(/malformed/i) });
+
+		const nestedPoisoned = deserializePersistedState<{ profile: { name: string } }>(
+			JSON.stringify({
+				version: 2,
+				state: {
+					profile: {
+						name: 'safe',
+						__proto__: { polluted: true }
+					}
+				}
+			}),
+			{ version: 2 }
+		);
+
+		expect(nestedPoisoned).toEqual({ ok: true, envelope: { version: 2, state: { profile: { name: 'safe' } } } });
+		expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
 	});
 });

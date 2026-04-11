@@ -1,4 +1,5 @@
 import { createStoreShell } from './store-shell.svelte.js';
+import { SvelteMap } from 'svelte/reactivity';
 
 type AnyRecord = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,6 +11,23 @@ type SetupStoreFactory<Store extends AnyRecord> = () => Store;
 
 function isRecord(value: unknown): value is AnyRecord {
 	return typeof value === 'object' && value !== null;
+}
+
+function collectDescriptors(value: object): Array<[string, PropertyDescriptor]> {
+	const descriptors = new SvelteMap<string, PropertyDescriptor>();
+	let current: object | null = value;
+
+	while (current && current !== Object.prototype) {
+		for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(current))) {
+			if (key === 'constructor' || descriptors.has(key)) {
+				continue;
+			}
+			descriptors.set(key, descriptor);
+		}
+		current = Object.getPrototypeOf(current);
+	}
+
+	return Array.from(descriptors.entries());
 }
 
 export function createSetupStore<Store extends AnyRecord, Id extends string>(
@@ -25,36 +43,43 @@ export function createSetupStore<Store extends AnyRecord, Id extends string>(
 	const state = $state({} as Record<string, unknown>);
 	const store = {} as Store;
 	const shell = createStoreShell({ id, store, state });
+	const stateKey = (key: string) => key as keyof typeof state;
 
-	for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(result))) {
+	for (const [key, descriptor] of collectDescriptors(result)) {
 		if ('value' in descriptor && typeof descriptor.value === 'function') {
-			shell.defineAction(key, descriptor.value as AnyFunction);
+			const action = descriptor.value as AnyFunction;
+			shell.defineAction(key, action);
 			continue;
 		}
 
-		if (descriptor.get || descriptor.set) {
-			const propDef: PropertyDescriptor = {
+		if (descriptor.get && descriptor.set) {
+			Reflect.set(state, key, descriptor.get.call(result));
+			shell.defineStateProperty(stateKey(key));
+			Object.defineProperty(result, key, {
 				enumerable: descriptor.enumerable ?? true,
-				configurable: false
-			};
-			if (descriptor.get) {
-				const getter = descriptor.get;
-				propDef.get = function () {
-					return getter.call(shell.store);
-				};
-			}
-			if (descriptor.set) {
-				const setter = descriptor.set;
-				propDef.set = function (value: unknown) {
-					setter.call(shell.store, value);
-				};
-			}
-			Object.defineProperty(shell.store, key, propDef);
+				configurable: true,
+				get() {
+					return Reflect.get(state, key);
+				},
+				set(value: unknown) {
+					shell.setStateValue(stateKey(key), value as (typeof state)[keyof typeof state]);
+				}
+			});
+			continue;
+		}
+
+		if (descriptor.set && !descriptor.get) {
+			throw new Error(`Invalid setup store definition for "${id}". Setter-only properties are not supported.`);
+		}
+
+		if (descriptor.get) {
+			const getter = descriptor.get;
+			shell.defineGetter(key, () => getter.call(shell.store));
 			continue;
 		}
 
 		Reflect.set(state, key, descriptor.value);
-		shell.defineStateProperty(key);
+		shell.defineStateProperty(stateKey(key));
 	}
 
 	return shell.store;

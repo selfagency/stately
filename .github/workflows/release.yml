@@ -65,7 +65,7 @@ jobs:
               return;
             }
 
-            const requiredWorkflows = ['Test & Build'];
+            const requiredWorkflows = ['CI'];
 
             for (const workflowName of requiredWorkflows) {
               const workflowsResp = await github.rest.actions.listRepoWorkflows({

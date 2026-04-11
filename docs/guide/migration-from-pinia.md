@@ -17,5 +17,6 @@ The main shift is that Stately is built for Svelte 5 runes and SvelteKit SSR rat
 
 - Use request-scoped managers in SSR instead of shared singletons.
 - Keep advanced behavior opt-in through plugins.
-- Use accessors or returned reactive values in setup stores so reactivity stays intact.
-- Use `storeToRefs()` when destructuring reactive properties.
+- Setup stores can be plain objects or class instances; prototype getters/actions are supported.
+- Use `storeToRefs()` when destructuring reactive properties, especially in setup stores.
+- Avoid destructuring primitive store properties directly (`const { count } = store`) because it snapshots values.

@@ -43,7 +43,11 @@ export function createStorageEventTransport<Message extends { origin?: string } 
 		}
 
 		for (const listener of listeners) {
-			listener(message);
+			try {
+				listener(message);
+			} catch {
+				// Listener error should not break other listeners
+			}
 		}
 	};
 

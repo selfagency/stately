@@ -116,4 +116,62 @@ describe('store shell helpers', () => {
 		store.$patch({ count: 100 });
 		expect(values).toHaveLength(3);
 	});
+
+	it('detects cyclic references in state without overflowing the call stack', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('cyclic-state', {
+			state: () => ({ count: 0, nested: {} as Record<string, unknown> }),
+			actions: {
+				increment() {
+					this.count += 1;
+				}
+			}
+		});
+
+		const store = useStore(manager);
+
+		// Introduce a cyclic reference into the state.
+		const cycle: Record<string, unknown> = {};
+		cycle['self'] = cycle;
+		store.$patch({ nested: cycle });
+
+		// Calling increment must not throw a stack-overflow error.
+		expect(() => {
+			store.increment();
+		}).not.toThrow();
+		expect(store.count).toBe(1);
+	});
+
+	it('notifies subscribers for synchronous mutations in async actions without waiting for resolution', async () => {
+		const manager = createStateManager();
+		const useStore = defineStore('async-sync-mutation', {
+			state: () => ({ count: 0 }),
+			actions: {
+				async incrementAsync() {
+					this.count += 1;
+					await new Promise<void>((resolve) => setTimeout(resolve, 10));
+					this.count += 1;
+				}
+			}
+		});
+
+		const store = useStore(manager);
+		const mutations: string[] = [];
+		store.$subscribe((mutation) => {
+			mutations.push(mutation.type);
+		});
+
+		const promise = store.incrementAsync();
+
+		// Allow queueMicrotask to flush before the async portion settles.
+		await Promise.resolve();
+
+		// The synchronous portion mutation should have been recorded.
+		expect(mutations.length).toBeGreaterThanOrEqual(1);
+
+		await promise;
+
+		// After full resolution, the second mutation should also be recorded.
+		expect(mutations.length).toBeGreaterThanOrEqual(2);
+	});
 });

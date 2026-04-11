@@ -35,25 +35,37 @@ Use the setup-options object form when you also want typed plugin configuration 
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('preferences', {
-	setup: () => {
-		let theme = $state<'light' | 'dark'>('light');
-		let compact = $state(false);
+	setup: () => ({
+		theme: 'light' as 'light' | 'dark',
+		compact: false,
+		toggleTheme() {
+			this.theme = this.theme === 'light' ? 'dark' : 'light';
+		},
+		setCompact(value: boolean) {
+			this.compact = value;
+		}
+	})
+});
+```
 
-		return {
-			get theme() {
-				return theme;
-			},
-			get compact() {
-				return compact;
-			},
-			toggleTheme() {
-				theme = theme === 'light' ? 'dark' : 'light';
-			},
-			setCompact(value: boolean) {
-				compact = value;
-			}
-		};
+Setup stores can also return class instances.
+Stately resolves setup members from both own properties and the prototype chain.
+
+```ts
+class CounterStore {
+	count = 0;
+
+	get doubleCount() {
+		return this.count * 2;
 	}
+
+	increment() {
+		this.count += 1;
+	}
+}
+
+export const useCounterStore = defineStore('counter', {
+	setup: () => new CounterStore()
 });
 ```
 

@@ -135,4 +135,43 @@ describe('sync runtime', () => {
 		}
 		expect(store.count).toBe(5);
 	});
+
+	it('sanitizes nested reserved keys in synced payload state', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish(message) {
+				for (const listener of listeners) {
+					listener(message);
+				}
+			},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => listeners.delete(listener);
+			},
+			destroy() {}
+		};
+
+		const useStore = defineStore('sync-sanitize', {
+			state: () => ({ profile: { name: 'initial' } })
+		});
+		const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+		const store = useStore(manager);
+		const poisonedProfile = JSON.parse('{"name":"updated","__proto__":{"polluted":true}}') as Record<string, unknown>;
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'sync-sanitize',
+				origin: 'remote',
+				version: 1,
+				mutationId: 1,
+				timestamp: Date.now(),
+				state: {
+					profile: poisonedProfile
+				}
+			});
+		}
+
+		expect(store.profile).toEqual({ name: 'updated' });
+		expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
+	});
 });

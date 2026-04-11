@@ -1,4 +1,5 @@
 import type { PersistDeserializeOptions, PersistEnvelope } from './types.js';
+import { sanitizeValue } from '../internal/sanitize.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
@@ -40,7 +41,7 @@ export function deserializePersistedState<State>(
 			ok: true,
 			envelope: {
 				version: options.version,
-				state: parsed.state as State
+				state: sanitizeValue(parsed.state) as State
 			}
 		};
 	}
@@ -57,7 +58,7 @@ export function deserializePersistedState<State>(
 			ok: true,
 			envelope: {
 				version: options.version,
-				state: options.migrate(parsed.state, parsed.version)
+				state: sanitizeValue(options.migrate(parsed.state, parsed.version))
 			}
 		};
 	} catch (e) {
