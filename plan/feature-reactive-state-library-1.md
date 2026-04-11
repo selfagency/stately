@@ -1,6 +1,6 @@
 ---
 goal: Svelte 5 Reactive State Library Implementation Plan
-version: 1.0
+version: 1.1
 date_created: 2026-04-10
 last_updated: 2026-04-10
 owner: GitHub Copilot
@@ -26,6 +26,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **REQ-008**: Preserve strong TypeScript inference for store state, getters, actions, plugin-added properties, and configuration options.
 - **REQ-009**: Keep the core runtime tree-shakable and make persistence/history/sync/async features opt-in.
 - **REQ-010**: Provide a showcase page in the existing SvelteKit app demonstrating the API and all requested features.
+- **REQ-011**: Add GitHub Actions CI workflows that validate pull requests and mainline changes with `check`, `lint`, `test`, `build`, and package-quality verification for the npm library.
+- **REQ-012**: Add npm-library release automation for publishing the package with a documented versioning strategy and release workflow.
+- **REQ-013**: Configure contributor quality gates with `husky`, `lint-staged`, `svelte-check`, and lint/format hooks aligned with the repository’s Biome and ESLint tooling.
+- **REQ-014**: Create a VitePress documentation site that covers getting started, API usage, SSR-safe patterns, plugin features, and deployment.
 - **SEC-001**: Prevent cross-request state leakage under SSR by avoiding shared mutable singleton state on the server by default.
 - **SEC-002**: Serialize persisted state defensively; do not evaluate persisted payloads or trust browser storage contents.
 - **SEC-003**: Ensure `BroadcastChannel` and `storage` event payloads are schema-validated before patching live state.
@@ -35,10 +39,15 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **CON-002**: Internal modules that use `$state`, `$derived`, or `$effect` must be implemented in `.svelte.ts` files so the Svelte compiler can transform runes correctly.
 - **CON-003**: Plain `.ts` files may be used only for runtime-agnostic helpers that do not require runes.
 - **CON-004**: The implementation must remain compatible with the current package tooling defined in `package.json` (`svelte-package`, `svelte-check`, `vitest`, `eslint`).
+- **CON-005**: CI workflows must live under `.github/workflows/` and use the repository’s package-manager and script conventions rather than custom ad hoc commands.
+- **CON-006**: Contributor hooks must build on the existing `@biomejs/biome`, `husky`, and `lint-staged` devDependencies already present in `package.json`.
+- **CON-007**: Documentation site source should live under `docs/` with VitePress configuration under `docs/.vitepress/` and must not displace library runtime code from `src/lib/`.
 - **GUD-001**: Prefer `$derived` over `$effect` for computed state. Use `$effect` only for external side effects such as persistence, channels, or timers.
 - **GUD-002**: Do not rely on destructuring reactive properties unless the API returns stable refs/wrappers designed for destructuring.
 - **GUD-003**: Use `$state.snapshot()` for history entries and persistence serialization to avoid leaking proxies into external systems.
 - **GUD-004**: Use `createSubscriber` from `svelte/reactivity` when bridging external event sources into reactive getters.
+- **GUD-005**: Prefer package-manager scripts as the single source of truth for CI, hooks, and documentation builds so local automation and GitHub Actions stay aligned.
+- **GUD-006**: Prefer incremental, fast pre-commit checks on staged files and reserve heavier workflows such as full tests or build validation for pre-push or CI.
 - **PAT-001**: Separate the library into a minimal core plus feature plugins.
 - **PAT-002**: Model Pinia plugin behavior with a root instance method like `createStateManager().use(plugin)` so plugins can augment stores and register hooks.
 - **PAT-003**: Treat direct state mutation and `$patch()` as first-class flows, but route both through a unified mutation recorder so persistence, history, sync, and devtools timelines stay coherent.
@@ -113,6 +122,22 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 | TASK-028 | Add packaged usage examples under `src/lib/examples/` for option/setup stores and each plugin area.          |           |      |
 | TASK-029 | Verify `npm run check`, `npm run lint`, `npm run test`, and `npm run build` all pass.                        |           |      |
 
+### Implementation Phase 6
+
+- GOAL-006: Add CI/CD automation, contributor hooks, and a VitePress documentation site suitable for npm-library delivery.
+
+| Task     | Description                                                                                                                                                          | Completed | Date |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---- |
+| TASK-030 | Add `.github/workflows/ci.yml` to run install, `pnpm run check`, `pnpm run lint`, `pnpm run test`, `pnpm run build`, and package smoke validation on PRs and pushes. |           |      |
+| TASK-031 | Add `.github/workflows/release.yml` and versioning/publish automation for npm-library deployment, including provenance-friendly publish configuration.               |           |      |
+| TASK-032 | Add release-management support files and docs (for example `.changeset/` config, publish metadata, and release instructions) so publishing is deterministic.         |           |      |
+| TASK-033 | Configure `lint-staged` and `husky` pre-commit hooks for staged-file formatting and linting using Biome and ESLint.                                                  |           |      |
+| TASK-034 | Configure `husky` pre-push validation for `svelte-check` and appropriate test coverage so local quality gates catch regressions before CI.                           |           |      |
+| TASK-035 | Add `format`, `format:check`, and hook-aligned script entries in `package.json`, plus any required Biome or hook config files.                                       |           |      |
+| TASK-036 | Scaffold a VitePress site under `docs/` with base config, theme navigation, sidebar structure, and initial landing pages.                                            |           |      |
+| TASK-037 | Author VitePress content for installation, SSR-safe usage, `defineStore`, plugins, examples, testing, and migration guidance.                                        |           |      |
+| TASK-038 | Add docs build/deploy automation, including CI integration and a documentation deployment workflow for the VitePress site.                                           |           |      |
+
 <!-- markdownlint-enable MD060 -->
 
 ## 3. Alternatives
@@ -132,6 +157,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **DEP-004**: Add `lz-string` for opt-in compressed persistence payloads.
 - **DEP-005**: Add `idb-keyval` or implement an equivalent thin IndexedDB adapter directly. Preferred choice for execution: `idb-keyval` to avoid error-prone raw IndexedDB boilerplate.
 - **DEP-006**: Browser APIs `localStorage`, `sessionStorage`, `BroadcastChannel`, `AbortController`, and `storage` events must be feature-detected and guarded for SSR.
+- **DEP-007**: Add `vitepress` for the documentation site build, local preview, and deployable static output.
+- **DEP-008**: Add a release-management tool such as `@changesets/cli` to support repeatable npm-library versioning and publish workflows.
+- **DEP-009**: GitHub Actions workflows will depend on repository secrets or trusted publishing configuration for npm deployment.
 
 ## 5. Files
 
@@ -179,6 +207,18 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **FILE-042**: `src/lib/__tests__/async.spec.ts` — cancellation and concurrency coverage.
 - **FILE-043**: `src/routes/+page.svelte.spec.ts` or `src/lib/__tests__/showcase.spec.ts` — UI behavior coverage.
 - **FILE-044**: `README.md` — end-user documentation.
+- **FILE-045**: `.github/workflows/ci.yml` — pull-request and branch validation workflow.
+- **FILE-046**: `.github/workflows/release.yml` — npm-library publish workflow.
+- **FILE-047**: `.github/workflows/docs.yml` — VitePress documentation build/deploy workflow.
+- **FILE-048**: `.changeset/` — release management and versioning configuration.
+- **FILE-049**: `.husky/pre-commit` — staged-file validation hook.
+- **FILE-050**: `.husky/pre-push` — local pre-push validation hook.
+- **FILE-051**: `.lintstagedrc.*` or `package.json` lint-staged config — staged-file task definitions.
+- **FILE-052**: `biome.json` or equivalent Biome config surface — formatting and check configuration if not already defined elsewhere.
+- **FILE-053**: `docs/.vitepress/config.ts` — VitePress site configuration.
+- **FILE-054**: `docs/index.md` — documentation home page.
+- **FILE-055**: `docs/guide/*.md` — getting started and usage guides.
+- **FILE-056**: `docs/api/*.md` — API reference and feature docs.
 
 ## 6. Testing
 
@@ -201,6 +241,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **TEST-017**: Verify stale async responses cannot overwrite newer committed state.
 - **TEST-018**: Verify the showcase page demonstrates persistence, history, sync, and async behavior from the user’s perspective.
 - **TEST-019**: Verify `npm run check`, `npm run lint`, `npm run test`, and `npm run build` all succeed after implementation.
+- **TEST-020**: Verify the CI workflow executes the canonical package scripts and fails on type, lint, test, build, or package-quality regressions.
+- **TEST-021**: Verify the npm release workflow can perform a safe dry-run or publish-ready validation using the selected versioning strategy.
+- **TEST-022**: Verify `husky` and `lint-staged` hooks run the intended format/lint checks on staged files and the intended `svelte-check`/test validations before push.
+- **TEST-023**: Verify the VitePress site builds successfully and the docs deployment workflow produces deployable static output.
 
 ## 7. Risks & Assumptions
 
@@ -210,6 +254,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **RISK-004**: Cross-tab sync conflicts can occur if two tabs patch the same store concurrently without a conflict policy beyond last-write-wins.
 - **RISK-005**: Compression can increase CPU cost for frequently mutating stores; it should remain opt-in and likely be discouraged for hot-path stores.
 - **RISK-006**: SSR-safe request scoping adds API complexity compared with SPA-only singleton usage.
+- **RISK-007**: npm publish automation can fail or mispublish without correct versioning, provenance, or secret configuration.
+- **RISK-008**: Aggressive local hooks can frustrate contributors if pre-commit checks are too slow or overlap badly with CI.
+- **RISK-009**: VitePress content can drift from the actual library behavior if documentation updates are not kept coupled to public API changes.
 - **ASSUMPTION-001**: The library will target modern browsers with `AbortController`; legacy fallback behavior is not required in the first release.
 - **ASSUMPTION-002**: Last-write-wins is acceptable for the first synchronization release; CRDT-grade conflict resolution is out of scope.
 - **ASSUMPTION-003**: A built-in devtools timeline API and showcase-based debugger are sufficient for “time-travel debugging” in v1; full browser-extension integration is not required initially.
@@ -239,7 +286,7 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **REV-001**: The current plan is complete and technically coherent.
 - **REV-002**: The strongest parts are the SSR constraints, Svelte 5 module-boundary rules, and plugin-first architecture.
 - **REV-003**: The missing operational layer was a concrete bean hierarchy for execution tracking.
-- **REV-004**: The hierarchy below maps every implementation-step task (`TASK-001` through `TASK-029`) into milestone, epic, feature, and task beans with detailed `## Todo` checklists.
+- **REV-004**: The hierarchy below maps every implementation-step task (`TASK-001` through `TASK-038`) into milestone, epic, feature, and task beans with detailed `## Todo` checklists.
 - **REV-005**: This section is ready to be used as the source material for Beans creation.
 
 ### 9.2 Creation Notes
@@ -259,7 +306,7 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Type**: `milestone`
 - **Priority**: `critical`
 - **Depends on**: `none`
-- **Maps to**: Implementation Phases 1–5
+- **Maps to**: Implementation Phases 1–6
 - **Suggested `## Todo`**:
 	- [ ] Approve the implementation plan and bean hierarchy.
 	- [ ] Create all child epics, features, and tasks.
@@ -786,5 +833,154 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 	- [ ] Run `npm run test` and fix unit/browser test failures.
 	- [ ] Run `npm run build` and fix packaging/export issues.
 	- [ ] Confirm the package is ready for release-quality review.
+
+#### EPIC-006 — CI/CD, Contributor Hooks, and VitePress Documentation
+
+- **Type**: `epic`
+- **Priority**: `critical`
+- **Parent**: `MILESTONE-001`
+- **Depends on**: `EPIC-001`
+- **Maps to**: Implementation Phase 6
+
+##### FEATURE-014 — GitHub Actions CI and npm Release Automation
+
+- **Type**: `feature`
+- **Priority**: `critical`
+- **Parent**: `EPIC-006`
+- **Depends on**: `FEATURE-002`
+- **Maps to**: `TASK-030`, `TASK-031`, `TASK-032`
+
+###### TASK-030 — Add pull-request and mainline CI workflow
+
+- **Type**: `task`
+- **Priority**: `critical`
+- **Parent**: `FEATURE-014`
+- **Depends on**: `TASK-005`
+- **Maps to**: `TASK-030`
+- **Suggested `## Todo`**:
+	- [ ] Create `.github/workflows/ci.yml`.
+	- [ ] Run install plus `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build` in CI.
+	- [ ] Add package-quality verification such as `svelte-package`/`publint` validation through the existing scripts.
+	- [ ] Ensure the workflow runs on pull requests and protected branches.
+
+###### TASK-031 — Add npm publish and release workflow
+
+- **Type**: `task`
+- **Priority**: `critical`
+- **Parent**: `FEATURE-014`
+- **Depends on**: `TASK-030`
+- **Maps to**: `TASK-031`
+- **Suggested `## Todo`**:
+	- [ ] Create `.github/workflows/release.yml` for npm-library publishing.
+	- [ ] Define the publish trigger and versioning flow for releases.
+	- [ ] Configure provenance-friendly publish settings and secret or trusted-publisher requirements.
+	- [ ] Ensure release automation does not publish when validation fails.
+
+###### TASK-032 — Add release management support files and docs
+
+- **Type**: `task`
+- **Priority**: `high`
+- **Parent**: `FEATURE-014`
+- **Depends on**: `TASK-031`
+- **Maps to**: `TASK-032`
+- **Suggested `## Todo`**:
+	- [ ] Add `.changeset/` or the chosen release-management configuration.
+	- [ ] Update package publish metadata as needed for npm delivery.
+	- [ ] Document the release flow for maintainers.
+	- [ ] Validate that a dry-run release path is deterministic.
+
+##### FEATURE-015 — Local Quality Gates with Husky and Lint-Staged
+
+- **Type**: `feature`
+- **Priority**: `high`
+- **Parent**: `EPIC-006`
+- **Depends on**: `FEATURE-014`
+- **Maps to**: `TASK-033`, `TASK-034`, `TASK-035`
+
+###### TASK-033 — Configure pre-commit staged-file hooks
+
+- **Type**: `task`
+- **Priority**: `high`
+- **Parent**: `FEATURE-015`
+- **Depends on**: `TASK-030`
+- **Maps to**: `TASK-033`
+- **Suggested `## Todo`**:
+	- [ ] Configure `lint-staged` patterns for staged file validation.
+	- [ ] Add `.husky/pre-commit`.
+	- [ ] Run Biome format/check and ESLint in the staged-file flow.
+	- [ ] Keep pre-commit feedback fast enough for normal contributor use.
+
+###### TASK-034 — Configure pre-push validation hooks
+
+- **Type**: `task`
+- **Priority**: `high`
+- **Parent**: `FEATURE-015`
+- **Depends on**: `TASK-033`
+- **Maps to**: `TASK-034`
+- **Suggested `## Todo`**:
+	- [ ] Add `.husky/pre-push`.
+	- [ ] Run `svelte-check` before push.
+	- [ ] Run the appropriate local test command before push.
+	- [ ] Document the intended split between pre-commit, pre-push, and CI checks.
+
+###### TASK-035 — Add format and automation-aligned scripts
+
+- **Type**: `task`
+- **Priority**: `high`
+- **Parent**: `FEATURE-015`
+- **Depends on**: `TASK-033`, `TASK-034`
+- **Maps to**: `TASK-035`
+- **Suggested `## Todo`**:
+	- [ ] Add `format` and `format:check` scripts to `package.json`.
+	- [ ] Align hook commands with package-manager scripts so local and CI behavior match.
+	- [ ] Add or refine Biome configuration if needed for formatting and checks.
+	- [ ] Verify hooks and scripts do not conflict with ESLint or Svelte tooling.
+
+##### FEATURE-016 — VitePress Documentation Site and Deployment
+
+- **Type**: `feature`
+- **Priority**: `critical`
+- **Parent**: `EPIC-006`
+- **Depends on**: `FEATURE-012`
+- **Maps to**: `TASK-036`, `TASK-037`, `TASK-038`
+
+###### TASK-036 — Scaffold the VitePress site
+
+- **Type**: `task`
+- **Priority**: `critical`
+- **Parent**: `FEATURE-016`
+- **Depends on**: `TASK-027`
+- **Maps to**: `TASK-036`
+- **Suggested `## Todo`**:
+	- [ ] Add `docs/.vitepress/config.ts`.
+	- [ ] Create the VitePress site structure under `docs/`.
+	- [ ] Configure navigation, sidebar, and site metadata.
+	- [ ] Add a docs landing page and primary guide entry points.
+
+###### TASK-037 — Author VitePress documentation content
+
+- **Type**: `task`
+- **Priority**: `high`
+- **Parent**: `FEATURE-016`
+- **Depends on**: `TASK-036`
+- **Maps to**: `TASK-037`
+- **Suggested `## Todo`**:
+	- [ ] Document installation and package consumption as an npm library.
+	- [ ] Document `defineStore`, option stores, and setup stores.
+	- [ ] Document SSR-safe usage, plugins, persistence, history, sync, and async orchestration.
+	- [ ] Add migration, testing, and troubleshooting guides.
+
+###### TASK-038 — Add docs build and deployment automation
+
+- **Type**: `task`
+- **Priority**: `high`
+- **Parent**: `FEATURE-016`
+- **Depends on**: `TASK-036`, `TASK-037`
+- **Maps to**: `TASK-038`
+- **Suggested `## Todo`**:
+	- [ ] Add a docs workflow under `.github/workflows/docs.yml`.
+	- [ ] Integrate VitePress build validation into CI.
+	- [ ] Configure deployment for the generated static docs site.
+	- [ ] Verify docs deployment does not drift from the library release flow.
 
 <!-- markdownlint-enable MD007 MD010 -->

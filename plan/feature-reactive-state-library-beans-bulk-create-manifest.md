@@ -28,6 +28,7 @@ Fill this in as beans are created.
 | `epic-persistence-history`       |              |
 | `epic-sync-async`                |              |
 | `epic-showcase-docs`             |              |
+| `epic-ci-docs`                   |              |
 | `feature-root-define-store`      |              |
 | `feature-types-exports`          |              |
 | `feature-store-instantiation`    |              |
@@ -41,6 +42,9 @@ Fill this in as beans are created.
 | `feature-showcase`               |              |
 | `feature-tests-docs`             |              |
 | `feature-release-gate`           |              |
+| `feature-ci-release`             |              |
+| `feature-dev-hooks`              |              |
+| `feature-vitepress-docs`         |              |
 | `task-001`                       |              |
 | `task-002`                       |              |
 | `task-003`                       |              |
@@ -70,6 +74,15 @@ Fill this in as beans are created.
 | `task-027`                       |              |
 | `task-028`                       |              |
 | `task-029`                       |              |
+| `task-030`                       |              |
+| `task-031`                       |              |
+| `task-032`                       |              |
+| `task-033`                       |              |
+| `task-034`                       |              |
+| `task-035`                       |              |
+| `task-036`                       |              |
+| `task-037`                       |              |
+| `task-038`                       |              |
 
 ## Batch 1 — Milestone
 
@@ -128,6 +141,13 @@ Fill this in as beans are created.
       "type": "epic",
       "priority": "critical",
       "body": "## Goal\nValidate the library with a showcase app, automated tests, documentation, examples, and final release checks.\n\n## Todo\n- [ ] Build the interactive showcase page.\n- [ ] Add browser and unit test coverage.\n- [ ] Update README and packaged examples.\n- [ ] Run final validation commands and clear release blockers."
+    },
+    {
+      "ref": "epic-ci-docs",
+      "title": "CI/CD, contributor hooks, and VitePress documentation",
+      "type": "epic",
+      "priority": "critical",
+      "body": "## Goal\nAdd GitHub Actions automation, local contributor hooks, and a VitePress documentation site for the npm library.\n\n## Todo\n- [ ] Add CI validation workflows.\n- [ ] Add npm publish and release automation.\n- [ ] Add Husky and lint-staged contributor hooks.\n- [ ] Create and deploy the VitePress documentation site."
     }
   ]
 }
@@ -271,6 +291,37 @@ Fill this in as beans are created.
       "type": "feature",
       "priority": "critical",
       "body": "## Goal\nRun final validation commands and clear release blockers.\n\n## Todo\n- [ ] Run check, lint, test, and build.\n- [ ] Fix packaging, export, and release-blocking issues."
+    }
+  ]
+}
+```
+
+### Under `epic-ci-docs`
+
+```json
+{
+  "sharedParentRef": "epic-ci-docs",
+  "items": [
+    {
+      "ref": "feature-ci-release",
+      "title": "GitHub Actions CI and npm release automation",
+      "type": "feature",
+      "priority": "critical",
+      "body": "## Goal\nImplement pull-request CI and npm-library release automation.\n\n## Todo\n- [ ] Add CI workflow for validation.\n- [ ] Add release workflow for npm publish.\n- [ ] Add release-management support files and docs."
+    },
+    {
+      "ref": "feature-dev-hooks",
+      "title": "Local quality gates with Husky and lint-staged",
+      "type": "feature",
+      "priority": "high",
+      "body": "## Goal\nImplement contributor hooks for formatting, linting, svelte-check, and local validation.\n\n## Todo\n- [ ] Configure pre-commit staged-file hooks.\n- [ ] Configure pre-push validation hooks.\n- [ ] Add format and automation-aligned scripts."
+    },
+    {
+      "ref": "feature-vitepress-docs",
+      "title": "VitePress documentation site and deployment",
+      "type": "feature",
+      "priority": "critical",
+      "body": "## Goal\nCreate a VitePress docs site and automate its build and deployment.\n\n## Todo\n- [ ] Scaffold the VitePress site.\n- [ ] Author the documentation content.\n- [ ] Add docs build and deployment automation."
     }
   ]
 }
@@ -611,6 +662,99 @@ Fill this in as beans are created.
 }
 ```
 
+### Under `feature-ci-release`
+
+```json
+{
+  "sharedParentRef": "feature-ci-release",
+  "items": [
+    {
+      "ref": "task-030",
+      "title": "Add pull-request and mainline CI workflow",
+      "type": "task",
+      "priority": "critical",
+      "body": "## Todo\n- [ ] Create `.github/workflows/ci.yml`.\n- [ ] Run install plus `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build` in CI.\n- [ ] Add package-quality verification through the existing package scripts.\n- [ ] Ensure the workflow runs on pull requests and protected branches."
+    },
+    {
+      "ref": "task-031",
+      "title": "Add npm publish and release workflow",
+      "type": "task",
+      "priority": "critical",
+      "body": "## Todo\n- [ ] Create `.github/workflows/release.yml` for npm-library publishing.\n- [ ] Define the publish trigger and versioning flow for releases.\n- [ ] Configure provenance-friendly publish settings and secret or trusted-publisher requirements.\n- [ ] Ensure release automation does not publish when validation fails."
+    },
+    {
+      "ref": "task-032",
+      "title": "Add release management support files and docs",
+      "type": "task",
+      "priority": "high",
+      "body": "## Todo\n- [ ] Add `.changeset/` or the chosen release-management configuration.\n- [ ] Update package publish metadata as needed for npm delivery.\n- [ ] Document the release flow for maintainers.\n- [ ] Validate that a dry-run release path is deterministic."
+    }
+  ]
+}
+```
+
+### Under `feature-dev-hooks`
+
+```json
+{
+  "sharedParentRef": "feature-dev-hooks",
+  "items": [
+    {
+      "ref": "task-033",
+      "title": "Configure pre-commit staged-file hooks",
+      "type": "task",
+      "priority": "high",
+      "body": "## Todo\n- [ ] Configure `lint-staged` patterns for staged file validation.\n- [ ] Add `.husky/pre-commit`.\n- [ ] Run Biome format/check and ESLint in the staged-file flow.\n- [ ] Keep pre-commit feedback fast enough for normal contributor use."
+    },
+    {
+      "ref": "task-034",
+      "title": "Configure pre-push validation hooks",
+      "type": "task",
+      "priority": "high",
+      "body": "## Todo\n- [ ] Add `.husky/pre-push`.\n- [ ] Run `svelte-check` before push.\n- [ ] Run the appropriate local test command before push.\n- [ ] Document the intended split between pre-commit, pre-push, and CI checks."
+    },
+    {
+      "ref": "task-035",
+      "title": "Add format and automation-aligned scripts",
+      "type": "task",
+      "priority": "high",
+      "body": "## Todo\n- [ ] Add `format` and `format:check` scripts to `package.json`.\n- [ ] Align hook commands with package-manager scripts so local and CI behavior match.\n- [ ] Add or refine Biome configuration if needed for formatting and checks.\n- [ ] Verify hooks and scripts do not conflict with ESLint or Svelte tooling."
+    }
+  ]
+}
+```
+
+### Under `feature-vitepress-docs`
+
+```json
+{
+  "sharedParentRef": "feature-vitepress-docs",
+  "items": [
+    {
+      "ref": "task-036",
+      "title": "Scaffold the VitePress site",
+      "type": "task",
+      "priority": "critical",
+      "body": "## Todo\n- [ ] Add `docs/.vitepress/config.ts`.\n- [ ] Create the VitePress site structure under `docs/`.\n- [ ] Configure navigation, sidebar, and site metadata.\n- [ ] Add a docs landing page and primary guide entry points."
+    },
+    {
+      "ref": "task-037",
+      "title": "Author VitePress documentation content",
+      "type": "task",
+      "priority": "high",
+      "body": "## Todo\n- [ ] Document installation and package consumption as an npm library.\n- [ ] Document `defineStore`, option stores, and setup stores.\n- [ ] Document SSR-safe usage, plugins, persistence, history, sync, and async orchestration.\n- [ ] Add migration, testing, and troubleshooting guides."
+    },
+    {
+      "ref": "task-038",
+      "title": "Add docs build and deployment automation",
+      "type": "task",
+      "priority": "high",
+      "body": "## Todo\n- [ ] Add a docs workflow under `.github/workflows/docs.yml`.\n- [ ] Integrate VitePress build validation into CI.\n- [ ] Configure deployment for the generated static docs site.\n- [ ] Verify docs deployment does not drift from the library release flow."
+    }
+  ]
+}
+```
+
 ## Batch 5 — Blocking relationships to apply after creation
 
 Use the real bean IDs from the mapping sheet.
@@ -644,7 +788,16 @@ Use the real bean IDs from the mapping sheet.
   { "ref": "task-026", "blockedByRefs": ["task-024"] },
   { "ref": "task-027", "blockedByRefs": ["task-024", "task-025"] },
   { "ref": "task-028", "blockedByRefs": ["task-027"] },
-  { "ref": "task-029", "blockedByRefs": ["task-025", "task-026", "task-027", "task-028"] }
+  { "ref": "task-029", "blockedByRefs": ["task-025", "task-026", "task-027", "task-028"] },
+  { "ref": "task-030", "blockedByRefs": ["task-005"] },
+  { "ref": "task-031", "blockedByRefs": ["task-030"] },
+  { "ref": "task-032", "blockedByRefs": ["task-031"] },
+  { "ref": "task-033", "blockedByRefs": ["task-030"] },
+  { "ref": "task-034", "blockedByRefs": ["task-033"] },
+  { "ref": "task-035", "blockedByRefs": ["task-033", "task-034"] },
+  { "ref": "task-036", "blockedByRefs": ["task-027"] },
+  { "ref": "task-037", "blockedByRefs": ["task-036"] },
+  { "ref": "task-038", "blockedByRefs": ["task-036", "task-037"] }
 ]
 ```
 
