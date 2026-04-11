@@ -9,6 +9,7 @@ history, sync, and async orchestration.
   <img src="./stately.svg" alt="Stately logo" width="220" />
 </p>
 <!-- markdownlint-enable MD033 -->
+
 ## Read the docs
 
 The full documentation lives at [`stately.self.agency`](https://stately.self.agency/).
