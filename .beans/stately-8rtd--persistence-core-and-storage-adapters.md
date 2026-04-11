@@ -1,11 +1,11 @@
 ---
 # stately-8rtd
 title: Persistence core and storage adapters
-status: todo
+status: in-progress
 type: feature
 priority: critical
 created_at: 2026-04-11T00:12:29Z
-updated_at: 2026-04-11T00:12:29Z
+updated_at: 2026-04-11T04:01:18Z
 parent: stately-ruuz
 ---
 
@@ -15,6 +15,6 @@ Implement persistence plugin core, storage adapters, and optional compression.
 
 ## Todo
 
-- [ ] Implement persistence plugin core.
+- [x] Implement persistence plugin core.
 - [ ] Implement local, session, memory, and IndexedDB adapters.
 - [ ] Add optional LZ compression support.
