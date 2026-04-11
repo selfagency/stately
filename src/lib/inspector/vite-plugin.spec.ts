@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID, VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX } from './virtual.js';
-import { createStatelyInspectorVitePlugin } from './vite-plugin.js';
+import { statelyVitePlugin } from './vite-plugin.js';
 
-describe('createStatelyInspectorVitePlugin', () => {
+describe('statelyVitePlugin', () => {
 	it('resolves virtual modules and injects the inspector loader into Vite client code', async () => {
-		const plugin = createStatelyInspectorVitePlugin();
+		const plugin = statelyVitePlugin();
 		const resolveId = plugin.resolveId as (id: string) => Promise<string | undefined> | string | undefined;
 		const load = plugin.load as (id: string) => Promise<string | undefined> | string | undefined;
 		const transform = plugin.transform as (
@@ -38,7 +38,7 @@ describe('createStatelyInspectorVitePlugin', () => {
 	});
 
 	it('stays inert for SSR transforms and disabled mode', async () => {
-		const enabledPlugin = createStatelyInspectorVitePlugin();
+		const enabledPlugin = statelyVitePlugin();
 		const enabledTransform = enabledPlugin.transform as (
 			code: string,
 			id: string,
@@ -50,7 +50,7 @@ describe('createStatelyInspectorVitePlugin', () => {
 			})
 		).toBeFalsy();
 
-		const disabledPlugin = createStatelyInspectorVitePlugin({ enabled: false });
+		const disabledPlugin = statelyVitePlugin({ enabled: false });
 		const disabledTransform = disabledPlugin.transform as (
 			code: string,
 			id: string,

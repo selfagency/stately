@@ -11,10 +11,10 @@ Use the Vite subpath export in development:
 ```ts
 import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { createStatelyInspectorVitePlugin } from '@selfagency/stately/inspector/vite';
+import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
 
 export default defineConfig({
-	plugins: [sveltekit(), createStatelyInspectorVitePlugin()]
+	plugins: [sveltekit(), statelyVitePlugin()]
 });
 ```
 

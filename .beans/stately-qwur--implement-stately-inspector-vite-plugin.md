@@ -29,6 +29,9 @@ pr: 10
 - [x] Add failing demo-build inspector coverage
 - [x] Make the showcase build include both state functionality and the inspector
 - [x] Run targeted tests plus build validation and update PR #10
+- [x] Rename the public Vite helper to `statelyVitePlugin()`
+- [x] Turn the inspector into a tab-opened drawer that uses the Stately logo
+- [x] Route Stately warnings into drawer-local notices instead of console warnings
 
 ## Summary of Changes
 
@@ -40,5 +43,8 @@ pr: 10
 - Added public `./inspector` and `./inspector/vite` package exports, local dev dogfooding in `vite.config.ts`, and dedicated guide/reference documentation.
 - Added showcase coverage proving the built demo includes the inspector and that inspector state stays in sync with the showcase store.
 - Wired the showcase page to install the inspector hook before client-side store creation and render the drawer after mount so production preview builds support e2e testing.
-- Verified the updated demo flow with `pnpm run check`, targeted browser tests for the showcase and inspector, and `pnpm run build`.
+- Renamed the public Vite helper to `statelyVitePlugin()` across code, tests, and docs.
+- Redesigned `InspectorDrawer.svelte` into a real toggleable drawer with a Stately logo tab instead of an always-on panel.
+- Routed Stately persistence warnings into inspector notices rendered inside the drawer, keeping alerts local to the inspector UI.
+- Verified the updated drawer flow with `pnpm run check`, targeted browser tests for the showcase and inspector, the renamed Vite plugin spec, and `pnpm run build`.
 - Opened PR #10: https://github.com/selfagency/stately/pull/10

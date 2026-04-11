@@ -8,9 +8,12 @@ describe('showcase page', () => {
 		render(ShowcasePage);
 
 		await expect.element(page.getByRole('heading', { level: 1 })).toHaveTextContent('Stately showcase');
+		await expect.element(page.getByText('Open Stately')).toBeInTheDocument();
+		await page.getByText('Open Stately').click();
 		await expect.element(page.getByRole('heading', { level: 2, name: 'Stately inspector' })).toBeInTheDocument();
 		await expect.element(page.getByRole('button', { name: 'Select store showcase-counter' })).toBeInTheDocument();
 		await expect.element(page.getByText(/"count":\s*0/)).toBeInTheDocument();
+		await page.getByText('Open Stately').click();
 
 		await page.getByRole('button', { name: 'Increment tab A' }).click();
 		await expect.element(page.getByText('Tab A count: 1')).toBeInTheDocument();

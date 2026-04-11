@@ -19,7 +19,7 @@ function getInspectorRuntimePath(): string {
 	return normalizePath(path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'runtime'));
 }
 
-export function createStatelyInspectorVitePlugin(options: StatelyInspectorVitePluginOptions = {}): Plugin {
+export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {}): Plugin {
 	const runtimePath = getInspectorRuntimePath();
 	const enabled = options.enabled ?? true;
 

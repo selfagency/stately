@@ -3,6 +3,14 @@ import type { DevtoolsTimelineEntry } from '../runtime/devtools-timeline.svelte.
 
 export const statelyInspectorAdapterKey = Symbol.for('stately.inspector.adapter');
 
+export type StatelyInspectorNoticeLevel = 'warning' | 'alert' | 'dialog';
+
+export interface StatelyInspectorNotice {
+	message: string;
+	level: StatelyInspectorNoticeLevel;
+	timestamp: number;
+}
+
 export interface StatelyInspectorHistorySnapshot {
 	entries: Array<{ snapshot: unknown; timestamp: number }>;
 	currentIndex: number;
@@ -44,6 +52,9 @@ export interface StatelyInspectorHook {
 	registerStore(adapter: StatelyInspectorStoreAdapter): () => void;
 	register(store: InspectableStore, timeline: TimelineReader): () => void;
 	listStores(): StatelyInspectorStoreAdapter[];
+	listNotices(): StatelyInspectorNotice[];
+	notifyNotice(notice: StatelyInspectorNotice): void;
+	clearNotices(): void;
 	subscribe(callback: () => void): () => void;
 }
 

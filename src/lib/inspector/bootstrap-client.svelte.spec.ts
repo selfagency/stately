@@ -23,6 +23,8 @@ describe('bootstrap client', () => {
 
 		mountStatelyInspector();
 
+		await expect.element(page.getByText('Open Stately')).toBeInTheDocument();
+		await page.getByText('Open Stately').click();
 		await expect.element(page.getByRole('heading', { level: 2 })).toHaveTextContent('Stately inspector');
 		await expect.element(page.getByRole('button', { name: 'Select store bootstrap-counter' })).toBeInTheDocument();
 

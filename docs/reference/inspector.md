@@ -1,6 +1,6 @@
 # Inspector reference
 
-## `createStatelyInspectorVitePlugin(options?)`
+## `statelyVitePlugin(options?)`
 
 Creates the dev-only Vite plugin that injects the inspector loader into Vite's
 dev client.
@@ -8,7 +8,7 @@ dev client.
 Use it from `@selfagency/stately/inspector/vite`.
 
 ```ts
-import { createStatelyInspectorVitePlugin } from '@selfagency/stately/inspector/vite';
+import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
 ```
 
 ### Options

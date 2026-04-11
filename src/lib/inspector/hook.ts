@@ -1,5 +1,11 @@
 import { createStatelyInspectorStoreAdapter } from './store-adapter.svelte.js';
-import type { InspectableStore, StatelyInspectorHook, StatelyInspectorStoreAdapter, TimelineReader } from './types.js';
+import type {
+	InspectableStore,
+	StatelyInspectorHook,
+	StatelyInspectorNotice,
+	StatelyInspectorStoreAdapter,
+	TimelineReader
+} from './types.js';
 import { statelyInspectorAdapterKey } from './types.js';
 
 const statelyInspectorHookKey = Symbol.for('stately.inspector.hook');
@@ -12,6 +18,7 @@ function notify(listeners: Set<() => void>): void {
 
 export function createStatelyInspectorHook(): StatelyInspectorHook {
 	const stores = new Map<string, StatelyInspectorStoreAdapter>();
+	const notices: StatelyInspectorNotice[] = [];
 	const listeners = new Set<() => void>();
 
 	const hook: StatelyInspectorHook = {
@@ -44,6 +51,17 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 		},
 		listStores() {
 			return [...stores.values()];
+		},
+		listNotices() {
+			return [...notices];
+		},
+		notifyNotice(notice) {
+			notices.unshift(notice);
+			notify(listeners);
+		},
+		clearNotices() {
+			notices.length = 0;
+			notify(listeners);
 		},
 		subscribe(callback) {
 			listeners.add(callback);

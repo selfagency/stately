@@ -1,13 +1,20 @@
-import type { StatelyInspectorHook, StatelyInspectorStoreAdapter, StatelyInspectorStoreSnapshot } from './types.js';
+import type {
+	StatelyInspectorHook,
+	StatelyInspectorNotice,
+	StatelyInspectorStoreAdapter,
+	StatelyInspectorStoreSnapshot
+} from './types.js';
 
 function noop(): void {}
 
 export function createInspectorDrawerState(config: { hook: StatelyInspectorHook }) {
 	const state = $state<{
+		notices: StatelyInspectorNotice[];
 		stores: StatelyInspectorStoreAdapter[];
 		selectedStoreId: string | null;
 		snapshot: StatelyInspectorStoreSnapshot | null;
 	}>({
+		notices: config.hook.listNotices(),
 		stores: config.hook.listStores(),
 		selectedStoreId: config.hook.listStores()[0]?.id ?? null,
 		snapshot: config.hook.listStores()[0]?.read() ?? null
@@ -30,6 +37,7 @@ export function createInspectorDrawerState(config: { hook: StatelyInspectorHook 
 	};
 
 	const unsubscribeHook = config.hook.subscribe(() => {
+		state.notices = config.hook.listNotices();
 		state.stores = config.hook.listStores();
 		if (!state.stores.some((store) => store.id === state.selectedStoreId)) {
 			state.selectedStoreId = state.stores[0]?.id ?? null;
@@ -40,6 +48,9 @@ export function createInspectorDrawerState(config: { hook: StatelyInspectorHook 
 	syncSelection();
 
 	return {
+		get notices() {
+			return state.notices;
+		},
 		get stores() {
 			return state.stores;
 		},
@@ -65,6 +76,9 @@ export function createInspectorDrawerState(config: { hook: StatelyInspectorHook 
 			const didNavigate = selectedStore.goToHistory(index);
 			state.snapshot = selectedStore.read();
 			return didNavigate;
+		},
+		clearNotices() {
+			config.hook.clearNotices();
 		},
 		destroy() {
 			unsubscribeSelectedStore();

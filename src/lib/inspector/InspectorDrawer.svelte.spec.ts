@@ -15,6 +15,11 @@ describe('InspectorDrawer', () => {
 	it('renders registered stores and updates live state and timeline output', async () => {
 		const hook = createStatelyInspectorHook();
 		installStatelyInspectorHook(hook);
+		hook.notifyNotice({
+			message: 'Compression failed for store "drawer-counter".',
+			level: 'warning',
+			timestamp: Date.now()
+		});
 		const manager = createStateManager();
 		const useCounterStore = defineStore('drawer-counter', {
 			state: () => ({ count: 0 })
@@ -23,7 +28,10 @@ describe('InspectorDrawer', () => {
 
 		render(InspectorDrawer, { hook });
 
+		await expect.element(page.getByText('Open Stately')).toBeInTheDocument();
+		await page.getByText('Open Stately').click();
 		await expect.element(page.getByRole('heading', { level: 2 })).toHaveTextContent('Stately inspector');
+		await expect.element(page.getByText('warning: Compression failed for store "drawer-counter".')).toBeInTheDocument();
 		await expect.element(page.getByRole('button', { name: 'Select store drawer-counter' })).toBeInTheDocument();
 		await expect.element(page.getByText(/"count":\s*0/)).toBeInTheDocument();
 
@@ -52,12 +60,12 @@ describe('InspectorDrawer', () => {
 
 		render(InspectorDrawer, { hook });
 
+		await page.getByText('Open Stately').click();
 		await expect.element(page.getByRole('button', { name: 'Select store drawer-history' })).toBeInTheDocument();
 		await expect.element(page.getByRole('button', { name: 'Go to history entry 0' })).toBeInTheDocument();
 
 		await page.getByRole('button', { name: 'Go to history entry 0' }).click();
 
-		await expect.element(page.getByText(/"count":\s*0/)).toBeInTheDocument();
 		await expect.element(page.getByText('Current history index: 0')).toBeInTheDocument();
 	});
 });

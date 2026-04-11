@@ -1,4 +1,5 @@
 import type { PersistenceAdapter } from '../types.js';
+import { reportStatelyInspectorNotice } from '../../inspector/notice.js';
 
 interface StorageLike {
 	getItem(key: string): string | null;
@@ -39,7 +40,7 @@ export function createSessionStorageAdapter(storage?: StorageLike): PersistenceA
 				s.setItem(key, value);
 			} catch (error) {
 				if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-					console.warn(`[stately] sessionStorage quota exceeded for key "${key}".`);
+					reportStatelyInspectorNotice(`sessionStorage quota exceeded for key "${key}".`);
 					return;
 				}
 				throw error;

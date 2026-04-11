@@ -2,12 +2,12 @@ import { codecovVitePlugin } from '@codecov/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
-import { createStatelyInspectorVitePlugin } from './src/lib/inspector/vite-plugin.js';
+import { statelyVitePlugin } from './src/lib/inspector/vite-plugin.js';
 
 export default defineConfig({
 	plugins: [
 		sveltekit(),
-		!process.env.VITEST && createStatelyInspectorVitePlugin(),
+		!process.env.VITEST && statelyVitePlugin(),
 		codecovVitePlugin({
 			enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
 			bundleName: '@selfagency/stately',
