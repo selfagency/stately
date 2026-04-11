@@ -1,12 +1,13 @@
 ---
 # stately-a7ci
-title: CI/CD, contributor hooks, and VitePress documentation
-status: todo
+title: "CI/CD, contributor hooks, and VitePress documentation"
+status: in-progress
 type: epic
 priority: critical
 created_at: 2026-04-11T00:35:00Z
-updated_at: 2026-04-11T00:35:00Z
+updated_at: 2026-04-11T14:37:26Z
 parent: stately-pm7k
+branch: feat/a7ci-ci-hooks-docs
 ---
 
 ## Goal
