@@ -37,8 +37,8 @@ describe('createSetupStore', () => {
 		expect(counter.label).toBe('Updated');
 	});
 
-	it('forwards accessor properties with both getter and setter to the shell store', () => {
-		let _value = 5;
+	it('supports writable accessor properties in setup stores', () => {
+		let value = 5;
 		const store = createSetupStore('accessor-store', () => {
 			return Object.defineProperties(
 				{},
@@ -47,10 +47,10 @@ describe('createSetupStore', () => {
 						enumerable: true,
 						configurable: true,
 						get() {
-							return _value;
+							return value;
 						},
-						set(v: number) {
-							_value = v * 2;
+						set(nextValue: number) {
+							value = nextValue;
 						}
 					}
 				}
@@ -58,9 +58,38 @@ describe('createSetupStore', () => {
 		});
 
 		expect(store.value).toBe(5);
-		store.value = 3;
-		// setter fires: _value = 3 * 2 = 6
-		expect(_value).toBe(6);
-		expect(store.value).toBe(6);
+		store.value = 9;
+		expect(store.value).toBe(9);
+		expect(value).toBe(5);
+	});
+
+	it('supports class-based setup stores with prototype getters and actions', () => {
+		type CounterStoreShape = Record<string, unknown> & {
+			count: number;
+			readonly doubleCount: number;
+			increment(): void;
+		};
+
+		class CounterStore {
+			count = 0;
+
+			get doubleCount() {
+				return this.count * 2;
+			}
+
+			increment() {
+				this.count += 1;
+			}
+		}
+
+		const counter = createSetupStore('class-counter', () => new CounterStore() as CounterStoreShape);
+
+		expect(counter.count).toBe(0);
+		expect(counter.doubleCount).toBe(0);
+
+		counter.increment();
+
+		expect(counter.count).toBe(1);
+		expect(counter.doubleCount).toBe(2);
 	});
 });

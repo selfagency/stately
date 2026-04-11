@@ -98,4 +98,59 @@ describe('defineStore', () => {
 			})
 		]);
 	});
+
+	it('supports setup stores that expose writable accessor properties', () => {
+		const manager = createStateManager();
+		const usePreferencesStore = defineStore('setup-accessor-contract', {
+			setup: () => {
+				let theme: 'light' | 'dark' = 'light';
+
+				return {
+					get theme() {
+						return theme;
+					},
+					set theme(value: 'light' | 'dark') {
+						theme = value;
+					}
+				};
+			}
+		});
+
+		const store = usePreferencesStore(manager);
+
+		expect(store.theme).toBe('light');
+		store.theme = 'dark';
+		expect(store.theme).toBe('dark');
+	});
+
+	it('supports class-based setup store members defined on prototypes', () => {
+		type CartStoreShape = Record<string, unknown> & {
+			items: number;
+			readonly summary: string;
+			addOne(): void;
+		};
+
+		class CartStore {
+			items = 0;
+
+			get summary() {
+				return `${this.items} items`;
+			}
+
+			addOne() {
+				this.items += 1;
+			}
+		}
+
+		const manager = createStateManager();
+		const useCartStore = defineStore('setup-class-contract', {
+			setup: () => new CartStore() as CartStoreShape
+		});
+
+		const store = useCartStore(manager);
+		store.addOne();
+
+		expect(store.items).toBe(1);
+		expect(store.summary).toBe('1 items');
+	});
 });

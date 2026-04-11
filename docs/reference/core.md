@@ -29,29 +29,44 @@ export const useCounterStore = defineStore('counter', {
 });
 ```
 
+If your state includes `Map`, `Set`, `Date`, or URL-like primitives, prefer
+Svelte reactive built-ins (`SvelteMap`, `SvelteSet`, `SvelteDate`, `SvelteURL`)
+to keep updates predictable.
+
 ```ts
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('preferences', {
-	setup: () => {
-		let theme = $state<'light' | 'dark'>('light');
-		let compact = $state(false);
+	setup: () => ({
+		theme: 'light' as 'light' | 'dark',
+		compact: false,
+		toggleTheme() {
+			this.theme = this.theme === 'light' ? 'dark' : 'light';
+		},
+		setCompact(value: boolean) {
+			this.compact = value;
+		}
+	})
+});
+```
 
-		return {
-			get theme() {
-				return theme;
-			},
-			get compact() {
-				return compact;
-			},
-			toggleTheme() {
-				theme = theme === 'light' ? 'dark' : 'light';
-			},
-			setCompact(value: boolean) {
-				compact = value;
-			}
-		};
+Class-based setup stores are also supported:
+
+```ts
+class CounterStore {
+	count = 0;
+
+	get doubleCount() {
+		return this.count * 2;
 	}
+
+	increment() {
+		this.count += 1;
+	}
+}
+
+const useCounterStore = defineStore('counter', {
+	setup: () => new CounterStore()
 });
 ```
 
@@ -135,6 +150,17 @@ Every store instance exposes the same shell helpers:
 - `$onAction(...)` for action hooks
 - `$dispose()` for teardown
 - `subscribe(...)` / `set(...)` for Svelte store interop
+
+`$subscribe()` callback signature:
+
+```ts
+store.$subscribe((mutation, state) => {
+	// mutation.type => 'direct' | 'patch-object' | 'patch-function'
+	// mutation.storeId => current store id
+	// mutation.payload => commit metadata and optional payload
+	// state => latest store state snapshot/proxy
+});
+```
 
 Practical rules:
 

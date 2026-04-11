@@ -1,4 +1,4 @@
-import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { createHistoryController, type HistoryController } from './history-controller.svelte.js';
 import { createTimeTravelController, type TimeTravelController } from './time-travel.svelte.js';
@@ -7,7 +7,7 @@ interface HistoryStore<State = Record<string, unknown>> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
-	$subscribe(callback: () => void): () => void;
+	$subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
 }
 
 interface HistoryOptions {

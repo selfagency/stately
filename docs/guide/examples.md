@@ -48,25 +48,16 @@ Setup stores are useful when you want to use Svelte runes directly.
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('example-setup-preferences', {
-	setup: () => {
-		let theme = $state<'light' | 'dark'>('light');
-		let compact = $state(false);
-
-		return {
-			get theme() {
-				return theme;
-			},
-			get compact() {
-				return compact;
-			},
-			toggleTheme() {
-				theme = theme === 'light' ? 'dark' : 'light';
-			},
-			setCompact(value: boolean) {
-				compact = value;
-			}
-		};
-	}
+	setup: () => ({
+		theme: 'light' as 'light' | 'dark',
+		compact: false,
+		toggleTheme() {
+			this.theme = this.theme === 'light' ? 'dark' : 'light';
+		},
+		setCompact(value: boolean) {
+			this.compact = value;
+		}
+	})
 });
 ```
 

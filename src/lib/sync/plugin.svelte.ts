@@ -1,5 +1,7 @@
 import type { StateManagerPlugin } from '../root/types.js';
 import { SvelteSet } from 'svelte/reactivity';
+import type { StoreMutationContext } from '../pinia-like/store-types.js';
+import { sanitizeValue } from '../internal/sanitize.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
@@ -9,7 +11,7 @@ interface SyncStore<State = Record<string, unknown>> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
-	$subscribe(callback: () => void): () => void;
+	$subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
 	$dispose(): void;
 }
 
@@ -54,6 +56,10 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			return;
 		}
 
+		if (typeof window === 'undefined' && !options.transports) {
+			return;
+		}
+
 		const transports =
 			options.transports ??
 			([
@@ -76,7 +82,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			for (const key of Object.keys(remote)) {
 				if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
 				if (knownStateKeys.has(key)) {
-					filtered[key] = remote[key];
+					filtered[key] = sanitizeValue(remote[key]);
 					hasKnownKey = true;
 				}
 			}

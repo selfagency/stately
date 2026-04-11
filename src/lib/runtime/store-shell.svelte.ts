@@ -32,6 +32,51 @@ function cloneState<State extends StoreState>(state: State): State {
 	return $state.snapshot(state) as State;
 }
 
+function isStateEqual(left: unknown, right: unknown): boolean {
+	if (Object.is(left, right)) {
+		return true;
+	}
+
+	if (typeof left !== typeof right) {
+		return false;
+	}
+
+	if (Array.isArray(left) && Array.isArray(right)) {
+		if (left.length !== right.length) {
+			return false;
+		}
+
+		for (let index = 0; index < left.length; index += 1) {
+			if (!isStateEqual(left[index], right[index])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	if (typeof left === 'object' && left !== null && typeof right === 'object' && right !== null) {
+		const leftKeys = Object.keys(left);
+		const rightKeys = Object.keys(right);
+		if (leftKeys.length !== rightKeys.length) {
+			return false;
+		}
+
+		for (const key of leftKeys) {
+			if (!Reflect.has(right, key)) {
+				return false;
+			}
+			if (!isStateEqual(Reflect.get(left, key), Reflect.get(right, key))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 function syncState<State extends StoreState>(target: State, next: Partial<State>): void {
 	for (const key of Object.keys(target)) {
 		if (!(key in next)) {
@@ -52,6 +97,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 }): StoreShellBuilder<Id, State, Store> {
 	let suppressDirectMutation = false;
 	let disposed = false;
+	let mutationCount = 0;
 	const initialState = cloneState(config.state);
 	const shellStore = config.store as Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
 	const timeline = createDevtoolsTimelineRecorder({
@@ -83,6 +129,8 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		if (disposed) {
 			return;
 		}
+
+		mutationCount += 1;
 
 		subscriptions.notifyMutation(type, payload);
 	};
@@ -129,11 +177,48 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 	};
 
 	const defineAction = (key: PropertyKey, action: AnyFunction): void => {
+		const actionWithMutationInference = function (this: unknown, ...args: unknown[]) {
+			const mutationCountBeforeAction = mutationCount;
+			const beforeState = cloneState(config.state);
+
+			const flushInferredDirectMutation = () => {
+				if (disposed || mutationCount !== mutationCountBeforeAction) {
+					return;
+				}
+
+				const afterState = cloneState(config.state);
+				if (!isStateEqual(beforeState, afterState)) {
+					mutationQueue.recordChange({ action: String(key), inferred: true });
+				}
+			};
+
+			try {
+				const result = action.apply(shellStore, args);
+				if (typeof (result as { then?: unknown })?.then === 'function') {
+					void (result as Promise<unknown>).then(
+						() => {
+							flushInferredDirectMutation();
+						},
+						() => {
+							flushInferredDirectMutation();
+						}
+					);
+				} else {
+					flushInferredDirectMutation();
+				}
+
+				return result;
+			} catch (error) {
+				flushInferredDirectMutation();
+				throw error;
+			}
+		};
+
 		Object.defineProperty(shellStore, key, {
 			enumerable: true,
 			configurable: true,
 			writable: true,
-			value: subscriptions.wrapAction(String(key), action.bind(shellStore))
+			value: subscriptions.wrapAction(String(key), actionWithMutationInference as AnyFunction)
 		});
 	};
 
