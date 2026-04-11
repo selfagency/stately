@@ -69,8 +69,8 @@ export function createHistoryPlugin(): StateManagerPlugin {
 		const timeTravel = createTimeTravelController({ history: controller });
 
 		return {
-			$history: controller
-			,$timeTravel: timeTravel
+			$history: controller,
+			$timeTravel: timeTravel
 		} satisfies Partial<StoreCustomProperties>;
 	};
 }

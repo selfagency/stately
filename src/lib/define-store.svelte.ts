@@ -1,4 +1,5 @@
 import { SvelteMap } from 'svelte/reactivity';
+import './pinia-like/plugin-options.js';
 import type {
 	DefineStoreOptionsBase,
 	StoreDefinition as PublicStoreDefinition,
@@ -18,6 +19,13 @@ type AnyFunction = (...args: any[]) => unknown;
 
 type GetterTree<State extends AnyRecord> = StoreGetters<Record<string, (state: State) => unknown>>;
 type ActionTree = StoreActions<Record<string, AnyFunction>>;
+
+export interface DefineSetupStoreOptions<Store extends AnyRecord> extends DefineStoreOptionsBase<
+	StoreState<Store>,
+	StoreInstance<string, StoreState<Store>>
+> {
+	setup: () => Store;
+}
 
 export interface DefineStoreOptions<
 	State extends AnyRecord,
@@ -57,6 +65,10 @@ function isOptionStoreDefinition(
 	return isRecord(value) && isFunction(Reflect.get(value, 'state'));
 }
 
+function isSetupStoreOptions(value: unknown): value is DefineSetupStoreOptions<AnyRecord> {
+	return isRecord(value) && isFunction(Reflect.get(value, 'setup'));
+}
+
 function assertValidStoreId(id: string): void {
 	if (!id.trim()) {
 		throw new Error('Invalid store definition: store id must be a non-empty string.');
@@ -68,8 +80,13 @@ function assertValidStoreDefinition(
 	definition: unknown
 ): asserts definition is
 	| DefineStoreOptions<AnyRecord, GetterTree<AnyRecord>, ActionTree>
-	| SetupStoreFactory<AnyRecord> {
-	if (!isOptionStoreDefinition(definition) && !isFunction(definition)) {
+	| SetupStoreFactory<AnyRecord>
+	| DefineSetupStoreOptions<AnyRecord> {
+	if (
+		!isOptionStoreDefinition(definition) &&
+		!isFunction(definition) &&
+		!isSetupStoreOptions(definition)
+	) {
 		throw new Error(
 			`Invalid store definition for "${id}". Expected an options object or setup function.`
 		);
@@ -111,13 +128,29 @@ export function defineStore<Id extends string, Store extends AnyRecord>(
 			: never;
 	}>
 >;
+export function defineStore<Id extends string, Store extends AnyRecord>(
+	id: Id,
+	setup: DefineSetupStoreOptions<Store>
+): PublicStoreDefinition<
+	Id,
+	StoreState<Store>,
+	StoreGetters<Record<never, never>>,
+	StoreActions<{
+		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction
+			? Store[K]
+			: never;
+	}>
+>;
 export function defineStore(id: string, definition: unknown) {
 	assertValidStoreId(id);
 	assertValidStoreDefinition(id, definition);
 
 	const storeDefinition: StoreDefinition = {
 		$id: id,
-		options: isOptionStoreDefinition(definition) ? definition : undefined
+		options:
+			isOptionStoreDefinition(definition) || isSetupStoreOptions(definition)
+				? definition
+				: undefined
 	};
 
 	registerDefinition(storeDefinition);
@@ -128,7 +161,7 @@ export function defineStore(id: string, definition: unknown) {
 				return createOptionStore(id, definition);
 			}
 
-			return createSetupStore(id, definition);
+			return createSetupStore(id, isSetupStoreOptions(definition) ? definition.setup : definition);
 		});
 
 	return Object.defineProperty(useStore, '$id', {

@@ -23,7 +23,9 @@ export interface PersistCompression {
 	decompress(value: string): string | undefined;
 }
 
-export interface PersistOptions<State = Record<string, unknown>> extends PersistDeserializeOptions<State> {
+export interface PersistOptions<
+	State = Record<string, unknown>
+> extends PersistDeserializeOptions<State> {
 	adapter: PersistenceAdapter;
 	key?: string;
 	compression?: PersistCompression;

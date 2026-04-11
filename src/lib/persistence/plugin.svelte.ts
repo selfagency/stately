@@ -43,7 +43,7 @@ function readPersistOptions(value: unknown): PersistOptions | undefined {
 		return undefined;
 	}
 
-	return persist as PersistOptions;
+	return persist as unknown as PersistOptions;
 }
 
 export function createPersistencePlugin(): StateManagerPlugin {
@@ -59,7 +59,8 @@ export function createPersistencePlugin(): StateManagerPlugin {
 
 		const key = persist.key ?? store.$id;
 		const serialize = persist.serialize ?? serializePersistedState;
-		const deserialize = persist.deserialize ?? ((raw: string) => deserializePersistedState(raw, persist));
+		const deserialize =
+			persist.deserialize ?? ((raw: string) => deserializePersistedState(raw, persist));
 		const compression = persist.compression;
 		let paused = false;
 		let rehydrating = false;

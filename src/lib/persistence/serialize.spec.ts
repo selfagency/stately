@@ -15,12 +15,17 @@ describe('persistence serialization', () => {
 			})
 		).toEqual({ version: 2, state: { count: 2 } });
 		expect(
-			deserializePersistedState<{ count: number }>(JSON.stringify({ version: 1, state: { count: 1 } }), {
-				version: 2,
-				migrate(state, fromVersion) {
-					return { count: state.count + fromVersion };
+			deserializePersistedState<{ count: number }>(
+				JSON.stringify({ version: 1, state: { count: 1 } }),
+				{
+					version: 2,
+					migrate(state, fromVersion) {
+						return {
+							count: (typeof state.count === 'number' ? state.count : 0) + fromVersion
+						};
+					}
 				}
-			})
+			)
 		).toEqual({ version: 2, state: { count: 2 } });
 		expect(
 			deserializePersistedState<{ count: number }>('not-json', {

@@ -58,4 +58,43 @@ describe('defineStore', () => {
 	it('rejects invalid option store definitions', () => {
 		expect(() => defineStore('invalid-store', {} as never)).toThrow(/invalid/i);
 	});
+
+	it('accepts persist and history options for option and setup stores', () => {
+		const observed: unknown[] = [];
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const manager = createStateManager().use(({ options }) => {
+			observed.push(options);
+		});
+
+		const optionDefinition = defineStore('plugin-option-counter', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1 },
+			history: { limit: 5 }
+		});
+		const setupDefinition = defineStore('plugin-setup-counter', {
+			setup: () => ({ count: 0 }),
+			persist: { adapter, version: 1 },
+			history: { limit: 5 }
+		});
+
+		optionDefinition(manager);
+		setupDefinition(manager);
+
+		expect(observed).toEqual([
+			expect.objectContaining({
+				persist: expect.objectContaining({ version: 1 }),
+				history: expect.objectContaining({ limit: 5 })
+			}),
+			expect.objectContaining({
+				persist: expect.objectContaining({ version: 1 }),
+				history: expect.objectContaining({ limit: 5 })
+			})
+		]);
+	});
 });

@@ -9,7 +9,9 @@ interface StorageLike {
 	readonly length: number;
 }
 
-export function createSessionStorageAdapter(storage: StorageLike = sessionStorage): PersistenceAdapter {
+export function createSessionStorageAdapter(
+	storage: StorageLike = sessionStorage
+): PersistenceAdapter {
 	return {
 		async getItem(key) {
 			return storage.getItem(key);
