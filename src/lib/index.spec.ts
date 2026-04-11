@@ -15,3 +15,4 @@ describe('public entrypoint', () => {
 
 		expect(stately).not.toHaveProperty('resetDefaultStateManager');
 	});
+});

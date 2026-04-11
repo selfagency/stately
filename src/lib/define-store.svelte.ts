@@ -119,17 +119,21 @@ function createOptionStore<
 	const state = $state(options.state());
 	const store = {} as State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions;
 
-	for (const key of Object.keys(state) as Array<keyof State>) {
+	const defineStateProperty = <K extends keyof State>(key: K): void => {
 		Object.defineProperty(store, key, {
 			enumerable: true,
 			configurable: false,
-			get() {
-				return state[key];
+			get(): State[K] {
+				return Reflect.get(state, key) as State[K];
 			},
-			set(value: State[keyof State]) {
-				state[key] = value;
+			set(value: State[K]) {
+				Reflect.set(state, key, value);
 			}
 		});
+	};
+
+	for (const key of Object.keys(state) as Array<keyof State>) {
+		defineStateProperty(key);
 	}
 
 	for (const [key, getter] of Object.entries(options.getters ?? {}) as Array<
@@ -171,7 +175,7 @@ function createSetupStore<Store extends AnyRecord, Id extends string>(
 
 	for (const [key, value] of Object.entries(store)) {
 		if (isFunction(value)) {
-			(store as Record<string, unknown>)[key] = value.bind(store);
+			Reflect.set(store, key, value.bind(store));
 		}
 	}
 
@@ -199,7 +203,7 @@ export function defineStore<Id extends string, Store extends AnyRecord>(
 	Id,
 	StoreState<Store>,
 	StoreGetters<Record<never, never>>,
-	StoreActions<Record<string, Extract<Store[keyof Store], AnyFunction>>>
+	StoreActions<{ [K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never }>
 >;
 export function defineStore(id: string, definition: unknown) {
 	assertValidStoreId(id);

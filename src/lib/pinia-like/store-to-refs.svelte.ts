@@ -24,7 +24,7 @@ export function storeToRefs<Store extends AnyRecord>(store: Store): StoreRefs<St
 			continue;
 		}
 
-		const value = source[String(key)];
+		const value = Reflect.get(source, key);
 		if (typeof value === 'function') {
 			continue;
 		}
@@ -32,7 +32,7 @@ export function storeToRefs<Store extends AnyRecord>(store: Store): StoreRefs<St
 		const descriptor = Object.getOwnPropertyDescriptor(store, key);
 		const ref: Partial<StoreRef<Store[typeof key]>> = {
 			get value() {
-				return source[String(key)] as Store[typeof key];
+				return Reflect.get(source, key) as Store[typeof key];
 			}
 		};
 
@@ -41,10 +41,10 @@ export function storeToRefs<Store extends AnyRecord>(store: Store): StoreRefs<St
 				enumerable: true,
 				configurable: false,
 				get() {
-					return source[String(key)] as Store[typeof key];
+					return Reflect.get(source, key) as Store[typeof key];
 				},
 				set(nextValue: Store[typeof key]) {
-					source[String(key)] = nextValue;
+					Reflect.set(source, key, nextValue);
 				}
 			});
 		}
