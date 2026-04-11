@@ -1,0 +1,38 @@
+.github/workflows/ci.yml
+  488fe9075bae0dc4 73
+vite.config.ts
+  872325f5abb5d0bf 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "982dc913409fd65cc52710d30272911bbc3a4511",
+  "prompts": {
+    "488fe9075bae0dc4": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775929320845",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "872325f5abb5d0bf": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775929492400",
+        "model": "default"
+      },
+      "human_author": null,
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
