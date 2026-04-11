@@ -7,7 +7,9 @@ describe('createAsyncPlugin', () => {
 	it('adds per-action async state and preserves action hook semantics', async () => {
 		let tick = 1000;
 		const events: string[] = [];
-		const manager = createStateManager().use(createAsyncPlugin({ createTimestamp: () => ++tick }));
+		const manager = createStateManager().use(
+			createAsyncPlugin({ createTimestamp: () => ++tick, policies: { load: 'drop' } })
+		);
 		const useStore = defineStore('async-plugin-store', {
 			state: () => ({ count: 0 }),
 			actions: {
@@ -33,12 +35,15 @@ describe('createAsyncPlugin', () => {
 		await expect(pending).resolves.toBe(2);
 		expect(store.$async.load.isLoading).toBe(false);
 		expect(store.$async.load.lastSuccessAt).toBe(1001);
+		await expect(Promise.all([store.load(3), store.load(4)])).resolves.toEqual([5, undefined]);
 
 		await expect(store.fail()).rejects.toThrow('nope');
-		expect(store.$async.fail.lastFailureAt).toBe(1002);
+		expect(store.$async.fail.lastFailureAt).toBe(1003);
 		expect(events).toEqual([
 			'start:load',
 			'after:2',
+			'start:load',
+			'after:5',
 			'start:fail',
 			'error:Error: nope'
 		]);

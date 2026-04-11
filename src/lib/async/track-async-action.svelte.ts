@@ -1,3 +1,5 @@
+import { createConcurrencyController, type ConcurrencyMode } from './concurrency.js';
+
 export interface AsyncActionState {
 	isLoading: boolean;
 	error: unknown;
@@ -8,10 +10,11 @@ export interface AsyncActionState {
 
 export interface TrackAsyncActionOptions {
 	createTimestamp?: () => number;
+	policy?: ConcurrencyMode;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function trackAsyncAction<Action extends (...args: any[]) => unknown>(
+export function trackAsyncAction<Action extends (...args: any[]) => Promise<unknown>>(
 	action: Action,
 	options: TrackAsyncActionOptions = {}
 ) {
@@ -23,6 +26,31 @@ export function trackAsyncAction<Action extends (...args: any[]) => unknown>(
 	});
 	let activeController: AbortController | undefined;
 	const createTimestamp = options.createTimestamp ?? (() => Date.now());
+	const concurrency = createConcurrencyController(
+		options.policy ?? 'parallel',
+		(...args: Parameters<Action>) => {
+			activeController = new AbortController();
+			metadata.isLoading = true;
+			metadata.error = undefined;
+
+			return action(...args)
+				.then((value) => {
+					metadata.isLoading = false;
+					metadata.lastSuccessAt = createTimestamp();
+					return value;
+				})
+				.catch((error) => {
+					metadata.isLoading = false;
+					metadata.error = error;
+					metadata.lastFailureAt = createTimestamp();
+					throw error;
+				})
+				.finally(() => {
+					activeController = undefined;
+				});
+		},
+		{ cancelActive: () => activeController?.abort() }
+	);
 
 	const state: AsyncActionState = {
 		get isLoading() {
@@ -42,32 +70,7 @@ export function trackAsyncAction<Action extends (...args: any[]) => unknown>(
 		}
 	};
 
-	const run = ((...args: Parameters<Action>) => {
-		const result = action(...args);
-		if (!(result instanceof Promise)) {
-			return result;
-		}
-
-		activeController = new AbortController();
-		metadata.isLoading = true;
-		metadata.error = undefined;
-
-		return result
-			.then((value) => {
-				metadata.isLoading = false;
-				metadata.lastSuccessAt = createTimestamp();
-				return value;
-			})
-			.catch((error) => {
-				metadata.isLoading = false;
-				metadata.error = error;
-				metadata.lastFailureAt = createTimestamp();
-				throw error;
-			})
-			.finally(() => {
-				activeController = undefined;
-			});
-	}) as Action;
+	const run = ((...args: Parameters<Action>) => concurrency.run(...args)) as Action;
 
 	return {
 		run,

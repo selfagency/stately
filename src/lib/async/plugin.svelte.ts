@@ -1,5 +1,6 @@
 import type { StateManagerPlugin } from '../root/types.js';
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { ConcurrencyMode } from './concurrency.js';
 import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
 
 export interface AsyncActionRegistry {
@@ -8,6 +9,7 @@ export interface AsyncActionRegistry {
 
 export interface AsyncPluginOptions extends TrackAsyncActionOptions {
 	include?: string[];
+	policies?: Record<string, ConcurrencyMode>;
 }
 
 declare module '../pinia-like/store-types.js' {
@@ -41,7 +43,10 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 				continue;
 			}
 
-			const tracked = trackAsyncAction(value.bind(store), options);
+			const tracked = trackAsyncAction(value.bind(store), {
+				createTimestamp: options.createTimestamp,
+				policy: options.policies?.[key] ?? options.policy
+			});
 			registry[key] = tracked.state;
 			store[key] = tracked.run;
 		}
