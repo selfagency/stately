@@ -1,4 +1,4 @@
-import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
 import type { PersistController, PersistOptions, PersistenceAdapter } from './types.js';
@@ -7,7 +7,7 @@ interface PersistableStore<State = Record<string, unknown>> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
-	$subscribe(callback: () => void): () => void;
+	$subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
 	$dispose(): void;
 }
 

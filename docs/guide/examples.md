@@ -42,28 +42,30 @@ export const useCounterStore = defineStore('example-option-counter', {
 
 ## Setup store preferences
 
-Setup stores are useful when you want to use Svelte runes directly.
+Setup stores are useful when you want to use Svelte runes directly to manage reactive state with explicit control over reads and writes.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('example-setup-preferences', {
 	setup: () => {
-		let theme = $state<'light' | 'dark'>('light');
-		let compact = $state(false);
+		const preferences = $state({
+			theme: 'light' as 'light' | 'dark',
+			compact: false
+		});
 
 		return {
 			get theme() {
-				return theme;
+				return preferences.theme;
 			},
 			get compact() {
-				return compact;
+				return preferences.compact;
 			},
 			toggleTheme() {
-				theme = theme === 'light' ? 'dark' : 'light';
+				preferences.theme = preferences.theme === 'light' ? 'dark' : 'light';
 			},
 			setCompact(value: boolean) {
-				compact = value;
+				preferences.compact = value;
 			}
 		};
 	}

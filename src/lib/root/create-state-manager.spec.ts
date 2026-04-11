@@ -58,4 +58,22 @@ describe('createStateManager', () => {
 			vi.stubGlobal('window', original);
 		}
 	});
+
+	it('preserves plugin getter descriptors when applying augmentations', () => {
+		const manager = createStateManager().use(() => {
+			let counter = 0;
+			return {
+				get reactiveValue() {
+					counter += 1;
+					return counter;
+				}
+			};
+		});
+
+		const definition: ExampleDefinition = { $id: 'descriptor-store' };
+		const store = manager.createStore(definition, () => ({}) as Record<string, unknown>) as Record<string, unknown>;
+
+		expect(Reflect.get(store, 'reactiveValue')).toBe(1);
+		expect(Reflect.get(store, 'reactiveValue')).toBe(2);
+	});
 });

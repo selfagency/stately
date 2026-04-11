@@ -4,6 +4,16 @@ function isObject(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
+function applyDescriptorAugmentation(target: object, source: object): void {
+	const descriptors = Object.getOwnPropertyDescriptors(source);
+	for (const key of Reflect.ownKeys(descriptors)) {
+		const descriptor = descriptors[key as keyof typeof descriptors];
+		if (descriptor) {
+			Object.defineProperty(target, key, descriptor);
+		}
+	}
+}
+
 export function createStateManager(): StateManager {
 	const plugins: StateManagerPlugin[] = [];
 	const definitions = new Map<string, StoreDefinition>();
@@ -61,7 +71,7 @@ export function createStateManager(): StateManager {
 				};
 				const augmentation = plugin(context);
 				if (isObject(store) && isObject(augmentation)) {
-					Object.assign(store, augmentation);
+					applyDescriptorAugmentation(store, augmentation);
 				}
 			}
 

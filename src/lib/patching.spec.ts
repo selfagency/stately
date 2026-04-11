@@ -40,4 +40,27 @@ describe('patching flows', () => {
 			{ type: 'direct', mutationCount: 1 }
 		]);
 	});
+
+	it('notifies subscribers for deep direct mutations from actions', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('patching-deep-direct', {
+			state: () => ({ items: [] as string[] }),
+			actions: {
+				addItem(value: string) {
+					this.items.push(value);
+				}
+			}
+		});
+		const store = useStore(manager);
+		const mutationTypes: string[] = [];
+
+		store.$subscribe((mutation) => {
+			mutationTypes.push(mutation.type);
+		});
+
+		store.addItem('first');
+
+		expect(store.items).toEqual(['first']);
+		expect(mutationTypes).toEqual(['direct']);
+	});
 });
