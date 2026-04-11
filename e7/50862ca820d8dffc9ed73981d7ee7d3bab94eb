@@ -1,0 +1,23 @@
+.gitignore
+  ccfe8fe81efb53b5 250
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "e750862ca820d8dffc9ed73981d7ee7d3bab94eb",
+  "prompts": {
+    "ccfe8fe81efb53b5": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775920484246",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
