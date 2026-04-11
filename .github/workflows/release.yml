@@ -217,6 +217,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build package
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: pnpm run build
 
       - name: Pack npm tarball

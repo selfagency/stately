@@ -1,5 +1,7 @@
 # Stately
 
+[![CI](https://github.com/selfagency/stately/actions/workflows/ci.yml/badge.svg)](https://github.com/selfagency/stately/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/selfagency/stately/graph/badge.svg?token=9F7ZcOIrh1)](https://codecov.io/gh/selfagency/stately)
+
 Stately is a Pinia-inspired reactive state library for Svelte 5 runes and SvelteKit. It gives you a familiar
 `defineStore()` API, direct mutation ergonomics, request-scoped managers for SSR, and opt-in plugins for persistence,
 history, sync, and async orchestration.

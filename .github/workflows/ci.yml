@@ -68,11 +68,22 @@ jobs:
       - name: Run lint checks
         run: pnpm run lint
 
-      - name: Run unit and browser tests
-        run: pnpm run test
-
       - name: Build package and verify publish output
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: pnpm run build
 
-      - name: Build VitePress documentation site
-        run: pnpm run docs:build
+      - name: Run unit and browser tests
+        run: pnpm run test --coverage --reporter=junit --outputFile=test-report.junit.xml
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage reports to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

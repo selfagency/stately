@@ -1,9 +1,17 @@
+import { codecovVitePlugin } from '@codecov/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [
+		sveltekit(),
+		codecovVitePlugin({
+			enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+			bundleName: '@selfagency/stately',
+			uploadToken: process.env.CODECOV_TOKEN
+		})
+	],
 	test: {
 		expect: { requireAssertions: true },
 		coverage: {
