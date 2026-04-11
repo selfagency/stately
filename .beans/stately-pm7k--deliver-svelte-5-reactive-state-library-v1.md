@@ -1,12 +1,11 @@
 ---
 # stately-pm7k
-title: 'Deliver Svelte 5 Reactive State Library v1'
-status: in-progress
+title: Deliver Svelte 5 Reactive State Library v1
+status: completed
 type: milestone
 priority: critical
 created_at: 2026-04-11T00:11:45Z
-updated_at: 2026-04-11T00:16:22Z
-branch: chore/pm7k-reactive-state-library-beans
+updated_at: 2026-04-11T16:39:10Z
 ---
 
 ## Goal
