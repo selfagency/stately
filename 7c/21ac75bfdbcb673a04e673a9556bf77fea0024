@@ -1,0 +1,23 @@
+.github/workflows/ci.yml
+  488fe9075bae0dc4 73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "7c21ac75bfdbcb673a04e673a9556bf77fea0024",
+  "prompts": {
+    "488fe9075bae0dc4": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775929320845",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
