@@ -80,6 +80,17 @@ export function createStatelyInspectorStoreAdapter<State extends StoreState>(con
 				listeners.delete(callback);
 			};
 		},
+		goToHistory(index) {
+			if (!hasHistory(config.store)) {
+				return false;
+			}
+
+			const didNavigate = config.store.$timeTravel.goTo(index);
+			if (didNavigate) {
+				emit();
+			}
+			return didNavigate;
+		},
 		dispose() {
 			unsubscribeMutations();
 			unsubscribeActions();

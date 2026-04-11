@@ -21,6 +21,7 @@ export interface StatelyInspectorStoreAdapter<State = Record<string, unknown>> {
 	readonly id: string;
 	read(): StatelyInspectorStoreSnapshot<State>;
 	subscribe(callback: () => void): () => void;
+	goToHistory(index: number): boolean;
 	dispose(): void;
 }
 
