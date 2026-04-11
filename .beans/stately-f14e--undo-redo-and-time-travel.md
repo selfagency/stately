@@ -10,8 +10,10 @@ parent: stately-ruuz
 ---
 
 ## Goal
+
 Implement history tracking, undo/redo, and timeline replay.
 
 ## Todo
+
 - [ ] Implement history controller.
 - [ ] Implement time-travel replay.

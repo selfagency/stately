@@ -1,6 +1,8 @@
 import type { StoreMutationContext } from '../pinia-like/store-types.js';
 
-export interface MutationCommit<TType extends StoreMutationContext['type'] = StoreMutationContext['type']> {
+export interface MutationCommit<
+	TType extends StoreMutationContext['type'] = StoreMutationContext['type']
+> {
 	id: number;
 	storeId: string;
 	type: TType;
@@ -10,13 +12,18 @@ export interface MutationCommit<TType extends StoreMutationContext['type'] = Sto
 
 export function createMutationQueue(config: {
 	storeId: string;
-	notify: (type: StoreMutationContext['type'], payload: { commit: MutationCommit; payload?: unknown }) => void;
+	notify: (
+		type: StoreMutationContext['type'],
+		payload: { commit: MutationCommit; payload?: unknown }
+	) => void;
 }) {
 	let nextCommitId = 1;
 	let activeCommit: MutationCommit<'patch-function'> | undefined;
 	let depth = 0;
 
-	const beginCommit = <TType extends StoreMutationContext['type']>(type: TType): MutationCommit<TType> => ({
+	const beginCommit = <TType extends StoreMutationContext['type']>(
+		type: TType
+	): MutationCommit<TType> => ({
 		id: nextCommitId++,
 		storeId: config.storeId,
 		type,

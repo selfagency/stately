@@ -1,45 +1,45 @@
 {
-  "version": 1,
-  "skills": {
-    "document-writer": {
-      "source": "onmax/nuxt-skills",
-      "sourceType": "github",
-      "computedHash": "7a2b9799ece651b94b288a6b7d799da7ed603f24384897a370c1bfc6e75d74bb"
-    },
-    "pnpm": {
-      "source": "onmax/nuxt-skills",
-      "sourceType": "github",
-      "computedHash": "0e72c2b2563556bc027cd025d0b3e11bf7147f362f4815ac9ad083ccbac55750"
-    },
-    "svelte-code-writer": {
-      "source": "sveltejs/ai-tools",
-      "sourceType": "github",
-      "computedHash": "c0e2cce9855f8e312cbb0a05aef164b4659c672d7723e4e598ffa6bc94890542"
-    },
-    "svelte-core-bestpractices": {
-      "source": "sveltejs/ai-tools",
-      "sourceType": "github",
-      "computedHash": "bec11e369679027edf9d4acbe6d9788f8da33dc14b48b874f231d3ba13705324"
-    },
-    "ts-library": {
-      "source": "onmax/nuxt-skills",
-      "sourceType": "github",
-      "computedHash": "4c33b682fad3e3323e4e8c71ee019f380699802030d147469f4564afe04fb867"
-    },
-    "vite": {
-      "source": "onmax/nuxt-skills",
-      "sourceType": "github",
-      "computedHash": "f6b076920b1a2d8300dd2a2a66962e40c35102231b74af7d336cf47b999ba4a3"
-    },
-    "vitest": {
-      "source": "onmax/nuxt-skills",
-      "sourceType": "github",
-      "computedHash": "04ed1b09da8ac778d693ad12fab49b1c48aadfe1758fe13eb4d6de3fdcbb22f4"
-    },
-    "writing-web-documentation": {
-      "source": "onmax/nuxt-skills",
-      "sourceType": "github",
-      "computedHash": "78d28a486868c980c3962f459ddd18e9444cad0d8941b88778ee47489059c099"
-    }
-  }
+	"version": 1,
+	"skills": {
+		"document-writer": {
+			"source": "onmax/nuxt-skills",
+			"sourceType": "github",
+			"computedHash": "7a2b9799ece651b94b288a6b7d799da7ed603f24384897a370c1bfc6e75d74bb"
+		},
+		"pnpm": {
+			"source": "onmax/nuxt-skills",
+			"sourceType": "github",
+			"computedHash": "0e72c2b2563556bc027cd025d0b3e11bf7147f362f4815ac9ad083ccbac55750"
+		},
+		"svelte-code-writer": {
+			"source": "sveltejs/ai-tools",
+			"sourceType": "github",
+			"computedHash": "c0e2cce9855f8e312cbb0a05aef164b4659c672d7723e4e598ffa6bc94890542"
+		},
+		"svelte-core-bestpractices": {
+			"source": "sveltejs/ai-tools",
+			"sourceType": "github",
+			"computedHash": "bec11e369679027edf9d4acbe6d9788f8da33dc14b48b874f231d3ba13705324"
+		},
+		"ts-library": {
+			"source": "onmax/nuxt-skills",
+			"sourceType": "github",
+			"computedHash": "4c33b682fad3e3323e4e8c71ee019f380699802030d147469f4564afe04fb867"
+		},
+		"vite": {
+			"source": "onmax/nuxt-skills",
+			"sourceType": "github",
+			"computedHash": "f6b076920b1a2d8300dd2a2a66962e40c35102231b74af7d336cf47b999ba4a3"
+		},
+		"vitest": {
+			"source": "onmax/nuxt-skills",
+			"sourceType": "github",
+			"computedHash": "04ed1b09da8ac778d693ad12fab49b1c48aadfe1758fe13eb4d6de3fdcbb22f4"
+		},
+		"writing-web-documentation": {
+			"source": "onmax/nuxt-skills",
+			"sourceType": "github",
+			"computedHash": "78d28a486868c980c3962f459ddd18e9444cad0d8941b88778ee47489059c099"
+		}
+	}
 }

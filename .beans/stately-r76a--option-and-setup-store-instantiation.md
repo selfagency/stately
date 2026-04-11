@@ -10,6 +10,7 @@ parent: stately-5ddl
 ---
 
 ## Goal
+
 Implement runtime instantiation for option stores and setup stores.
 
 ## Todo

@@ -10,6 +10,7 @@ parent: stately-5ddl
 ---
 
 ## Goal
+
 Implement store instance helpers and grouped commit batching.
 
 ## Todo

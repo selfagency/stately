@@ -10,9 +10,11 @@ parent: stately-uu8l
 ---
 
 ## Goal
+
 Implement async action tracking, concurrency policies, cancellation, and external event bridges.
 
 ## Todo
+
 - [ ] Add async plugin and tracked action wrapper.
 - [ ] Implement concurrency policy engine.
 - [ ] Add abort and stale-result protection.

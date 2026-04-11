@@ -10,9 +10,11 @@ parent: stately-pm7k
 ---
 
 ## Goal
+
 Validate the library with a showcase app, automated tests, documentation, examples, and final release checks.
 
 ## Todo
+
 - [ ] Build the interactive showcase page.
 - [ ] Add browser and unit test coverage.
 - [ ] Update README and packaged examples.

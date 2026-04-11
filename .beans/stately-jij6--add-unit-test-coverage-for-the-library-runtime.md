@@ -8,10 +8,11 @@ created_at: 2026-04-11T00:13:52Z
 updated_at: 2026-04-11T00:14:08Z
 parent: stately-2nan
 blocked_by:
-    - stately-0zqz
+  - stately-0zqz
 ---
 
 ## Todo
+
 - [ ] Add `define-store.spec.ts` and `patching.spec.ts`.
 - [ ] Add `history.spec.ts` and `persistence.spec.ts`.
 - [ ] Add `sync.spec.ts` and `async.spec.ts`.

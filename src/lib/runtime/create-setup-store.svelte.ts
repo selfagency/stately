@@ -1,4 +1,4 @@
-import { createStoreShell } from "./store-shell.svelte.js";
+import { createStoreShell } from './store-shell.svelte.js';
 
 type AnyRecord = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,39 +9,39 @@ type StoreFromSetup<Store extends AnyRecord, Id extends string> = Store & { read
 type SetupStoreFactory<Store extends AnyRecord> = () => Store;
 
 function isRecord(value: unknown): value is AnyRecord {
-  return typeof value === "object" && value !== null;
+	return typeof value === 'object' && value !== null;
 }
 
 export function createSetupStore<Store extends AnyRecord, Id extends string>(
-  id: Id,
-  setup: SetupStoreFactory<Store>,
+	id: Id,
+	setup: SetupStoreFactory<Store>
 ): StoreFromSetup<Store, Id> {
-  const result = setup();
+	const result = setup();
 
-  if (!isRecord(result)) {
-    throw new Error(
-      `Invalid setup store definition for "${id}". Setup stores must return an object.`,
-    );
-  }
+	if (!isRecord(result)) {
+		throw new Error(
+			`Invalid setup store definition for "${id}". Setup stores must return an object.`
+		);
+	}
 
-  const state = $state({} as Record<string, unknown>);
-  const store = {} as Store;
-  const shell = createStoreShell({ id, store, state });
+	const state = $state({} as Record<string, unknown>);
+	const store = {} as Store;
+	const shell = createStoreShell({ id, store, state });
 
-  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(result))) {
-    if ("value" in descriptor && typeof descriptor.value === "function") {
-      shell.defineAction(key, descriptor.value as AnyFunction);
-      continue;
-    }
+	for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(result))) {
+		if ('value' in descriptor && typeof descriptor.value === 'function') {
+			shell.defineAction(key, descriptor.value as AnyFunction);
+			continue;
+		}
 
-    if (descriptor.get && !descriptor.set) {
-      shell.defineGetter(key, () => descriptor.get?.call(shell.store));
-      continue;
-    }
+		if (descriptor.get && !descriptor.set) {
+			shell.defineGetter(key, () => descriptor.get?.call(shell.store));
+			continue;
+		}
 
-    Reflect.set(state, key, descriptor.value);
-    shell.defineStateProperty(key);
-  }
+		Reflect.set(state, key, descriptor.value);
+		shell.defineStateProperty(key);
+	}
 
-  return shell.store;
+	return shell.store;
 }

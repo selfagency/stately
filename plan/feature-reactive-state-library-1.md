@@ -308,11 +308,11 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `none`
 - **Maps to**: Implementation Phases 1–6
 - **Suggested `## Todo`**:
-	- [ ] Approve the implementation plan and bean hierarchy.
-	- [ ] Create all child epics, features, and tasks.
-	- [ ] Execute work in dependency order.
-	- [ ] Verify runtime, showcase, docs, and packaging are complete.
-	- [ ] Mark milestone completed only after `TASK-029` is complete.
+  - [ ] Approve the implementation plan and bean hierarchy.
+  - [ ] Create all child epics, features, and tasks.
+  - [ ] Execute work in dependency order.
+  - [ ] Verify runtime, showcase, docs, and packaging are complete.
+  - [ ] Mark milestone completed only after `TASK-029` is complete.
 
 ### 9.4 Epics, Features, and Tasks
 
@@ -340,10 +340,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `none`
 - **Maps to**: `TASK-001`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/root/create-state-manager.ts` with the root manager interface and lifecycle skeleton.
-	- [ ] Create `src/lib/root/state-manager-context.ts` with Svelte context helpers for request-scoped access.
-	- [ ] Create `src/lib/root/types.ts` for manager, plugin, and lifecycle contracts.
-	- [ ] Document SPA-only versus SSR-safe manager usage in code-level type comments where needed.
+  - [ ] Create `src/lib/root/create-state-manager.ts` with the root manager interface and lifecycle skeleton.
+  - [ ] Create `src/lib/root/state-manager-context.ts` with Svelte context helpers for request-scoped access.
+  - [ ] Create `src/lib/root/types.ts` for manager, plugin, and lifecycle contracts.
+  - [ ] Document SPA-only versus SSR-safe manager usage in code-level type comments where needed.
 
 ###### TASK-002 — Implement `defineStore()` entry point
 
@@ -353,10 +353,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-001`
 - **Maps to**: `TASK-002`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/define-store.svelte.ts` supporting option-store signatures.
-	- [ ] Add setup-store overloads and bind store definitions to a concrete manager instance.
-	- [ ] Enforce unique store ids and consistent store registration semantics.
-	- [ ] Add error messages for invalid definition shapes.
+  - [ ] Create `src/lib/define-store.svelte.ts` supporting option-store signatures.
+  - [ ] Add setup-store overloads and bind store definitions to a concrete manager instance.
+  - [ ] Enforce unique store ids and consistent store registration semantics.
+  - [ ] Add error messages for invalid definition shapes.
 
 ##### FEATURE-002 — Types, Ref Extraction, and Public Entry Exports
 
@@ -374,10 +374,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-002`
 - **Maps to**: `TASK-003`
 - **Suggested `## Todo`**:
-	- [ ] Define `StoreState`, `StoreGetters`, `StoreActions`, and `StoreDefinition` generics.
-	- [ ] Define mutation and action hook context types.
-	- [ ] Add plugin augmentation interfaces for future extension.
-	- [ ] Verify strict TypeScript inference works for both option and setup stores.
+  - [ ] Define `StoreState`, `StoreGetters`, `StoreActions`, and `StoreDefinition` generics.
+  - [ ] Define mutation and action hook context types.
+  - [ ] Add plugin augmentation interfaces for future extension.
+  - [ ] Verify strict TypeScript inference works for both option and setup stores.
 
 ###### TASK-004 — Add reactive `storeToRefs()` helper
 
@@ -387,10 +387,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-003`
 - **Maps to**: `TASK-004`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/pinia-like/store-to-refs.svelte.ts`.
-	- [ ] Ensure extracted members stay reactive under Svelte 5 constraints.
-	- [ ] Exclude action methods from ref extraction.
-	- [ ] Add typings for state and getter extraction behavior.
+  - [ ] Create `src/lib/pinia-like/store-to-refs.svelte.ts`.
+  - [ ] Ensure extracted members stay reactive under Svelte 5 constraints.
+  - [ ] Exclude action methods from ref extraction.
+  - [ ] Add typings for state and getter extraction behavior.
 
 ###### TASK-005 — Publish stable package exports
 
@@ -400,9 +400,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-003`, `TASK-004`
 - **Maps to**: `TASK-005`
 - **Suggested `## Todo`**:
-	- [ ] Update `src/lib/index.ts` to export the stable core entry points.
-	- [ ] Export plugin factory entry points without leaking unstable internals.
-	- [ ] Verify the package entry shape matches the intended public API surface.
+  - [ ] Update `src/lib/index.ts` to export the stable core entry points.
+  - [ ] Export plugin factory entry points without leaking unstable internals.
+  - [ ] Verify the package entry shape matches the intended public API surface.
 
 #### EPIC-002 — Store Runtime and Mutation Pipeline
 
@@ -428,10 +428,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-005`
 - **Maps to**: `TASK-006`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/runtime/create-option-store.svelte.ts`.
-	- [ ] Convert `state()` output into reactive store state.
-	- [ ] Bind getters as derived accessors and actions as store-bound methods.
-	- [ ] Verify direct property mutation flows through the runtime correctly.
+  - [ ] Create `src/lib/runtime/create-option-store.svelte.ts`.
+  - [ ] Convert `state()` output into reactive store state.
+  - [ ] Bind getters as derived accessors and actions as store-bound methods.
+  - [ ] Verify direct property mutation flows through the runtime correctly.
 
 ###### TASK-007 — Implement setup-store runtime
 
@@ -441,10 +441,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-006`
 - **Maps to**: `TASK-007`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/runtime/create-setup-store.svelte.ts`.
-	- [ ] Classify returned members into state, getters, and actions.
-	- [ ] Guard against private/non-returned state breaking serialization or plugins.
-	- [ ] Verify method binding and exposed-member typing.
+  - [ ] Create `src/lib/runtime/create-setup-store.svelte.ts`.
+  - [ ] Classify returned members into state, getters, and actions.
+  - [ ] Guard against private/non-returned state breaking serialization or plugins.
+  - [ ] Verify method binding and exposed-member typing.
 
 ##### FEATURE-004 — Store Shell and Commit Batching
 
@@ -462,10 +462,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-007`
 - **Maps to**: `TASK-008`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/runtime/store-shell.svelte.ts`.
-	- [ ] Implement `$id`, `$state`, `$patch`, `$reset`, `$subscribe`, `$onAction`, and `$dispose`.
-	- [ ] Ensure all state changes route through a common mutation hook.
-	- [ ] Add safe reset behavior for option and setup stores.
+  - [ ] Create `src/lib/runtime/store-shell.svelte.ts`.
+  - [ ] Implement `$id`, `$state`, `$patch`, `$reset`, `$subscribe`, `$onAction`, and `$dispose`.
+  - [ ] Ensure all state changes route through a common mutation hook.
+  - [ ] Add safe reset behavior for option and setup stores.
 
 ###### TASK-009 — Add grouped mutation queue
 
@@ -475,10 +475,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-008`
 - **Maps to**: `TASK-009`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/runtime/mutation-queue.svelte.ts`.
-	- [ ] Group synchronous patch-function mutations into one logical commit.
-	- [ ] Expose commit metadata for history, persistence, and sync integrations.
-	- [ ] Verify nested or chained mutation scenarios behave deterministically.
+  - [ ] Create `src/lib/runtime/mutation-queue.svelte.ts`.
+  - [ ] Group synchronous patch-function mutations into one logical commit.
+  - [ ] Expose commit metadata for history, persistence, and sync integrations.
+  - [ ] Verify nested or chained mutation scenarios behave deterministically.
 
 ##### FEATURE-005 — Subscriptions and Timeline Recording
 
@@ -496,10 +496,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-009`
 - **Maps to**: `TASK-010`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/runtime/subscriptions.ts`.
-	- [ ] Implement mutation subscription callbacks and detached subscription behavior.
-	- [ ] Implement action hooks with `after` and `onError` callbacks.
-	- [ ] Ensure cleanup works inside and outside components.
+  - [ ] Create `src/lib/runtime/subscriptions.ts`.
+  - [ ] Implement mutation subscription callbacks and detached subscription behavior.
+  - [ ] Implement action hooks with `after` and `onError` callbacks.
+  - [ ] Ensure cleanup works inside and outside components.
 
 ###### TASK-011 — Add internal devtools timeline recorder
 
@@ -509,10 +509,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-010`
 - **Maps to**: `TASK-011`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/runtime/devtools-timeline.svelte.ts`.
-	- [ ] Record mutation and action events with labels, timestamps, and durations.
-	- [ ] Capture snapshots or patch metadata needed for later replay.
-	- [ ] Expose a read API suitable for the showcase debugger UI.
+  - [ ] Create `src/lib/runtime/devtools-timeline.svelte.ts`.
+  - [ ] Record mutation and action events with labels, timestamps, and durations.
+  - [ ] Capture snapshots or patch metadata needed for later replay.
+  - [ ] Expose a read API suitable for the showcase debugger UI.
 
 #### EPIC-003 — Persistence and History Plugins
 
@@ -538,10 +538,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-011`
 - **Maps to**: `TASK-012`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/persistence/types.ts` for persist config and adapter contracts.
-	- [ ] Create `src/lib/persistence/plugin.svelte.ts` for install-time store augmentation.
-	- [ ] Create `src/lib/persistence/serialize.ts` using `$state.snapshot()` and migration hooks.
-	- [ ] Validate versioned rehydration and safe deserialization behavior.
+  - [ ] Create `src/lib/persistence/types.ts` for persist config and adapter contracts.
+  - [ ] Create `src/lib/persistence/plugin.svelte.ts` for install-time store augmentation.
+  - [ ] Create `src/lib/persistence/serialize.ts` using `$state.snapshot()` and migration hooks.
+  - [ ] Validate versioned rehydration and safe deserialization behavior.
 
 ###### TASK-013 — Implement storage adapters
 
@@ -551,10 +551,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-012`
 - **Maps to**: `TASK-013`
 - **Suggested `## Todo`**:
-	- [ ] Add localStorage adapter.
-	- [ ] Add sessionStorage adapter.
-	- [ ] Add in-memory adapter.
-	- [ ] Add IndexedDB adapter with async get/set/remove/clear/keys operations.
+  - [ ] Add localStorage adapter.
+  - [ ] Add sessionStorage adapter.
+  - [ ] Add in-memory adapter.
+  - [ ] Add IndexedDB adapter with async get/set/remove/clear/keys operations.
 
 ###### TASK-014 — Add opt-in LZ compression
 
@@ -564,10 +564,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-013`
 - **Maps to**: `TASK-014`
 - **Suggested `## Todo`**:
-	- [ ] Add `lz-string` integration under `src/lib/persistence/compression/lz-string.ts`.
-	- [ ] Wire compression as an opt-in persist option.
-	- [ ] Verify compressed payloads round-trip correctly.
-	- [ ] Reject unsupported or invalid compressed input safely.
+  - [ ] Add `lz-string` integration under `src/lib/persistence/compression/lz-string.ts`.
+  - [ ] Wire compression as an opt-in persist option.
+  - [ ] Verify compressed payloads round-trip correctly.
+  - [ ] Reject unsupported or invalid compressed input safely.
 
 ##### FEATURE-007 — Undo, Redo, and Time Travel
 
@@ -585,10 +585,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-009`, `TASK-012`
 - **Maps to**: `TASK-015`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/history/plugin.svelte.ts`.
-	- [ ] Create `src/lib/history/history-controller.svelte.ts`.
-	- [ ] Implement `undo`, `redo`, `canUndo`, `canRedo`, and bounded history retention.
-	- [ ] Support explicit batch start/end grouping.
+  - [ ] Create `src/lib/history/plugin.svelte.ts`.
+  - [ ] Create `src/lib/history/history-controller.svelte.ts`.
+  - [ ] Implement `undo`, `redo`, `canUndo`, `canRedo`, and bounded history retention.
+  - [ ] Support explicit batch start/end grouping.
 
 ###### TASK-016 — Implement time-travel replay
 
@@ -598,10 +598,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-015`
 - **Maps to**: `TASK-016`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/history/time-travel.svelte.ts`.
-	- [ ] Replay historical snapshots through the same mutation pipeline as normal updates.
-	- [ ] Prevent persistence and sync feedback loops during replay mode.
-	- [ ] Expose replay metadata for the showcase debugger.
+  - [ ] Create `src/lib/history/time-travel.svelte.ts`.
+  - [ ] Replay historical snapshots through the same mutation pipeline as normal updates.
+  - [ ] Prevent persistence and sync feedback loops during replay mode.
+  - [ ] Expose replay metadata for the showcase debugger.
 
 ##### FEATURE-008 — Plugin Option Typing for Persist and History
 
@@ -619,9 +619,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-012`, `TASK-015`
 - **Maps to**: `TASK-017`
 - **Suggested `## Todo`**:
-	- [ ] Extend `src/lib/pinia-like/plugin-options.ts` with `persist` config types.
-	- [ ] Extend the same module with `history` config types.
-	- [ ] Ensure both option-store and setup-store definitions accept the new options.
+  - [ ] Extend `src/lib/pinia-like/plugin-options.ts` with `persist` config types.
+  - [ ] Extend the same module with `history` config types.
+  - [ ] Ensure both option-store and setup-store definitions accept the new options.
 
 #### EPIC-004 — Sync and Async Orchestration
 
@@ -647,10 +647,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-016`
 - **Maps to**: `TASK-018`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/sync/plugin.svelte.ts`.
-	- [ ] Create `src/lib/sync/broadcast-channel.ts` for primary cross-tab transport.
-	- [ ] Create `src/lib/sync/storage-events.ts` as a fallback transport.
-	- [ ] Add instance-origin filtering to ignore self-emitted events.
+  - [ ] Create `src/lib/sync/plugin.svelte.ts`.
+  - [ ] Create `src/lib/sync/broadcast-channel.ts` for primary cross-tab transport.
+  - [ ] Create `src/lib/sync/storage-events.ts` as a fallback transport.
+  - [ ] Add instance-origin filtering to ignore self-emitted events.
 
 ###### TASK-019 — Validate inbound sync messages
 
@@ -660,10 +660,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-018`
 - **Maps to**: `TASK-019`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/sync/message-schema.ts`.
-	- [ ] Validate store id, mutation id, version, payload shape, and timestamp fields.
-	- [ ] Reject malformed or incompatible remote payloads.
-	- [ ] Patch only after schema validation succeeds.
+  - [ ] Create `src/lib/sync/message-schema.ts`.
+  - [ ] Validate store id, mutation id, version, payload shape, and timestamp fields.
+  - [ ] Reject malformed or incompatible remote payloads.
+  - [ ] Patch only after schema validation succeeds.
 
 ##### FEATURE-010 — Async Action Tracking and Concurrency Control
 
@@ -681,10 +681,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-010`
 - **Maps to**: `TASK-020`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/async/plugin.svelte.ts`.
-	- [ ] Create `src/lib/async/track-async-action.svelte.ts`.
-	- [ ] Expose `isLoading`, `error`, `lastSuccessAt`, `lastFailureAt`, and `abort` state per tracked action.
-	- [ ] Ensure sync and failure hooks integrate with `$onAction()` semantics.
+  - [ ] Create `src/lib/async/plugin.svelte.ts`.
+  - [ ] Create `src/lib/async/track-async-action.svelte.ts`.
+  - [ ] Expose `isLoading`, `error`, `lastSuccessAt`, `lastFailureAt`, and `abort` state per tracked action.
+  - [ ] Ensure sync and failure hooks integrate with `$onAction()` semantics.
 
 ###### TASK-021 — Implement concurrency policy engine
 
@@ -694,10 +694,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-020`
 - **Maps to**: `TASK-021`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/async/concurrency.ts`.
-	- [ ] Implement `parallel`, `restartable`, `drop`, `enqueue`, and `dedupe` modes.
-	- [ ] Bind policy selection to per-action async options.
-	- [ ] Verify deterministic behavior when actions are called rapidly.
+  - [ ] Create `src/lib/async/concurrency.ts`.
+  - [ ] Implement `parallel`, `restartable`, `drop`, `enqueue`, and `dedupe` modes.
+  - [ ] Bind policy selection to per-action async options.
+  - [ ] Verify deterministic behavior when actions are called rapidly.
 
 ###### TASK-022 — Add abort and stale-result protection
 
@@ -707,10 +707,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-021`
 - **Maps to**: `TASK-022`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/async/request-controller.ts`.
-	- [ ] Use `AbortController` for cancellable action execution.
-	- [ ] Track action-call tokens to prevent stale responses from overwriting new state.
-	- [ ] Ensure cancellation updates loading/error metadata correctly.
+  - [ ] Create `src/lib/async/request-controller.ts`.
+  - [ ] Use `AbortController` for cancellable action execution.
+  - [ ] Track action-call tokens to prevent stale responses from overwriting new state.
+  - [ ] Ensure cancellation updates loading/error metadata correctly.
 
 ###### TASK-023 — Bridge external event systems into reactivity
 
@@ -720,9 +720,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-022`
 - **Maps to**: `TASK-023`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/async/external-subscribe.ts`.
-	- [ ] Use `createSubscriber` for browser or network event integrations.
-	- [ ] Provide a reusable pattern for future websocket or observer-backed stores.
+  - [ ] Create `src/lib/async/external-subscribe.ts`.
+  - [ ] Use `createSubscriber` for browser or network event integrations.
+  - [ ] Provide a reusable pattern for future websocket or observer-backed stores.
 
 #### EPIC-005 — Showcase, Testing, Documentation, and Release Readiness
 
@@ -748,10 +748,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-016`, `TASK-019`, `TASK-022`
 - **Maps to**: `TASK-024`
 - **Suggested `## Todo`**:
-	- [ ] Replace `src/routes/+page.svelte` with a demo for core store usage.
-	- [ ] Demonstrate persistence, undo/redo, time travel, multi-tab sync, and async cancellation.
-	- [ ] Include SSR-safe manager wiring patterns in the showcase structure.
-	- [ ] Make the demo suitable for both manual testing and package marketing.
+  - [ ] Replace `src/routes/+page.svelte` with a demo for core store usage.
+  - [ ] Demonstrate persistence, undo/redo, time travel, multi-tab sync, and async cancellation.
+  - [ ] Include SSR-safe manager wiring patterns in the showcase structure.
+  - [ ] Make the demo suitable for both manual testing and package marketing.
 
 ###### TASK-026 — Add browser integration tests for showcase behavior
 
@@ -761,9 +761,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-024`
 - **Maps to**: `TASK-026`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/routes/+page.svelte.spec.ts` or equivalent browser test file.
-	- [ ] Validate showcase behavior from the user perspective.
-	- [ ] Cover persistence, history, sync, and async UI flows without relying on internal implementation details.
+  - [ ] Create `src/routes/+page.svelte.spec.ts` or equivalent browser test file.
+  - [ ] Validate showcase behavior from the user perspective.
+  - [ ] Cover persistence, history, sync, and async UI flows without relying on internal implementation details.
 
 ##### FEATURE-012 — Unit Tests, Docs, and Packaged Examples
 
@@ -781,10 +781,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-023`
 - **Maps to**: `TASK-025`
 - **Suggested `## Todo`**:
-	- [ ] Add `define-store.spec.ts` and `patching.spec.ts`.
-	- [ ] Add `history.spec.ts` and `persistence.spec.ts`.
-	- [ ] Add `sync.spec.ts` and `async.spec.ts`.
-	- [ ] Verify plugin interactions and edge cases described in the main plan.
+  - [ ] Add `define-store.spec.ts` and `patching.spec.ts`.
+  - [ ] Add `history.spec.ts` and `persistence.spec.ts`.
+  - [ ] Add `sync.spec.ts` and `async.spec.ts`.
+  - [ ] Verify plugin interactions and edge cases described in the main plan.
 
 ###### TASK-027 — Update README and migration guidance
 
@@ -794,10 +794,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-024`, `TASK-025`
 - **Maps to**: `TASK-027`
 - **Suggested `## Todo`**:
-	- [ ] Document installation and public API usage.
-	- [ ] Document SPA-only and SSR-safe usage patterns separately.
-	- [ ] Add plugin configuration examples.
-	- [ ] Add a Pinia mental-model and migration section.
+  - [ ] Document installation and public API usage.
+  - [ ] Document SPA-only and SSR-safe usage patterns separately.
+  - [ ] Add plugin configuration examples.
+  - [ ] Add a Pinia mental-model and migration section.
 
 ###### TASK-028 — Add packaged example source files
 
@@ -807,10 +807,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-027`
 - **Maps to**: `TASK-028`
 - **Suggested `## Todo`**:
-	- [ ] Create `src/lib/examples/option-store` examples.
-	- [ ] Create `src/lib/examples/setup-store` examples.
-	- [ ] Add persistence, history, sync, and async focused examples.
-	- [ ] Ensure examples mirror the final public API exactly.
+  - [ ] Create `src/lib/examples/option-store` examples.
+  - [ ] Create `src/lib/examples/setup-store` examples.
+  - [ ] Add persistence, history, sync, and async focused examples.
+  - [ ] Ensure examples mirror the final public API exactly.
 
 ##### FEATURE-013 — Final Verification and Release Gate
 
@@ -828,11 +828,11 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-025`, `TASK-026`, `TASK-027`, `TASK-028`
 - **Maps to**: `TASK-029`
 - **Suggested `## Todo`**:
-	- [ ] Run `npm run check` and fix type/runtime issues.
-	- [ ] Run `npm run lint` and fix lint issues.
-	- [ ] Run `npm run test` and fix unit/browser test failures.
-	- [ ] Run `npm run build` and fix packaging/export issues.
-	- [ ] Confirm the package is ready for release-quality review.
+  - [ ] Run `npm run check` and fix type/runtime issues.
+  - [ ] Run `npm run lint` and fix lint issues.
+  - [ ] Run `npm run test` and fix unit/browser test failures.
+  - [ ] Run `npm run build` and fix packaging/export issues.
+  - [ ] Confirm the package is ready for release-quality review.
 
 #### EPIC-006 — CI/CD, Contributor Hooks, and VitePress Documentation
 
@@ -858,10 +858,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-005`
 - **Maps to**: `TASK-030`
 - **Suggested `## Todo`**:
-	- [ ] Create `.github/workflows/ci.yml`.
-	- [ ] Run install plus `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build` in CI.
-	- [ ] Add package-quality verification such as `svelte-package`/`publint` validation through the existing scripts.
-	- [ ] Ensure the workflow runs on pull requests and protected branches.
+  - [ ] Create `.github/workflows/ci.yml`.
+  - [ ] Run install plus `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build` in CI.
+  - [ ] Add package-quality verification such as `svelte-package`/`publint` validation through the existing scripts.
+  - [ ] Ensure the workflow runs on pull requests and protected branches.
 
 ###### TASK-031 — Add npm publish and release workflow
 
@@ -871,10 +871,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-030`
 - **Maps to**: `TASK-031`
 - **Suggested `## Todo`**:
-	- [ ] Create `.github/workflows/release.yml` for npm-library publishing.
-	- [ ] Define the publish trigger and versioning flow for releases.
-	- [ ] Configure provenance-friendly publish settings and secret or trusted-publisher requirements.
-	- [ ] Ensure release automation does not publish when validation fails.
+  - [ ] Create `.github/workflows/release.yml` for npm-library publishing.
+  - [ ] Define the publish trigger and versioning flow for releases.
+  - [ ] Configure provenance-friendly publish settings and secret or trusted-publisher requirements.
+  - [ ] Ensure release automation does not publish when validation fails.
 
 ###### TASK-032 — Add release management support files and docs
 
@@ -884,10 +884,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-031`
 - **Maps to**: `TASK-032`
 - **Suggested `## Todo`**:
-	- [ ] Add `.changeset/` or the chosen release-management configuration.
-	- [ ] Update package publish metadata as needed for npm delivery.
-	- [ ] Document the release flow for maintainers.
-	- [ ] Validate that a dry-run release path is deterministic.
+  - [ ] Add `.changeset/` or the chosen release-management configuration.
+  - [ ] Update package publish metadata as needed for npm delivery.
+  - [ ] Document the release flow for maintainers.
+  - [ ] Validate that a dry-run release path is deterministic.
 
 ##### FEATURE-015 — Local Quality Gates with Husky and Lint-Staged
 
@@ -905,10 +905,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-030`
 - **Maps to**: `TASK-033`
 - **Suggested `## Todo`**:
-	- [ ] Configure `lint-staged` patterns for staged file validation.
-	- [ ] Add `.husky/pre-commit`.
-	- [ ] Run Biome format/check and ESLint in the staged-file flow.
-	- [ ] Keep pre-commit feedback fast enough for normal contributor use.
+  - [ ] Configure `lint-staged` patterns for staged file validation.
+  - [ ] Add `.husky/pre-commit`.
+  - [ ] Run Biome format/check and ESLint in the staged-file flow.
+  - [ ] Keep pre-commit feedback fast enough for normal contributor use.
 
 ###### TASK-034 — Configure pre-push validation hooks
 
@@ -918,10 +918,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-033`
 - **Maps to**: `TASK-034`
 - **Suggested `## Todo`**:
-	- [ ] Add `.husky/pre-push`.
-	- [ ] Run `svelte-check` before push.
-	- [ ] Run the appropriate local test command before push.
-	- [ ] Document the intended split between pre-commit, pre-push, and CI checks.
+  - [ ] Add `.husky/pre-push`.
+  - [ ] Run `svelte-check` before push.
+  - [ ] Run the appropriate local test command before push.
+  - [ ] Document the intended split between pre-commit, pre-push, and CI checks.
 
 ###### TASK-035 — Add format and automation-aligned scripts
 
@@ -931,10 +931,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-033`, `TASK-034`
 - **Maps to**: `TASK-035`
 - **Suggested `## Todo`**:
-	- [ ] Add `format` and `format:check` scripts to `package.json`.
-	- [ ] Align hook commands with package-manager scripts so local and CI behavior match.
-	- [ ] Add or refine Biome configuration if needed for formatting and checks.
-	- [ ] Verify hooks and scripts do not conflict with ESLint or Svelte tooling.
+  - [ ] Add `format` and `format:check` scripts to `package.json`.
+  - [ ] Align hook commands with package-manager scripts so local and CI behavior match.
+  - [ ] Add or refine Biome configuration if needed for formatting and checks.
+  - [ ] Verify hooks and scripts do not conflict with ESLint or Svelte tooling.
 
 ##### FEATURE-016 — VitePress Documentation Site and Deployment
 
@@ -952,10 +952,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-027`
 - **Maps to**: `TASK-036`
 - **Suggested `## Todo`**:
-	- [ ] Add `docs/.vitepress/config.ts`.
-	- [ ] Create the VitePress site structure under `docs/`.
-	- [ ] Configure navigation, sidebar, and site metadata.
-	- [ ] Add a docs landing page and primary guide entry points.
+  - [ ] Add `docs/.vitepress/config.ts`.
+  - [ ] Create the VitePress site structure under `docs/`.
+  - [ ] Configure navigation, sidebar, and site metadata.
+  - [ ] Add a docs landing page and primary guide entry points.
 
 ###### TASK-037 — Author VitePress documentation content
 
@@ -965,10 +965,10 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-036`
 - **Maps to**: `TASK-037`
 - **Suggested `## Todo`**:
-	- [ ] Document installation and package consumption as an npm library.
-	- [ ] Document `defineStore`, option stores, and setup stores.
-	- [ ] Document SSR-safe usage, plugins, persistence, history, sync, and async orchestration.
-	- [ ] Add migration, testing, and troubleshooting guides.
+  - [ ] Document installation and package consumption as an npm library.
+  - [ ] Document `defineStore`, option stores, and setup stores.
+  - [ ] Document SSR-safe usage, plugins, persistence, history, sync, and async orchestration.
+  - [ ] Add migration, testing, and troubleshooting guides.
 
 ###### TASK-038 — Add docs build and deployment automation
 
@@ -978,9 +978,9 @@ This plan defines the implementation of a Svelte 5 reactive state library inside
 - **Depends on**: `TASK-036`, `TASK-037`
 - **Maps to**: `TASK-038`
 - **Suggested `## Todo`**:
-	- [ ] Add a docs workflow under `.github/workflows/docs.yml`.
-	- [ ] Integrate VitePress build validation into CI.
-	- [ ] Configure deployment for the generated static docs site.
-	- [ ] Verify docs deployment does not drift from the library release flow.
+  - [ ] Add a docs workflow under `.github/workflows/docs.yml`.
+  - [ ] Integrate VitePress build validation into CI.
+  - [ ] Configure deployment for the generated static docs site.
+  - [ ] Verify docs deployment does not drift from the library release flow.
 
 <!-- markdownlint-enable MD007 MD010 -->

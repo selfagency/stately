@@ -9,10 +9,11 @@
 		"prepack": "svelte-kit sync && svelte-package && publint",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --check . && eslint .",
+		"lint": "eslint . && prettier --check .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"format": "prettier --write ."
+		"test:coverage": "vitest --coverage",
+		"format": "eslint . --fix && prettier --write ."
 	},
 	"files": [
 		"dist",
