@@ -5,7 +5,8 @@ The recommended pattern is request-scoped manager creation plus Svelte context.
 
 ## SSR-safe pattern
 
-Create a fresh manager inside a layout or server-driven boundary and provide it through context:
+Create a fresh manager inside a layout or component boundary and provide it
+through context:
 
 ```ts
 import {
@@ -29,10 +30,30 @@ import { useCounterStore } from '$lib/stores/counter.js';
 const counter = useCounterStore(getStateManager());
 ```
 
-## SPA-only convenience
+The important rule is that each SSR request gets its own manager.
+That keeps store state isolated and prevents one user’s data from leaking into
+another user’s render.
 
-`getDefaultStateManager()` is available for browser-only usage.
-Treat it as a convenience for SPAs, not as the default integration for SSR.
+## Browser-only convenience
+
+`getDefaultStateManager()` is a browser-only convenience for SPA code.
+Use it only when the app is not rendering through SSR.
+
+```ts
+import { getDefaultStateManager } from '@selfagency/stately';
+
+const manager = getDefaultStateManager();
+```
+
+That is fine for client-only apps and demos.
+It is not the right default for SvelteKit because it reuses process-wide state.
+
+## Practical SvelteKit guidance
+
+- Create the manager at the top of the request-owned tree.
+- Provide it through context before any stores are instantiated.
+- Avoid shared module-level singletons on the server.
+- Keep persistence, sync, and browser APIs behind browser-only boundaries.
 
 ## Why this matters
 

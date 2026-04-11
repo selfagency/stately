@@ -37,8 +37,17 @@ features:
 Stately is a Svelte 5 state library for teams that want a small core runtime with explicit plugin-based features.
 It is designed for package consumers who want predictable store behavior in both SPA and SSR flows.
 
+The documentation is organized so you can move from learning the API to
+applying it in real apps:
+
+- The [guide](/guide/) explains the recommended patterns.
+- The [reference](/reference/api) breaks the public API into focused topics.
+- The [examples](/guide/examples) page shows persistence, history, sync, and async in practice.
+
 ## Start here
 
 - Read the [guide](/guide/) for installation, store definitions, SSR patterns, plugins, and release workflows.
 - Jump to the [API reference](/reference/api) for the exported runtime surface.
-- Browse the packaged examples under `src/lib/examples/` for consumer-facing patterns that match the public API.
+- Browse the packaged examples under `src/lib/examples/` and the
+  [examples page](/guide/examples) for consumer-facing patterns that match the
+  public API.

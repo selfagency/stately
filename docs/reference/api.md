@@ -1,50 +1,25 @@
 # Public API reference
 
-Stately exports the following runtime entry points from the package root.
+This is the hub for the public exports from `src/lib/index.ts`.
+If you want the "what does this do and when should I use it?" version, use
+the topic pages below instead of treating this page like a raw export list.
 
-## Core runtime
+## Start here
 
-- `defineStore`
-- `createStateManager`
-- `getDefaultStateManager`
-- `initializeStateManagerContext`
-- `getStateManager`
-- `setStateManager`
-- `storeToRefs`
+| Topic                                           | What it covers                                                                         | Best for                                                   |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Core runtime](/reference/core)                 | `defineStore`, state managers, store helpers, Svelte interop, and external subscribers | Understanding the store lifecycle and the core API surface |
+| [Plugins and orchestration](/reference/plugins) | Persistence, history, sync, and async plugins                                          | Learning how the advanced features fit together            |
+| [Persistence helpers](/reference/persistence)   | Storage adapters, compression, and persistence types                                   | Building or customizing durable store state                |
+| [Public types](/reference/types)                | Store, manager, history, sync, and async type contracts                                | Adding strong TypeScript inference or writing plugins      |
 
-## Plugins
+## What this reference includes
 
-- `createPersistencePlugin`
-- `createHistoryPlugin`
-- `createSyncPlugin`
-- `createAsyncPlugin`
-- `createExternalSubscriber`
+The pages linked above cover every package-root export in `src/lib/index.ts`,
+including the store manager helpers, plugin factories, storage adapters,
+compression helpers, and public type definitions.
 
-## Persistence helpers
+## Read alongside the guide
 
-- `createLocalStorageAdapter`
-- `createSessionStorageAdapter`
-- `createMemoryStorageAdapter`
-- `createIndexedDbAdapter`
-- `createLzStringCompression`
-
-## Selected public types
-
-- `StateManager`
-- `StateManagerPlugin`
-- `StoreDefinition`
-- `StoreInstance`
-- `StoreState`
-- `StoreActions`
-- `StoreGetters`
-- `PersistOptions`
-- `PersistController`
-- `PersistenceAdapter`
-- `HistoryController`
-- `TimeTravelController`
-- `AsyncActionRegistry`
-- `AsyncPluginOptions`
-- `SyncMessage`
-- `SyncTransport`
-
-For consumer-facing usage patterns, prefer the guide pages and packaged examples over runtime internals.
+The reference tells you exactly what each API does.
+For step-by-step usage, pair it with the [guide](/guide/) and [examples and recipes](/guide/examples).

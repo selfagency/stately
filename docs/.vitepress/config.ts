@@ -32,7 +32,7 @@ export default defineConfig({
 						{ text: 'Define stores', link: '/guide/define-store' },
 						{ text: 'SSR and SvelteKit', link: '/guide/ssr-and-sveltekit' },
 						{ text: 'Plugins', link: '/guide/plugins' },
-						{ text: 'Examples', link: '/guide/examples' }
+						{ text: 'Examples and recipes', link: '/guide/examples' }
 					]
 				},
 				{
@@ -47,7 +47,13 @@ export default defineConfig({
 			'/reference/': [
 				{
 					text: 'Reference',
-					items: [{ text: 'Public API', link: '/reference/api' }]
+					items: [
+						{ text: 'API hub', link: '/reference/api' },
+						{ text: 'Core runtime', link: '/reference/core' },
+						{ text: 'Plugins and orchestration', link: '/reference/plugins' },
+						{ text: 'Persistence helpers', link: '/reference/persistence' },
+						{ text: 'Public types', link: '/reference/types' }
+					]
 				}
 			]
 		},
