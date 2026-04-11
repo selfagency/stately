@@ -12,7 +12,7 @@ function deferred<T>() {
 describe('trackAsyncAction', () => {
 	it('tracks loading, success, failure, and exposes abort metadata', async () => {
 		let tick = 100;
-		const tracked = trackAsyncAction(
+		const tracked = trackAsyncAction<[number], number>(
 			async (value: number) => {
 				if (value < 0) {
 					throw new Error('boom');
@@ -38,17 +38,19 @@ describe('trackAsyncAction', () => {
 
 	it('supports abort signals and ignores stale async results', async () => {
 		const firstRequest = deferred<number>();
-		const tracked = trackAsyncAction(
-			async ({ signal }: { signal: AbortSignal }, value: number) => {
+		const tracked = trackAsyncAction<[number], number>(
+			(async ({ signal }: { signal: AbortSignal }, value: number) => {
 				if (value === 1) {
 					return await new Promise<number>((resolve, reject) => {
-						signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+						signal.addEventListener('abort', () =>
+							reject(new DOMException('Aborted', 'AbortError'))
+						);
 						firstRequest.promise.then(resolve);
 					});
 				}
 
 				return value;
-			},
+			}) as unknown as (...args: [number]) => Promise<number>,
 			{
 				policy: 'restartable',
 				injectSignal: (signal, args) => [{ signal }, ...args]
@@ -65,12 +67,12 @@ describe('trackAsyncAction', () => {
 		expect(tracked.state.isLoading).toBe(false);
 
 		const abortable = deferred<number>();
-		const directlyAbortable = trackAsyncAction(
-			async ({ signal }: { signal: AbortSignal }) =>
+		const directlyAbortable = trackAsyncAction<[], number>(
+			(async ({ signal }: { signal: AbortSignal }) =>
 				await new Promise<number>((resolve, reject) => {
 					signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
 					abortable.promise.then(resolve);
-				}),
+				})) as unknown as (...args: []) => Promise<number>,
 			{ injectSignal: (signal, args) => [{ signal }, ...args] }
 		);
 

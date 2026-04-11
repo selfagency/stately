@@ -23,7 +23,9 @@ export interface SyncPluginOptions<Message extends SyncMessage = SyncMessage> {
 }
 
 function createOrigin(): string {
-	return globalThis.crypto?.randomUUID?.() ?? `sync-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+	return (
+		globalThis.crypto?.randomUUID?.() ?? `sync-${Date.now()}-${Math.random().toString(36).slice(2)}`
+	);
 }
 
 function isSyncStore(value: unknown): value is SyncStore {

@@ -15,9 +15,8 @@ export interface TrackAsyncActionOptions {
 	injectSignal?: (signal: AbortSignal, args: unknown[]) => unknown[];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function trackAsyncAction<Action extends (...args: any[]) => Promise<unknown>>(
-	action: Action,
+export function trackAsyncAction<Args extends unknown[], Result>(
+	action: (...args: Args) => Promise<Result>,
 	options: TrackAsyncActionOptions = {}
 ) {
 	const metadata = $state({
@@ -30,13 +29,13 @@ export function trackAsyncAction<Action extends (...args: any[]) => Promise<unkn
 	const requestController = createRequestController();
 	const concurrency = createConcurrencyController(
 		options.policy ?? 'parallel',
-		(...args: Parameters<Action>) => {
+		(...args: Args) => {
 			const request = requestController.begin();
 			metadata.isLoading = true;
 			metadata.error = undefined;
-			const actionArgs = (options.injectSignal
-				? options.injectSignal(request.signal, args)
-				: args) as Parameters<Action>;
+			const actionArgs = (
+				options.injectSignal ? options.injectSignal(request.signal, args) : args
+			) as Args;
 
 			return action(...actionArgs)
 				.then((value) => {
@@ -80,7 +79,7 @@ export function trackAsyncAction<Action extends (...args: any[]) => Promise<unkn
 		}
 	};
 
-	const run = ((...args: Parameters<Action>) => concurrency.run(...args)) as Action;
+	const run = (...args: Args) => concurrency.run(...args);
 
 	return {
 		run,

@@ -2,18 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { createStateManager } from '../root/create-state-manager.js';
 import { defineStore } from '../define-store.svelte.js';
 import { createSyncPlugin } from './plugin.svelte.js';
+import type { SyncMessage, SyncTransport } from './types.js';
 
 describe('createSyncPlugin', () => {
 	it('publishes store snapshots and applies inbound messages for the same store', () => {
-		const listeners = new Set<(message: unknown) => void>();
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
 		const published: unknown[] = [];
-		const transport = {
-			publish(message: unknown) {
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish(message) {
 				published.push(message);
 			},
-			subscribe(listener: (message: unknown) => void) {
+			subscribe(listener) {
 				listeners.add(listener);
-				return () => listeners.delete(listener);
+				return () => {
+					listeners.delete(listener);
+				};
 			},
 			destroy() {
 				listeners.clear();
@@ -63,7 +66,7 @@ describe('createSyncPlugin', () => {
 				timestamp: 789,
 				version: 1,
 				state: null
-			});
+			} as unknown as SyncMessage<Record<string, unknown>>);
 		}
 
 		expect(counter.count).toBe(7);

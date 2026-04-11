@@ -42,7 +42,10 @@ export function createConcurrencyController<Args extends unknown[], Result>(
 					return start(...args);
 				case 'enqueue': {
 					const next = queue.then(() => start(...args));
-					queue = next.then(() => undefined, () => undefined);
+					queue = next.then(
+						() => undefined,
+						() => undefined
+					);
 					return next;
 				}
 				case 'dedupe': {
