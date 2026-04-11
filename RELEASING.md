@@ -9,7 +9,8 @@ The published npm artifact comes from `dist/`, not from the workspace root packa
 2. Merge the pull request into `main`.
 3. Let `.github/workflows/release.yml` create or update the versioning pull request.
 4. Review and merge that version pull request.
-5. Let the same workflow rebuild the package, generate the release-only `dist/package.json`, copy `README.md`, `CHANGELOG.md`, `LICENSE.md`, and `stately.svg`, and publish `./dist` to npm.
+5. Let the same workflow rebuild the package, generate the release-only `dist/package.json`, copy `README.md`,
+   `CHANGELOG.md`, `LICENSE.md`, and `stately.svg`, and publish `./dist` to npm.
 
 ## Release package shape
 
@@ -33,7 +34,8 @@ pnpm install
 pnpm release:dry-run
 ```
 
-The dry run validates the package, builds the release-ready `dist/` output, writes the stripped release manifest, copies the changelog and release assets, and performs an `npm publish --dry-run` against `./dist`.
+The dry run validates the package, builds the release-ready `dist/` output, writes the stripped release manifest, copies
+the changelog and release assets, and performs an `npm publish --dry-run` against `./dist`.
 
 ## Publishing requirements
 
@@ -42,4 +44,5 @@ The release workflow expects one of these setups:
 - npm Trusted Publishing configured for this repository, with GitHub OIDC enabled
 - `NPM_TOKEN` configured in repository secrets as a fallback
 
-For provenance-enabled publishing, keep the `repository` metadata and `publishConfig.provenance` values in `package.json` accurate.
+For provenance-enabled publishing, keep the `repository` metadata and `publishConfig.provenance` values in `package.json`
+accurate.
