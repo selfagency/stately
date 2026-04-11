@@ -38,7 +38,7 @@ describe('createSetupStore', () => {
 	});
 
 	it('forwards accessor properties with both getter and setter to the shell store', () => {
-		let _value = 10;
+		let _value = 5;
 		const store = createSetupStore('accessor-store', () => {
 			return Object.defineProperties(
 				{},
@@ -57,9 +57,10 @@ describe('createSetupStore', () => {
 			) as { value: number };
 		});
 
-		expect(store.value).toBe(10);
-		store.value = 5;
-		expect(_value).toBe(10);
-		expect(store.value).toBe(10);
+		expect(store.value).toBe(5);
+		store.value = 3;
+		// setter fires: _value = 3 * 2 = 6
+		expect(_value).toBe(6);
+		expect(store.value).toBe(6);
 	});
 });
