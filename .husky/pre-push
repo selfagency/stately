@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-pnpm run check && pnpm run test
+pnpm run validate:pre-push
