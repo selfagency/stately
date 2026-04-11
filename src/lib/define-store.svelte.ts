@@ -1,5 +1,4 @@
 import { SvelteMap } from 'svelte/reactivity';
-import type {} from './pinia-like/plugin-options.js';
 import type {
 	DefineStoreOptionsBase,
 	StoreDefinition as PublicStoreDefinition,

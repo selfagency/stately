@@ -1,11 +1,11 @@
 ---
 # stately-b8rl
 title: GitHub Actions CI and npm release automation
-status: todo
+status: completed
 type: feature
 priority: critical
 created_at: 2026-04-11T00:35:00Z
-updated_at: 2026-04-11T00:35:00Z
+updated_at: 2026-04-11T16:12:00Z
 parent: stately-a7ci
 ---
 
@@ -15,6 +15,13 @@ Implement pull-request CI and npm-library release automation.
 
 ## Todo
 
-- [ ] Add CI workflow for validation.
-- [ ] Add release workflow for npm publish.
-- [ ] Add release-management support files and docs.
+- [x] Add CI workflow for validation.
+- [x] Add release workflow for npm publish.
+- [x] Add release-management support files and docs.
+
+## Summary of Changes
+
+- Added pinned GitHub Actions workflows for CI validation and release automation.
+- Added Changesets configuration, maintainer release documentation, and package metadata/scripts for npm delivery.
+- Verified the release-management dry-run path after wiring the automation.
+- Upgraded the release flow so publishing now targets a stripped `dist/` package with its own manifest and changelog instead of the workspace root metadata.

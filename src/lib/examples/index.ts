@@ -1,9 +1,9 @@
 export { useCounterStore } from './option-store/counter.js';
-export { usePreferencesStore } from './setup-store/preferences.svelte.js';
+export { asyncManager, useAsyncCounterStore } from './plugins/async.js';
+export { historyManager, useDraftStore } from './plugins/history.js';
 export {
-	usePreferencesStore as usePersistentPreferencesStore,
-	persistenceManager
+	persistenceManager,
+	usePreferencesStore as usePersistentPreferencesStore
 } from './plugins/persistence.js';
-export { useDraftStore, historyManager } from './plugins/history.js';
-export { usePresenceStore, createSyncedManager } from './plugins/sync.js';
-export { useAsyncCounterStore, asyncManager } from './plugins/async.js';
+export { createSyncedManager, usePresenceStore } from './plugins/sync.js';
+export { usePreferencesStore } from './setup-store/preferences.svelte.js';
