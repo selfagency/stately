@@ -34,8 +34,24 @@ export function createSetupStore<Store extends AnyRecord, Id extends string>(
 			continue;
 		}
 
-		if (descriptor.get && !descriptor.set) {
-			shell.defineGetter(key, () => descriptor.get?.call(shell.store));
+		if (descriptor.get || descriptor.set) {
+			const propDef: PropertyDescriptor = {
+				enumerable: descriptor.enumerable ?? true,
+				configurable: false
+			};
+			if (descriptor.get) {
+				const getter = descriptor.get;
+				propDef.get = function () {
+					return getter.call(shell.store);
+				};
+			}
+			if (descriptor.set) {
+				const setter = descriptor.set;
+				propDef.set = function (value: unknown) {
+					setter.call(shell.store, value);
+				};
+			}
+			Object.defineProperty(shell.store, key, propDef);
 			continue;
 		}
 

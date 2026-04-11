@@ -39,7 +39,7 @@ export interface StoreShellBuilder<
 }
 
 function cloneState<State extends StoreState>(state: State): State {
-	return structuredClone(state);
+	return $state.snapshot(state) as State;
 }
 
 function syncState<State extends StoreState>(target: State, next: Partial<State>): void {
@@ -109,10 +109,12 @@ export function createStoreShell<
 		storeId: config.id,
 		notify(type, payload) {
 			notifyMutation(type, payload);
-			timeline.recordMutation({
-				label: `${config.id}:${type}`,
-				payload
-			});
+			if (!disposed) {
+				timeline.recordMutation({
+					label: `${config.id}:${type}`,
+					payload
+				});
+			}
 		}
 	});
 

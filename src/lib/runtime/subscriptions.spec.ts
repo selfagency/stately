@@ -45,4 +45,34 @@ describe('createSubscriptions', () => {
 		expect(mutations).toEqual(['direct:0']);
 		expect(actions).toEqual(['start:increment', 'after:2', 'start:explode', 'error:Error: boom']);
 	});
+
+	it('fires after/onError hooks for thenable actions (non-native Promise)', async () => {
+		const results: string[] = [];
+		const store = {};
+		const subscriptions = createSubscriptions<'t', object, typeof store>({
+			storeId: 't',
+			state: () => ({}),
+			store: () => store
+		});
+
+		subscriptions.onAction(({ after, onError }) => {
+			after((result) => results.push(`after:${String(result)}`));
+			onError((error) => results.push(`error:${String(error)}`));
+		});
+
+		// Build a plain thenable (not instanceof Promise) that resolves
+		const thenable = {
+			then(onFulfilled: (v: string) => void) {
+				onFulfilled('resolved');
+				return this;
+			},
+			catch() {
+				return this;
+			}
+		};
+		const thenableAction = subscriptions.wrapAction('thenableAction', () => thenable);
+		await thenableAction();
+
+		expect(results).toContain('after:resolved');
+	});
 });

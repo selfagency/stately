@@ -60,7 +60,7 @@ export type StoreInstance<
 	Readonly<Getters> &
 	Actions &
 	StoreCustomProperties &
-	StoreShellMethods<Id, State, State & Readonly<Getters> & Actions & StoreCustomProperties>;
+	StoreShellMethods<Id, State, StoreInstance<Id, State, Getters, Actions>>;
 
 export interface StoreDefinition<
 	Id extends string = string,

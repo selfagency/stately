@@ -1,3 +1,4 @@
+import { onDestroy } from 'svelte';
 import type {
 	StoreActionHookContext,
 	StoreMutationContext,
@@ -27,11 +28,18 @@ export function createSubscriptions<
 
 	return {
 		subscribe(callback: MutationSubscriber<Id, State, Store>, options?: StoreSubscribeOptions) {
-			void options;
 			mutationSubscribers.add(callback);
-			return () => {
+			const unsubscribe = () => {
 				mutationSubscribers.delete(callback);
 			};
+			if (!options?.detached) {
+				try {
+					onDestroy(unsubscribe);
+				} catch {
+					// Not in a component lifecycle context; caller is responsible for cleanup.
+				}
+			}
+			return unsubscribe;
 		},
 		onAction(callback: ActionSubscriber<Store>) {
 			actionSubscribers.add(callback);
@@ -81,8 +89,8 @@ export function createSubscriptions<
 
 				try {
 					const result = action.apply(this, args) as ReturnType<Action>;
-					if (result instanceof Promise) {
-						return result
+					if (typeof (result as { then?: unknown })?.then === 'function') {
+						return (result as Promise<unknown>)
 							.then((resolved) => {
 								for (const callback of afterCallbacks) {
 									callback(resolved);

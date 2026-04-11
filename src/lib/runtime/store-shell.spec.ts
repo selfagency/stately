@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
 
@@ -53,5 +53,31 @@ describe('store shell helpers', () => {
 		counter.$dispose();
 		counter.increment();
 		expect(mutations).toHaveLength(5);
+	});
+
+	it('does not notify subscribers or record mutations after $dispose()', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('disposed-test', {
+			state: () => ({ count: 0 }),
+			actions: {
+				increment() {
+					this.count += 1;
+				}
+			}
+		});
+
+		const store = useStore(manager);
+		const mutationSpy = vi.fn();
+		store.$subscribe(mutationSpy, { detached: true });
+
+		store.$patch({ count: 1 });
+		expect(mutationSpy).toHaveBeenCalledTimes(1);
+
+		store.$dispose();
+		store.$patch({ count: 2 });
+		store.increment();
+
+		// No additional calls after dispose
+		expect(mutationSpy).toHaveBeenCalledTimes(1);
 	});
 });

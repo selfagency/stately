@@ -36,4 +36,30 @@ describe('createSetupStore', () => {
 		expect(counter.doubleCount).toBe(6);
 		expect(counter.label).toBe('Updated');
 	});
+
+	it('forwards accessor properties with both getter and setter to the shell store', () => {
+		let _value = 10;
+		const store = createSetupStore('accessor-store', () => {
+			return Object.defineProperties(
+				{},
+				{
+					value: {
+						enumerable: true,
+						configurable: true,
+						get() {
+							return _value;
+						},
+						set(v: number) {
+							_value = v * 2;
+						}
+					}
+				}
+			) as { value: number };
+		});
+
+		expect(store.value).toBe(10);
+		store.value = 5;
+		expect(_value).toBe(10);
+		expect(store.value).toBe(10);
+	});
 });
