@@ -151,7 +151,12 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				flush,
 				rehydrate,
 				async clear() {
+					const wasPaused = paused;
+					paused = true;
+					await flushQueue.catch(() => undefined);
 					await persist.adapter.removeItem(key);
+					flushQueue = Promise.resolve();
+					paused = wasPaused;
 				},
 				pause() {
 					paused = true;

@@ -88,7 +88,7 @@ function assertValidStoreDefinition(
 		!isSetupStoreOptions(definition)
 	) {
 		throw new Error(
-			`Invalid store definition for "${id}". Expected an options object or setup function.`
+			`Invalid store definition for "${id}". Expected an options object, a setup function, or a setup options object.`
 		);
 	}
 }
