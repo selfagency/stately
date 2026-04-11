@@ -1,5 +1,6 @@
 import { SvelteSet } from 'svelte/reactivity';
 import type { StoreActionHookContext, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
+import { createMutationQueue } from './mutation-queue.svelte.js';
 
 type AnyRecord = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,7 +17,6 @@ type StoreActionSubscriber<Store extends object> = (
 
 export interface StoreShell<Id extends string, State extends StoreState, Store extends object> {
 	readonly $id: Id;
-	$id: Id;
 	$state: State;
 	$patch(partial: Partial<State> | ((state: State) => void)): void;
 	$reset(): void;
@@ -58,7 +58,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 }): StoreShellBuilder<Id, State, Store> {
 	const mutationSubscribers = new SvelteSet<StoreSubscriptionCallback<Id, State, Store>>();
 	const actionSubscribers = new SvelteSet<StoreActionSubscriber<Store>>();
-	let suppressMutation = false;
+	let suppressDirectMutation = false;
 	let disposed = false;
 	const initialState = cloneState(config.state);
 	const shellStore = config.store as Store & StoreShell<Id, State, Store & StoreShell<Id, State, Store>>;
@@ -80,18 +80,15 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		}
 	};
 
-	const withSuppressedMutation = (type: StoreMutationContext<Id, Store>['type'], payload: unknown, operation: () => void): void => {
-		const previous = suppressMutation;
-		suppressMutation = true;
-		operation();
-		suppressMutation = previous;
-		notifyMutation(type, payload);
-	};
+	const mutationQueue = createMutationQueue({
+		storeId: config.id,
+		notify: notifyMutation
+	});
 
 	const setStateValue = <Key extends keyof State>(key: Key, value: State[Key]): void => {
 		Reflect.set(config.state, key, value);
-		if (!suppressMutation) {
-			notifyMutation('direct', { key, value });
+		if (!suppressDirectMutation) {
+			mutationQueue.recordChange({ key, value });
 		}
 	};
 
@@ -188,8 +185,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 				return config.state;
 			},
 			set(nextState: State) {
-				withSuppressedMutation('patch-object', nextState, () => {
+				mutationQueue.run('patch-object', nextState, () => {
+					suppressDirectMutation = true;
 					syncState(config.state, nextState);
+					suppressDirectMutation = false;
 				});
 			}
 		},
@@ -198,16 +197,18 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			configurable: false,
 			value(patch: Partial<State> | ((state: State) => void)) {
 				if (typeof patch === 'function') {
-					withSuppressedMutation('patch-function', undefined, () => {
+					mutationQueue.run('patch-function', undefined, () => {
 						patch(config.state);
 					});
 					return;
 				}
 
-				withSuppressedMutation('patch-object', patch, () => {
+				mutationQueue.run('patch-object', patch, () => {
+					suppressDirectMutation = true;
 					for (const [key, value] of Object.entries(patch)) {
 						Reflect.set(config.state, key, value);
 					}
+					suppressDirectMutation = false;
 				});
 			}
 		},
@@ -215,8 +216,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			enumerable: false,
 			configurable: false,
 			value() {
-				withSuppressedMutation('patch-object', initialState, () => {
+				mutationQueue.run('patch-object', initialState, () => {
+					suppressDirectMutation = true;
 					syncState(config.state, cloneState(initialState));
+					suppressDirectMutation = false;
 				});
 			}
 		},

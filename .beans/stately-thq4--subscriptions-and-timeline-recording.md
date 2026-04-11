@@ -1,11 +1,11 @@
 ---
 # stately-thq4
 title: Subscriptions and timeline recording
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-11T00:12:14Z
-updated_at: 2026-04-11T00:12:14Z
+updated_at: 2026-04-11T02:23:10Z
 parent: stately-5ddl
 ---
 

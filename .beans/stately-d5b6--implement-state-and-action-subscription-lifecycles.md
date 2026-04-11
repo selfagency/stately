@@ -1,11 +1,11 @@
 ---
 # stately-d5b6
 title: Implement state and action subscription lifecycles
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-04-11T00:13:08Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T02:23:10Z
 parent: stately-thq4
 blocked_by:
     - stately-pz6d
