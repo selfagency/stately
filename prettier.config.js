@@ -19,7 +19,7 @@ export default {
 		}
 	],
 	plugins: ['prettier-plugin-svelte', 'prettier-plugin-organize-attributes'],
-	printWidth: 100,
+	printWidth: 120,
 	singleQuote: true,
 	trailingComma: 'none',
 	useTabs: true
