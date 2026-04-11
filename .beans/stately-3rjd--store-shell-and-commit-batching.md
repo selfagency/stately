@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: critical
 created_at: 2026-04-11T00:12:14Z
-updated_at: 2026-04-11T02:14:38Z
+updated_at: 2026-04-11T02:19:59Z
 parent: stately-5ddl
 ---
 
@@ -13,5 +13,6 @@ parent: stately-5ddl
 Implement store instance helpers and grouped commit batching.
 
 ## Todo
-- [ ] Implement store shell helpers.
+
+- [x] Implement store shell helpers.
 - [ ] Implement grouped mutation queue.

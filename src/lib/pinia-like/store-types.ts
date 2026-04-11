@@ -28,12 +28,39 @@ export interface DefineStoreOptionsBase<State extends StoreState = StoreState, S
 	// plugins can augment definition options by extending this interface
 }
 
+export interface StoreSubscribeOptions {
+	detached?: boolean;
+}
+
+export interface StoreShellMethods<
+	Id extends string,
+	State extends StoreState,
+	Store extends object
+> {
+	readonly $id: Id;
+	$state: State;
+	$patch(partial: Partial<State> | ((state: State) => void)): void;
+	$reset(): void;
+	$subscribe(
+		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
+		options?: StoreSubscribeOptions
+	): () => void;
+	$onAction(
+		callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void
+	): () => void;
+	$dispose(): void;
+}
+
 export type StoreInstance<
 	Id extends string,
 	State extends StoreState = StoreState,
 	Getters extends StoreGetters = StoreGetters,
 	Actions extends StoreActions = StoreActions
-> = State & Readonly<Getters> & Actions & StoreCustomProperties & { readonly $id: Id };
+> = State &
+	Readonly<Getters> &
+	Actions &
+	StoreCustomProperties &
+	StoreShellMethods<Id, State, State & Readonly<Getters> & Actions & StoreCustomProperties>;
 
 export interface StoreDefinition<
 	Id extends string = string,

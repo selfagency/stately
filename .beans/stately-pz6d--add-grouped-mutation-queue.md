@@ -1,11 +1,11 @@
 ---
 # stately-pz6d
 title: Add grouped mutation queue
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-04-11T00:13:04Z
-updated_at: 2026-04-11T00:14:08Z
+updated_at: 2026-04-11T02:19:59Z
 parent: stately-3rjd
 blocked_by:
     - stately-dh46
