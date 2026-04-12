@@ -238,4 +238,28 @@ describe('FSM plugin', () => {
 
 		expect(() => useStore(manager)).toThrow();
 	});
+
+	it('rolls back current state when _enter hook throws', () => {
+		const manager = createStateManager().use(createFsmPlugin());
+		const useStore = defineStore('fsm-enter-rollback', {
+			state: () => ({ count: 0 }),
+			fsm: {
+				initial: 'idle',
+				states: {
+					idle: { START: 'loading' },
+					loading: {
+						_enter() {
+							throw new Error('enter failed');
+						}
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+
+		expect(() => store.$fsm.send('START')).toThrow('enter failed');
+
+		// State must be rolled back to 'idle', not stuck at 'loading'.
+		expect(store.$fsm.current).toBe('idle');
+	});
 });
