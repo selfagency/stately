@@ -6,6 +6,7 @@ import type {
 	StoreSubscribeOptions
 } from '../pinia-like/store-types.js';
 import { ASYNC_ACTION_MARKER } from './async-marker.js';
+import { readMarker, writeMarker } from '../internal/marker-helpers.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
@@ -174,8 +175,8 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 				}
 			};
 
-			if ((action as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
-				(wrapped as unknown as Record<symbol, boolean>)[ASYNC_ACTION_MARKER] = true;
+			if (readMarker<boolean>(action, ASYNC_ACTION_MARKER)) {
+				writeMarker<boolean>(wrapped, ASYNC_ACTION_MARKER, true);
 			}
 
 			return wrapped as Action;

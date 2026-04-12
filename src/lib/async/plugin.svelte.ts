@@ -1,6 +1,7 @@
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
+import { readMarker } from '../internal/marker-helpers.js';
 import type { ConcurrencyMode } from './concurrency.js';
 import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
 
@@ -48,7 +49,7 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 
 			// By default we only wrap actions that were originally declared async.
 			// `include` also acts as an explicit opt-in for Promise-returning actions declared without `async`.
-			if (!isExplicitlyIncluded && !(value as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
+			if (!isExplicitlyIncluded && !readMarker<boolean>(value, ASYNC_ACTION_MARKER)) {
 				continue;
 			}
 

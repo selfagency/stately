@@ -6,6 +6,7 @@ import type {
 	StoreSubscribeOptions
 } from '../pinia-like/store-types.js';
 import { ASYNC_ACTION_MARKER } from './async-marker.js';
+import { writeMarker } from '../internal/marker-helpers.js';
 import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';
@@ -307,7 +308,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		};
 
 		if (action.constructor?.name === 'AsyncFunction') {
-			(actionWithMutationInference as unknown as Record<symbol, boolean>)[ASYNC_ACTION_MARKER] = true;
+			writeMarker<boolean>(actionWithMutationInference, ASYNC_ACTION_MARKER, true);
 		}
 
 		Object.defineProperty(shellStore, key, {
