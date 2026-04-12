@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-sans: 'Avenir Next', 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+	--color-background: #07111b;
+	--color-foreground: #e9f1fb;
+	--color-card: #0b1522;
+	--color-card-foreground: #edf4ff;
+	--color-popover: #0d1827;
+	--color-popover-foreground: #edf4ff;
+	--color-primary: #8ad4ff;
+	--color-primary-foreground: #07111b;
+	--color-secondary: #132335;
+	--color-secondary-foreground: #dbeafe;
+	--color-muted: #102032;
+	--color-muted-foreground: #95a9c3;
+	--color-accent: #f5c76b;
+	--color-accent-foreground: #1a1203;
+	--color-border: rgb(148 163 184 / 0.18);
+	--color-input: rgb(148 163 184 / 0.16);
+	--color-ring: rgb(138 212 255 / 0.55);
+}
+
+@source "./InspectorDrawer.svelte";
+@source "../components/ui/**/*.svelte";
+
+@layer base {
+	:root,
+	.stately-inspector-theme {
+		color-scheme: dark;
+	}
+}

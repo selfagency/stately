@@ -1,3 +1,4 @@
+import { reportStatelyInspectorNotice } from '../inspector/notice.js';
 import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
@@ -95,7 +96,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 			try {
 				encoded = compression ? compression.compress(payload) : payload;
 			} catch {
-				console.warn(`[stately] Compression failed for store "${store.$id}". Falling back to uncompressed.`);
+				reportStatelyInspectorNotice(`Compression failed for store "${store.$id}". Falling back to uncompressed.`);
 				encoded = payload;
 			}
 
@@ -118,7 +119,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 			try {
 				source = compression ? compression.decompress(raw) : raw;
 			} catch {
-				console.warn(`[stately] Decompression failed for store "${store.$id}".`);
+				reportStatelyInspectorNotice(`Decompression failed for store "${store.$id}".`);
 				return false;
 			}
 
@@ -142,7 +143,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 
 			const result = deserializePersistedState(source, persist);
 			if (!result.ok) {
-				console.warn(`[stately] Rehydration failed for store "${store.$id}": ${result.error}`);
+				reportStatelyInspectorNotice(`Rehydration failed for store "${store.$id}": ${result.error}`);
 				return false;
 			}
 

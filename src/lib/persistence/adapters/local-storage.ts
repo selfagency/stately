@@ -1,3 +1,4 @@
+import { reportStatelyInspectorNotice } from '../../inspector/notice.js';
 import type { PersistenceAdapter } from '../types.js';
 
 interface StorageLike {
@@ -39,7 +40,7 @@ export function createLocalStorageAdapter(storage?: StorageLike): PersistenceAda
 				s.setItem(key, value);
 			} catch (error) {
 				if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-					console.warn(`[stately] localStorage quota exceeded for key "${key}".`);
+					reportStatelyInspectorNotice(`localStorage quota exceeded for key "${key}".`);
 					return;
 				}
 				throw error;

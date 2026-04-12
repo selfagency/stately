@@ -1,7 +1,8 @@
-import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
+import lzString from 'lz-string';
 import type { PersistCompression } from '../types.js';
 
 const PREFIX = 'lz:';
+const { compressToUTF16, decompressFromUTF16 } = lzString;
 
 export function createLzStringCompression(): PersistCompression {
 	return {

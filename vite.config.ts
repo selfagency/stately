@@ -1,11 +1,19 @@
 import { codecovVitePlugin } from '@codecov/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { statelyVitePlugin } from './src/lib/inspector/vite-plugin.js';
 
 export default defineConfig({
 	plugins: [
+		tailwindcss(),
 		sveltekit(),
+		!process.env.VITEST &&
+			statelyVitePlugin({
+				buttonPosition: 'right-bottom',
+				panelSide: 'right'
+			}),
 		codecovVitePlugin({
 			enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
 			bundleName: '@selfagency/stately',
@@ -17,7 +25,17 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			include: ['src/lib/**'],
-			exclude: ['src/lib/examples/**', 'src/lib/vitest-examples/**'],
+			exclude: [
+				'src/lib/examples/**',
+				'src/lib/vitest-examples/**',
+				'src/lib/components/**',
+				'src/lib/hooks/**',
+				'src/lib/**/index.ts',
+				'src/lib/**/types.ts',
+				'src/lib/**/*.d.ts',
+				'src/lib/**/*.css',
+				'src/lib/inspector/runtime/**'
+			],
 			thresholds: {
 				statements: 70,
 				branches: 70,

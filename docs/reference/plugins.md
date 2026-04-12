@@ -154,3 +154,9 @@ const manager = createStateManager().use(
 Plugins commonly extend `$dispose()` to clean up subscriptions, transports, or other external resources.
 That means you should treat `$dispose()` as the store’s teardown point, not
 just a convenience method.
+
+## Development inspector
+
+The inspector is not a state-manager plugin, so it is documented separately.
+Use [Inspector](/reference/inspector) for the dev-only runtime helpers and the
+Vite integration export.

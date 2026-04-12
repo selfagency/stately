@@ -74,7 +74,7 @@ jobs:
         run: pnpm run build
 
       - name: Run unit and browser tests
-        run: pnpm run test --coverage --reporter=junit --outputFile=test-report.junit.xml
+        run: pnpm run test --coverage --reporter=verbose --reporter=junit --outputFile=test-report.junit.xml
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}

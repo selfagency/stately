@@ -1,3 +1,4 @@
+import type { StatelyInspectorHook } from '../inspector/types.js';
 import type { StoreActionHookContext, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
@@ -5,6 +6,8 @@ import { createSubscriptions } from './subscriptions.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
+
+const statelyInspectorHookKey = Symbol.for('stately.inspector.hook');
 
 export interface StoreShell<Id extends string, State extends StoreState, Store extends object> {
 	readonly $id: Id;
@@ -119,6 +122,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		state: () => shellStore.$state,
 		store: () => shellStore
 	});
+	let unregisterInspectorStore: (() => void) | undefined;
 
 	subscriptions.onAction(({ name, args, after, onError }) => {
 		const action = timeline.startAction({
@@ -311,6 +315,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 					return;
 				}
 				disposed = true;
+				unregisterInspectorStore?.();
 				subscriptions.clear();
 				config.onDispose?.();
 			}
@@ -339,6 +344,11 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			}
 		}
 	});
+
+	const globalHook = Reflect.get(globalThis, statelyInspectorHookKey) as StatelyInspectorHook | undefined;
+	if (globalHook?.register) {
+		unregisterInspectorStore = globalHook.register(shellStore, timeline);
+	}
 
 	return {
 		store: shellStore,
