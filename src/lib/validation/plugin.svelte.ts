@@ -34,7 +34,7 @@ function readValidateOptions(value: unknown):
 declare module '../pinia-like/store-types.js' {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	interface DefineStoreOptionsBase<State, Store> {
-		validate?: (state: Record<string, unknown>) => boolean | string;
+		validate?: (state: State) => boolean | string;
 		onValidationError?: (error: string) => void;
 	}
 }

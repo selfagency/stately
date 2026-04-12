@@ -35,6 +35,8 @@ Behavior notes:
 - injects through the Vite dev client path
 - mounts a singleton browser inspector host
 - should not be combined with a second manually rendered `InspectorDrawer`
+- ships typed support for the internal `virtual:stately-inspector-options`
+	module used by the loader bridge
 
 ### Options
 
@@ -61,6 +63,10 @@ statelyVitePlugin({
 
 When `enabled` is `false`, the plugin resolves no virtual inspector modules and
 skips client injection entirely.
+
+The published `@selfagency/stately/inspector/vite` entrypoint also carries the
+ambient type declaration for `virtual:stately-inspector-options`, so editor
+support remains intact when the plugin is consumed from the packaged library.
 
 ## `InspectorDrawer`
 

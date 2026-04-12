@@ -5,11 +5,9 @@ type AnyFunction = (...args: any[]) => unknown;
 
 type RecordWithFunctions = Record<string, AnyFunction>;
 
-type ObjectLike = object;
+export type StoreState<TState extends object = object> = TState;
 
-export type StoreState<TState extends ObjectLike = object> = TState;
-
-export type StoreGetters<TGetters extends ObjectLike = object> = TGetters;
+export type StoreGetters<TGetters extends object = object> = TGetters;
 
 export type StoreActions<TActions extends RecordWithFunctions = RecordWithFunctions> = TActions;
 
@@ -28,10 +26,10 @@ export interface DefineStoreOptionsBase<State extends StoreState = StoreState, S
 	// plugins can augment definition options by extending this interface
 }
 
-export interface StoreSubscribeOptions<State extends StoreState = StoreState> {
+export interface StoreSubscribeOptions<State extends StoreState = StoreState, Selected = State> {
 	detached?: boolean;
-	select?: (state: State) => unknown;
-	equalityFn?: (previous: unknown, next: unknown) => boolean;
+	select?: (state: State) => Selected;
+	equalityFn?: (previous: Selected, next: Selected) => boolean;
 }
 
 export interface StoreShellMethods<Id extends string, State extends StoreState, Store extends object> {
@@ -39,9 +37,9 @@ export interface StoreShellMethods<Id extends string, State extends StoreState, 
 	$state: State;
 	$patch(partial: Partial<State> | ((state: State) => void)): void;
 	$reset(): void;
-	$subscribe(
+	$subscribe<Selected = State>(
 		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
-		options?: StoreSubscribeOptions<State>
+		options?: StoreSubscribeOptions<State, Selected>
 	): () => void;
 	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
@@ -54,6 +52,7 @@ export type StoreInstance<
 	State extends StoreState = StoreState,
 	Getters extends StoreGetters = StoreGetters,
 	Actions extends StoreActions = StoreActions
+
 > = State &
 	Readonly<Getters> &
 	Actions &

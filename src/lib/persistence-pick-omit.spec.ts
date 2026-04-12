@@ -82,7 +82,7 @@ describe('persistence pick/omit', () => {
 				adapter,
 				pick: ['a'],
 				omit: ['b']
-			} as PersistOptions<{ a: number; b: number }>
+			} as unknown as PersistOptions<{ a: number; b: number }>
 		});
 
 		expect(() => useStore(manager)).toThrow(/pick.*omit/i);
