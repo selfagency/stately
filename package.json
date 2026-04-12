@@ -88,7 +88,7 @@
 		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && node scripts/release.js --dry-run",
 		"release:version": "changeset version",
 		"test": "npm run test:unit -- --run",
-		"test:coverage": "vitest --coverage",
+		"test:coverage": "vitest --run --coverage",
 		"test:unit": "vitest",
 		"validate:pre-push": "pnpm run check && pnpm run test",
 		"validate:staged": "lint-staged"

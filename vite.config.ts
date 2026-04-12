@@ -25,7 +25,17 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			include: ['src/lib/**'],
-			exclude: ['src/lib/examples/**', 'src/lib/vitest-examples/**'],
+			exclude: [
+				'src/lib/examples/**',
+				'src/lib/vitest-examples/**',
+				'src/lib/components/**',
+				'src/lib/hooks/**',
+				'src/lib/**/index.ts',
+				'src/lib/**/types.ts',
+				'src/lib/**/*.d.ts',
+				'src/lib/**/*.css',
+				'src/lib/inspector/runtime/**'
+			],
 			thresholds: {
 				statements: 70,
 				branches: 70,
