@@ -1,6 +1,5 @@
 # Finite state machines
 
-Workflow state, handled with ceremony.
 This page documents the public finite-state-machine surface exposed by `createFsmPlugin()`.
 
 ## `createFsmPlugin()`

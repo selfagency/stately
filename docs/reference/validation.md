@@ -1,6 +1,5 @@
 # Validation
 
-The gates are well-documented.
 This page covers the public validation surface exposed by `createValidationPlugin()`.
 
 ## `createValidationPlugin()`
@@ -30,6 +29,8 @@ Validation runs after the patch is applied.
 
 - `true` — accept the patch
 - `undefined` — accept the patch
+- `false` — restore the previous snapshot, call `onValidationError` if present,
+  then throw `Error('Validation failed')`
 - string — restore the previous snapshot, call `onValidationError` if present,
   then throw `Error(message)`
 - throws — restore the previous snapshot, then rethrow the original error

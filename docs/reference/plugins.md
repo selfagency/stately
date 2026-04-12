@@ -122,8 +122,8 @@ Key behavior:
 
 - runs after the patch is applied
 - accepts the mutation when `validate()` returns `true` or `undefined`
-- restores the previous snapshot when `validate()` returns an error string
-- calls `onValidationError` before throwing when an error string is returned
+- restores the previous snapshot and throws `Error('Validation failed')` when `validate()` returns `false`; calls `onValidationError` first if present
+- restores the previous snapshot when `validate()` returns an error string; calls `onValidationError` before throwing
 - restores the previous snapshot and rethrows if `validate()` itself throws
 
 Read [Validation](/reference/validation) for the full contract.

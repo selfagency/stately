@@ -1,6 +1,5 @@
 # Persistence helpers
 
-Durability, properly archived.
 This page covers the persistence-specific helpers, option types, and adapter contracts
 used by `createPersistencePlugin()`.
 

@@ -1,7 +1,6 @@
 # Validation
 
-The validation plugin stands watch at the gates of your state.
-Use it when a store should reject invalid state immediately after a patch runs.
+Use this plugin when a store should reject invalid state immediately after a patch runs.
 
 This is a good fit for forms, constrained editors, and domain state with
 invariants that should never survive past the current mutation.
@@ -46,7 +45,8 @@ Validation runs after `$patch()` applies the mutation.
 Validation outcomes work like this:
 
 - return `true` or `undefined` — accept the patch
-- return a string — roll back the patch and throw an `Error` with that message
+- return `false` — roll back the patch, call `onValidationError` if present, and throw `Error('Validation failed')`
+- return a string — roll back the patch, call `onValidationError` if present, and throw an `Error` with that message
 - throw from `validate()` — roll back the patch and rethrow the original error
 
 That rollback behavior is important: invalid state does not remain in the store after validation fails.

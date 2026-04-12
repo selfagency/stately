@@ -31,4 +31,4 @@ updated_at: 2026-04-12T20:25:22Z
 - Expanded core, plugin, persistence, examples, and troubleshooting docs to cover selective subscriptions, action guards, sync ordering, history batching, TTL persistence, and async cancellation.
 - Verified the docs with `pnpm run docs:build`, `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build`.
 
-- Refined `README.md` again to emphasize the inspector, clarify the library for readers unfamiliar with Pinia, remove low-value maintainer-oriented sections, and shift the voice toward a more confidently regal Stately tone.
+- Refined `README.md` again to emphasize the inspector, clarify the library for readers unfamiliar with Pinia, and remove low-value maintainer-oriented sections.
