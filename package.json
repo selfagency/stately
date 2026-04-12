@@ -1,6 +1,6 @@
 {
 	"name": "@selfagency/stately",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Pinia-inspired state management for Svelte 5 and SvelteKit with persistence, history, sync, and async orchestration.",
 	"private": false,
 	"keywords": [
