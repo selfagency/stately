@@ -17,7 +17,8 @@ describe('stately inspector store registration', () => {
 		const registrations = hook.listStores();
 
 		expect(registrations).toHaveLength(1);
-		expect(registrations[0]?.id).toBe('inspector-counter');
+		expect(registrations[0]?.id).toMatch(/^inspector-counter::\d+$/);
+		expect(registrations[0]?.label).toBe('inspector-counter');
 		expect(registrations[0]?.read()).toMatchObject({
 			id: 'inspector-counter',
 			state: { count: 0 },
