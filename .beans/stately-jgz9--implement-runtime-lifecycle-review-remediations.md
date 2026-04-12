@@ -1,9 +1,11 @@
 ---
 # stately-jgz9
-title: Implement runtime lifecycle review remediations
+title: 'Implement runtime lifecycle review remediations'
 status: completed
 type: bug
 priority: high
+branch: fix/jgz9-runtime-lifecycle-remediations
+pr: 13
 created_at: 2026-04-12T16:29:43Z
 updated_at: 2026-04-12T16:39:23Z
 ---

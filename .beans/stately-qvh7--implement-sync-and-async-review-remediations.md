@@ -1,9 +1,11 @@
 ---
 # stately-qvh7
-title: Implement sync and async review remediations
+title: 'Implement sync and async review remediations'
 status: completed
 type: bug
 priority: high
+branch: fix/qvh7-sync-async-review-remediations
+pr: 13
 created_at: 2026-04-12T16:49:55Z
 updated_at: 2026-04-12T16:58:46Z
 ---
