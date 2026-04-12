@@ -1,13 +1,19 @@
 import { codecovVitePlugin } from '@codecov/vite-plugin';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 import { statelyVitePlugin } from './src/lib/inspector/vite-plugin.js';
 
 export default defineConfig({
 	plugins: [
+		tailwindcss(),
 		sveltekit(),
-		!process.env.VITEST && statelyVitePlugin(),
+		!process.env.VITEST &&
+			statelyVitePlugin({
+				buttonPosition: 'right-bottom',
+				panelSide: 'right'
+			}),
 		codecovVitePlugin({
 			enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
 			bundleName: '@selfagency/stately',
