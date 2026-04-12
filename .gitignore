@@ -189,6 +189,7 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
+src/lib/inspector/style.css
 
 ### Svelte ###
 # gitignore template for the SvelteKit, frontend web component framework
@@ -249,3 +250,5 @@ $RECYCLE.BIN/
 
 docs/.vitepress/dist
 .playwright-mcp
+*.junit.xml
+src/lib/inspector/style.css

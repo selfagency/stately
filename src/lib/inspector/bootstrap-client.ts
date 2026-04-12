@@ -1,3 +1,4 @@
+import './style.css';
 import { mount, unmount } from 'svelte';
 import InspectorDrawer from './InspectorDrawer.svelte';
 import {

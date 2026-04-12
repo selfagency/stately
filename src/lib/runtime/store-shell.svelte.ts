@@ -22,7 +22,7 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
 	$reset(): void;
 	$subscribe(
 		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
-		options?: StoreSubscribeOptions
+		options?: StoreSubscribeOptions<State>
 	): () => void;
 	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
@@ -317,7 +317,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		},
 		$patch: {
 			enumerable: false,
-			configurable: false,
+			configurable: true,
 			value(patch: Partial<State> | ((state: State) => void)) {
 				if (typeof patch === 'function') {
 					mutationQueue.run('patch-function', undefined, () => {
