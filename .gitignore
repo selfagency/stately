@@ -250,3 +250,5 @@ $RECYCLE.BIN/
 
 docs/.vitepress/dist
 .playwright-mcp
+*.junit.xml
+src/lib/inspector/style.css
