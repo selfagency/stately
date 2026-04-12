@@ -1,5 +1,4 @@
 import type { StateManagerPlugin } from '../root/types.js';
-import { SvelteSet } from 'svelte/reactivity';
 import type { StoreMutationContext } from '../pinia-like/store-types.js';
 import { sanitizeValue } from '../internal/sanitize.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
@@ -48,7 +47,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 ): StateManagerPlugin {
 	const origin = options.origin ?? createOrigin();
 	const version = options.version ?? 1;
-	const createId = options.createId ?? (() => Date.now());
+	const createId = options.createId;
 	const createTimestamp = options.createTimestamp ?? (() => Date.now());
 
 	return ({ store }) => {
@@ -72,9 +71,11 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			] as SyncTransport<Message>[]);
 
 		let applyingRemote = false;
-		let lastSeenMutationId = 0;
-
-		const knownStateKeys = new SvelteSet(Object.keys(store.$state));
+		let nextOutgoingId = 0;
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map; used in event handler closures, not reactive context
+		const receivedMutationIds = new Map<string, number>();
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Set; used for key lookup only, not reactive
+		const knownStateKeys = new Set(Object.keys(store.$state));
 
 		function filterToKnownKeys(remote: Record<string, unknown>): Record<string, unknown> | undefined {
 			const filtered: Record<string, unknown> = {};
@@ -105,7 +106,8 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 						return;
 					}
 
-					if (parsed.mutationId <= lastSeenMutationId) {
+					const lastReceived = receivedMutationIds.get(parsed.origin) ?? 0;
+					if (parsed.mutationId <= lastReceived) {
 						return;
 					}
 
@@ -114,12 +116,15 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 						return;
 					}
 
-					lastSeenMutationId = parsed.mutationId;
 					applyingRemote = true;
-					store.$patch(validatedState);
-					applyingRemote = false;
+					try {
+						store.$patch(validatedState);
+						receivedMutationIds.set(parsed.origin, parsed.mutationId);
+					} finally {
+						applyingRemote = false;
+					}
 				} catch {
-					applyingRemote = false;
+					// Message parse or validation error — skip silently
 				}
 			})
 		);
@@ -129,8 +134,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 				return;
 			}
 
-			const mutationId = options.createId ? createId() : lastSeenMutationId + 1;
-			lastSeenMutationId = mutationId;
+			const mutationId = createId ? createId() : ++nextOutgoingId;
 			const message = {
 				storeId: store.$id,
 				origin,

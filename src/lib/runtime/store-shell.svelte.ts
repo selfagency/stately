@@ -1,5 +1,11 @@
 import type { StatelyInspectorHook } from '../inspector/types.js';
-import type { StoreActionHookContext, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
+import type {
+	StoreActionHookContext,
+	StoreMutationContext,
+	StoreState,
+	StoreSubscribeOptions
+} from '../pinia-like/store-types.js';
+import { ASYNC_ACTION_MARKER } from './async-marker.js';
 import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';
@@ -14,7 +20,10 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
 	$state: State;
 	$patch(partial: Partial<State> | ((state: State) => void)): void;
 	$reset(): void;
-	$subscribe(callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void): () => void;
+	$subscribe(
+		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
+		options?: StoreSubscribeOptions
+	): () => void;
 	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
 	subscribe(run: (value: State) => void, invalidate?: (value?: State) => void): () => void;
@@ -44,6 +53,10 @@ function isStateEqual(left: unknown, right: unknown, visited = new WeakSet<objec
 		return false;
 	}
 
+	if (left === null || right === null) {
+		return false;
+	}
+
 	if (Array.isArray(left) && Array.isArray(right)) {
 		if (left.length !== right.length) {
 			return false;
@@ -53,6 +66,7 @@ function isStateEqual(left: unknown, right: unknown, visited = new WeakSet<objec
 			return true;
 		}
 		visited.add(left);
+		visited.add(right);
 
 		for (let index = 0; index < left.length; index += 1) {
 			if (!isStateEqual(Reflect.get(left, index), Reflect.get(right, index), visited)) {
@@ -63,11 +77,42 @@ function isStateEqual(left: unknown, right: unknown, visited = new WeakSet<objec
 		return true;
 	}
 
-	if (typeof left === 'object' && left !== null && typeof right === 'object' && right !== null) {
+	if (typeof left === 'object' && typeof right === 'object') {
+		if ((left as object).constructor !== (right as object).constructor) {
+			return false;
+		}
+
+		if (left instanceof Date) {
+			return left.getTime() === (right as Date).getTime();
+		}
+
+		if (left instanceof RegExp) {
+			return left.source === (right as RegExp).source && left.flags === (right as RegExp).flags;
+		}
+
+		if (left instanceof Map) {
+			const r = right as Map<unknown, unknown>;
+			if (left.size !== r.size) return false;
+			for (const [k, v] of left) {
+				if (!r.has(k) || !isStateEqual(v, r.get(k), visited)) return false;
+			}
+			return true;
+		}
+
+		if (left instanceof Set) {
+			const r = right as Set<unknown>;
+			if (left.size !== r.size) return false;
+			for (const v of left) {
+				if (!r.has(v)) return false;
+			}
+			return true;
+		}
+
 		if (visited.has(left)) {
 			return true;
 		}
 		visited.add(left);
+		visited.add(right);
 
 		const leftKeys = Object.keys(left);
 		const rightKeys = Object.keys(right);
@@ -230,6 +275,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			}
 		};
 
+		if (action.constructor?.name === 'AsyncFunction') {
+			(actionWithMutationInference as unknown as Record<symbol, boolean>)[ASYNC_ACTION_MARKER] = true;
+		}
+
 		Object.defineProperty(shellStore, key, {
 			enumerable: true,
 			configurable: true,
@@ -254,8 +303,11 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			set(nextState: State) {
 				mutationQueue.run('patch-object', nextState, () => {
 					suppressDirectMutation = true;
-					syncState(config.state, nextState);
-					suppressDirectMutation = false;
+					try {
+						syncState(config.state, nextState);
+					} finally {
+						suppressDirectMutation = false;
+					}
 				});
 			}
 		},
@@ -272,10 +324,13 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 
 				mutationQueue.run('patch-object', patch, () => {
 					suppressDirectMutation = true;
-					for (const [key, value] of Object.entries(patch)) {
-						Reflect.set(config.state, key, value);
+					try {
+						for (const [key, value] of Object.entries(patch)) {
+							Reflect.set(config.state, key, value);
+						}
+					} finally {
+						suppressDirectMutation = false;
 					}
-					suppressDirectMutation = false;
 				});
 			}
 		},
@@ -285,8 +340,11 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			value() {
 				mutationQueue.run('patch-object', initialState, () => {
 					suppressDirectMutation = true;
-					syncState(config.state, cloneState(initialState));
-					suppressDirectMutation = false;
+					try {
+						syncState(config.state, cloneState(initialState));
+					} finally {
+						suppressDirectMutation = false;
+					}
 				});
 			}
 		},
@@ -338,8 +396,11 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 			value(value: State) {
 				mutationQueue.run('patch-object', value, () => {
 					suppressDirectMutation = true;
-					syncState(config.state, value);
-					suppressDirectMutation = false;
+					try {
+						syncState(config.state, value);
+					} finally {
+						suppressDirectMutation = false;
+					}
 				});
 			}
 		}

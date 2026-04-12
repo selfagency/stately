@@ -1,4 +1,5 @@
 import { reportStatelyInspectorNotice } from '../inspector/notice.js';
+import { sanitizeValue } from '../internal/sanitize.js';
 import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
@@ -80,6 +81,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		let paused = false;
 		let rehydrating = false;
 		let flushQueue = Promise.resolve();
+		let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 		const flush = async () => {
 			if (paused || rehydrating || isReplayActive(store)) {
@@ -134,7 +136,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				}
 				rehydrating = true;
 				try {
-					store.$patch(parsed.state);
+					store.$patch(sanitizeValue(parsed.state) as Partial<typeof store.$state>);
 					return true;
 				} finally {
 					rehydrating = false;
@@ -157,12 +159,26 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		};
 
 		const ready = rehydrate().then(() => undefined);
+		const handleFlushError = (error: unknown) => {
+			if (persist.onError) {
+				persist.onError(error);
+			} else {
+				reportStatelyInspectorNotice(`Flush failed for store "${store.$id}": ${String(error)}`);
+			}
+		};
 		const unsubscribe = store.$subscribe(() => {
-			void flush().catch(() => {});
+			const doFlush = () => void flush().catch(handleFlushError);
+			if (persist.debounce) {
+				clearTimeout(debounceTimer);
+				debounceTimer = setTimeout(doFlush, persist.debounce);
+			} else {
+				doFlush();
+			}
 		});
 		const dispose = store.$dispose.bind(store);
 		Object.defineProperty(store, '$dispose', {
 			value() {
+				clearTimeout(debounceTimer);
 				unsubscribe();
 				dispose();
 			},

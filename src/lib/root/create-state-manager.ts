@@ -79,9 +79,20 @@ export function createStateManager(): StateManager {
 			return store;
 		},
 		deleteStore(id) {
+			definitions.delete(id);
 			return stores.delete(id);
 		},
 		clear() {
+			for (const store of stores.values()) {
+				if (
+					typeof store === 'object' &&
+					store !== null &&
+					'$dispose' in store &&
+					typeof (store as Record<string, unknown>).$dispose === 'function'
+				) {
+					(store as { $dispose: () => void }).$dispose();
+				}
+			}
 			stores.clear();
 			definitions.clear();
 		}

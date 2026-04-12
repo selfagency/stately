@@ -100,7 +100,6 @@
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
 		"@internationalized/date": "^3.12.0",
-		"@lucide/svelte": "^1.8.0",
 		"@shikijs/langs": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
 		"@sveltejs/adapter-auto": "^7.0.1",
@@ -143,8 +142,8 @@
 		"vitest-browser-svelte": "^2.1.0"
 	},
 	"dependencies": {
+		"@lucide/svelte": "^1.8.0",
 		"class-variance-authority": "^0.7.1",
-		"lucide-svelte": "^1.0.1",
 		"lz-string": "^1.5.0"
 	},
 	"peerDependencies": {

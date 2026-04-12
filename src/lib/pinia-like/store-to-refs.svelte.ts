@@ -1,5 +1,3 @@
-import { SvelteSet } from 'svelte/reactivity';
-
 type AnyRecord = object;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,7 +12,8 @@ export type StoreRefs<Store extends AnyRecord> = {
 };
 
 function collectKeys(value: object): string[] {
-	const keys = new SvelteSet<string>();
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Set; not used in reactive context
+	const keys = new Set<string>();
 	let current: object | null = value;
 
 	while (current && current !== Object.prototype) {

@@ -40,7 +40,7 @@ export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {
 				return id;
 			}
 
-			if (id.startsWith(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX) && !id.includes('..')) {
+			if (id.startsWith(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX)) {
 				return id.replace(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX, `${runtimePath}/`);
 			}
 		},
@@ -54,8 +54,8 @@ export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {
 			}
 
 			if (id.startsWith(runtimePath)) {
-				const file = cleanInspectorUrl(id);
-				if (fs.existsSync(file)) {
+				const file = path.normalize(cleanInspectorUrl(id));
+				if (file.startsWith(runtimePath) && fs.existsSync(file)) {
 					return fs.readFileSync(file, 'utf8');
 				}
 			}

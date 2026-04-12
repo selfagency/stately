@@ -12,7 +12,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 export function sanitizeValue<T>(value: T, depth = 0): T {
 	if (depth > MAX_DEPTH) {
-		return {} as T;
+		return value;
 	}
 
 	if (Array.isArray(value)) {
