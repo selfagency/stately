@@ -160,46 +160,4 @@ Visit [stately.self.agency](https://stately.self.agency/) for the full documenta
 
 ## AI Agent Skill
 
-Stately ships an [AI agent skill](https://github.com/antfu/skills-npm) that helps LLM coding agents (Cursor, Windsurf, GitHub Copilot, etc.) work with the library correctly.
-
-### Setup
-
-1. Install [`skills-npm`](https://github.com/antfu/skills-npm) in your project:
-
-   ```sh
-   pnpm add -D skills-npm
-   ```
-
-2. Add a `prepare` script so skills are symlinked on install:
-
-   ```jsonc
-   // package.json
-   {
-   	"scripts": {
-   		"prepare": "skills-npm"
-   	}
-   }
-   ```
-
-   If you already have a `prepare` script, chain them: `"prepare": "husky && skills-npm"`
-
-3. Add the symlink output to `.gitignore`:
-
-   ```gitignore
-   skills/npm-*
-   ```
-
-4. Run `pnpm install` — the Stately skill will be symlinked into your agent's skills directory automatically.
-
-You can customize which agents or packages are included via a `skills-npm.config.ts`:
-
-```ts
-import { defineConfig } from 'skills-npm';
-
-export default defineConfig({
-	agents: ['cursor', 'windsurf'],
-	include: ['@selfagency/stately']
-});
-```
-
-See the [skills-npm docs](https://github.com/antfu/skills-npm) for all configuration options.
+Stately ships an AI agent skill that helps LLM coding agents (Cursor, Windsurf, GitHub Copilot, etc.) work with the library correctly. See the [AI Agent Skill guide](https://stately.self.agency/guide/ai-agent-skill) for setup instructions.

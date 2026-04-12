@@ -19,8 +19,12 @@ if (browser) {
 const demo = createShowcaseDemo();
 const primary = demo.primary;
 const peer = demo.peer;
+const wizard = demo.wizard;
+const form = demo.form;
+const preferences = demo.preferences;
 let savedSnapshot = $state('No manually saved snapshot yet.');
 let persistenceMode = $state<'live' | 'paused'>('live');
+let validationError = $state('');
 let activity = $state('Ready for experimentation.');
 
 const asyncStatus = $derived.by(() => {
@@ -73,6 +77,12 @@ const persistencePattern = `export const useDraftStore = defineStore('draft', {\
 const historyPattern = `const manager = createStateManager().use(createHistoryPlugin());\n\nstore.$history.startBatch();\nstore.increment();\nstore.increment();\nstore.$history.endBatch();\nstore.$timeTravel.goTo(0);`;
 
 const asyncPattern = `const manager = createStateManager().use(createAsyncPlugin());\n\nawait store.loadCount(12);\nstore.$async.loadCount.abort();\nif (store.$async.loadCount.isLoading) {\n\t// show pending UI\n}`;
+
+const fsmPattern = `const manager = createStateManager().use(createFsmPlugin());\n\nexport const useWizardStore = defineStore('wizard', {\n\tstate: () => ({ label: 'not started' }),\n\tfsm: {\n\t\tinitial: 'idle',\n\t\tstates: {\n\t\t\tidle:    { start: 'running' },\n\t\t\trunning: { pause: 'paused', finish: 'done', fail: 'failed' },\n\t\t\tpaused:  { resume: 'running', cancel: 'idle' },\n\t\t\tdone:    {},\n\t\t\tfailed:  { retry: 'running', cancel: 'idle' }\n\t\t}\n\t}\n});\n\nconst store = useWizardStore(manager);\nstore.$fsm.send('start');\nconsole.log(store.$fsm.current); // 'running'`;
+
+const validationPattern = `const manager = createStateManager().use(createValidationPlugin());\n\nexport const useFormStore = defineStore('form', {\n\tstate: () => ({ quantity: 1, email: '' }),\n\tvalidate(state) {\n\t\tif (state.quantity < 1) return 'Quantity must be at least 1.';\n\t\tif (!state.email.includes('@')) return 'Enter a valid email.';\n\t\treturn true;\n\t},\n\tonValidationError(err) { console.error(err); }\n});\n\n// Rejected — quantity below minimum\nstore.$patch({ quantity: -5 });`;
+
+const preferencesPattern = `export const usePreferencesStore = defineStore('preferences', {\n\tstate: () => ({ theme: 'light', compact: false, fontSize: 14 }),\n\tpersist: { adapter: createLocalStorageAdapter(), version: 1 },\n\tactions: {\n\t\ttoggleTheme() { this.theme = this.theme === 'light' ? 'dark' : 'light'; },\n\t\tsetFontSize(size) { this.fontSize = Math.max(10, Math.min(24, size)); }\n\t}\n});`;
 
 async function refreshSavedSnapshot() {
 	savedSnapshot = (await demo.persistence.read()) ?? 'No manually saved snapshot yet.';
@@ -160,6 +170,54 @@ async function loadAsyncTarget(target: number) {
 
 function cancelPendingAsyncLoad() {
 	primary.$async.loadCount.abort();
+}
+
+// FSM handlers
+function fsmSend(event: string) {
+	try {
+		wizard.$fsm.send(event);
+		activity = `FSM transition: ${event} → ${wizard.$fsm.current}`;
+	} catch {
+		activity = `FSM: transition '${event}' is not allowed in state '${wizard.$fsm.current}'.`;
+	}
+}
+
+// Validation handlers
+function applyQuantity(value: number) {
+	const before = form.quantity;
+	form.setQuantity(value);
+	if (form.quantity === before && value !== before) {
+		validationError = `Rejected: quantity ${value} failed validation.`;
+	} else {
+		validationError = '';
+		activity = `Quantity updated to ${form.quantity}.`;
+	}
+}
+
+function applyEmail(value: string) {
+	const before = form.email;
+	form.setEmail(value);
+	if (form.email === before && value !== before) {
+		validationError = `Rejected: '${value}' failed email validation.`;
+	} else {
+		validationError = '';
+	}
+}
+
+// Preferences handlers
+function togglePreferencesTheme() {
+	preferences.toggleTheme();
+	activity = `Theme changed to ${preferences.theme}.`;
+}
+
+function toggleCompact() {
+	preferences.setCompact(!preferences.compact);
+	activity = `Compact mode ${preferences.compact ? 'enabled' : 'disabled'}.`;
+}
+
+function adjustFontSize(delta: number) {
+	preferences.setFontSize(preferences.fontSize + delta);
+	activity = `Font size set to ${preferences.fontSize}px.`;
 }
 
 onMount(() => {
@@ -325,6 +383,150 @@ onMount(() => {
 							</p>
 						</Card.Content>
 					</Card.Root>
+				</ShowcaseSection>
+
+				<ShowcaseSection
+					label="Use case 05"
+					tag="Workflow lifecycle"
+					title="Model a task with explicit states — idle, running, paused, done, failed"
+					description="Replace boolean soup with a finite state machine. Stately enforces valid transitions and exposes a typed controller on the store."
+					code={fsmPattern}>
+					<div class="space-y-4">
+						<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+							<p class="text-muted-foreground mb-1 text-sm font-medium">Current FSM state</p>
+							<p data-testid="fsm-state" class="text-3xl font-semibold tracking-tight text-foreground">
+								{wizard.$fsm.current}
+							</p>
+						</div>
+						<div class="flex flex-wrap gap-3">
+							<Button type="button" onclick={() => fsmSend('start')} disabled={!wizard.$fsm.can('start')}>Start</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => fsmSend('pause')}
+								disabled={!wizard.$fsm.can('pause')}>Pause</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => fsmSend('resume')}
+								disabled={!wizard.$fsm.can('resume')}>Resume</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => fsmSend('finish')}
+								disabled={!wizard.$fsm.can('finish')}>Finish</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => fsmSend('fail')}
+								disabled={!wizard.$fsm.can('fail')}>Fail</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => fsmSend('retry')}
+								disabled={!wizard.$fsm.can('retry')}>Retry</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => fsmSend('cancel')}
+								disabled={!wizard.$fsm.can('cancel')}>Cancel</Button>
+						</div>
+					</div>
+				</ShowcaseSection>
+
+				<ShowcaseSection
+					label="Use case 06"
+					tag="Form validation"
+					title="Reject invalid state before it reaches the store"
+					description="Wrap any store with the validation plugin. Invalid patches are silently dropped — the store never enters a broken state."
+					code={validationPattern}>
+					<div class="space-y-4">
+						<div class="grid gap-4 sm:grid-cols-2">
+							<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+								<p class="text-muted-foreground mb-3 text-sm font-medium">Quantity (1–99)</p>
+								<div class="flex items-center gap-3">
+									<Button type="button" variant="outline" onclick={() => applyQuantity(form.quantity - 1)}>−</Button>
+									<span data-testid="form-quantity" class="w-10 text-center text-xl font-semibold"
+										>{form.quantity}</span>
+									<Button type="button" variant="outline" onclick={() => applyQuantity(form.quantity + 1)}>+</Button>
+									<Button type="button" variant="outline" onclick={() => applyQuantity(0)}>Try 0 (invalid)</Button>
+									<Button type="button" variant="outline" onclick={() => applyQuantity(999)}>Try 999 (invalid)</Button>
+								</div>
+							</div>
+							<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+								<p class="text-muted-foreground mb-3 text-sm font-medium">Email (optional)</p>
+								<input
+									type="text"
+									value={form.email}
+									oninput={(e) => applyEmail((e.target as HTMLInputElement).value)}
+									placeholder="user@example.com"
+									class="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+							</div>
+						</div>
+						{#if validationError}
+							<Card.Root size="sm" class="border-destructive/50 bg-destructive/5">
+								<Card.Content>
+									<p class="text-destructive text-sm">{validationError}</p>
+								</Card.Content>
+							</Card.Root>
+						{/if}
+						<Card.Root size="sm" class="shadow-xs">
+							<Card.Header>
+								<Card.Description>Validated state</Card.Description>
+							</Card.Header>
+							<Card.Content class="pt-0">
+								<pre class="overflow-x-auto text-sm">{JSON.stringify(
+										{ quantity: form.quantity, email: form.email },
+										null,
+										2
+									)}</pre>
+							</Card.Content>
+						</Card.Root>
+					</div>
+				</ShowcaseSection>
+
+				<ShowcaseSection
+					label="Use case 07"
+					tag="Persisted preferences"
+					title="Keep UI preferences across page reloads without extra boilerplate"
+					description="A second independent store shows the inspector tracking multiple state objects simultaneously. Changes persist to localStorage automatically."
+					code={preferencesPattern}>
+					<div class="space-y-4">
+						<div class="grid gap-4 sm:grid-cols-3">
+							<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+								<p class="text-muted-foreground mb-3 text-sm font-medium">Theme</p>
+								<p data-testid="pref-theme" class="mb-3 text-xl font-semibold capitalize">{preferences.theme}</p>
+								<Button type="button" onclick={togglePreferencesTheme}>Toggle theme</Button>
+							</div>
+							<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+								<p class="text-muted-foreground mb-3 text-sm font-medium">Compact mode</p>
+								<p data-testid="pref-compact" class="mb-3 text-xl font-semibold">
+									{preferences.compact ? 'On' : 'Off'}
+								</p>
+								<Button type="button" variant="outline" onclick={toggleCompact}>Toggle compact</Button>
+							</div>
+							<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+								<p class="text-muted-foreground mb-3 text-sm font-medium">Font size</p>
+								<p data-testid="pref-font-size" class="mb-3 text-xl font-semibold">{preferences.fontSize}px</p>
+								<div class="flex gap-2">
+									<Button type="button" variant="outline" onclick={() => adjustFontSize(-2)}>−</Button>
+									<Button type="button" variant="outline" onclick={() => adjustFontSize(2)}>+</Button>
+								</div>
+							</div>
+						</div>
+						<Card.Root size="sm" class="shadow-xs">
+							<Card.Header>
+								<Card.Description>Live preferences state (persisted to localStorage)</Card.Description>
+							</Card.Header>
+							<Card.Content class="pt-0">
+								<pre class="overflow-x-auto text-sm">{JSON.stringify(
+										{ theme: preferences.theme, compact: preferences.compact, fontSize: preferences.fontSize },
+										null,
+										2
+									)}</pre>
+							</Card.Content>
+						</Card.Root>
+					</div>
 				</ShowcaseSection>
 			</div>
 

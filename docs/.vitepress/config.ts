@@ -44,6 +44,7 @@ export default defineConfig({
 					items: [
 						{ text: 'Testing and releases', link: '/guide/testing-and-releases' },
 						{ text: 'Migration from Pinia', link: '/guide/migration-from-pinia' },
+						{ text: 'AI agent skill', link: '/guide/ai-agent-skill' },
 						{ text: 'Troubleshooting', link: '/guide/troubleshooting' }
 					]
 				}

@@ -1,0 +1,41 @@
+# Stately
+
+> Stately is a Pinia-inspired state management library for Svelte 5 and SvelteKit. It provides `defineStore()` with option and setup stores, SSR-safe request-scoped managers, and an opt-in plugin system for persistence, history, finite state machines, multi-tab sync, async orchestration, and validation.
+
+- Package: `@selfagency/stately` on npm
+- Built on Svelte 5 runes (`$state`, `$derived`, `$effect`)
+- Designed for SvelteKit SSR safety with request-scoped state managers via Svelte context
+- Familiar API for Pinia/Vue developers: `$patch`, `$reset`, `$subscribe`, `$onAction`, `storeToRefs()`
+- Plugins are tree-shakable and opt-in: import only what you use
+
+## Docs
+
+- [Guide overview](https://stately.self.agency/guide/): Installation, first store, and documentation map
+- [Defining stores](https://stately.self.agency/guide/define-store): Option stores, setup stores, state, getters, actions, subscriptions, $patch, $reset
+- [Plugins](https://stately.self.agency/guide/plugins): Persistence, history, sync, async, and how to register plugins with createStateManager().use()
+- [Finite state machines](https://stately.self.agency/guide/fsm): FSM plugin for managing UI workflows with explicit states, transitions, guards, and lifecycle hooks
+- [Validation](https://stately.self.agency/guide/validation): Pre-commit state validation with rollback on failure
+- [SSR and SvelteKit](https://stately.self.agency/guide/ssr-and-sveltekit): Request-scoped managers, Svelte context, avoiding singleton state on the server
+- [SvelteKit data loading](https://stately.self.agency/guide/sveltekit-data-loading): Hydrating stores from SvelteKit load functions
+- [Inspector](https://stately.self.agency/guide/inspector): Dev-only inspector drawer and Vite plugin for real-time state debugging
+- [Examples and recipes](https://stately.self.agency/guide/examples): Counter, preferences, persistence, history, async, FSM examples
+
+## Reference
+
+- [API hub](https://stately.self.agency/reference/api): Index of all public exports grouped by module
+- [Core runtime](https://stately.self.agency/reference/core): defineStore, createStateManager, storeToRefs, store helpers ($id, $state, $patch, $reset, $subscribe, $onAction, $dispose)
+- [Plugins and orchestration](https://stately.self.agency/reference/plugins): createPersistencePlugin, createHistoryPlugin, createSyncPlugin, createAsyncPlugin, concurrency policies
+- [Finite state machines](https://stately.self.agency/reference/fsm): createFsmPlugin, FsmController, transitions, guards, lifecycle hooks
+- [Validation](https://stately.self.agency/reference/validation): createValidationPlugin, ValidationResult, rollback behavior
+- [Persistence helpers](https://stately.self.agency/reference/persistence): Storage adapters (localStorage, sessionStorage, IndexedDB, memory), TTL, compression, pick/omit, migration
+- [Inspector](https://stately.self.agency/reference/inspector): statelyVitePlugin options, StatelyInspector component, programmatic API
+- [Public types](https://stately.self.agency/reference/types): TypeScript type exports (StoreDefinition, StateManager, PluginContext, etc.)
+
+## Optional
+
+- [Migration from Pinia](https://stately.self.agency/guide/migration-from-pinia): Side-by-side comparison for Vue/Pinia developers moving to Svelte 5
+- [CDN and web-only usage](https://stately.self.agency/guide/cdn): Using Stately without a bundler via CDN imports
+- [AI agent skill](https://stately.self.agency/guide/ai-agent-skill): LLM agent skill shipped via skills-npm for IDE assistants
+- [Testing and releases](https://stately.self.agency/guide/testing-and-releases): TDD workflow, CI pipeline, and release process
+- [Troubleshooting](https://stately.self.agency/guide/troubleshooting): Common issues and solutions
+- [GitHub repository](https://github.com/selfagency/stately): Source code, issues, and contributing guide
