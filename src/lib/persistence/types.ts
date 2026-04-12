@@ -33,6 +33,12 @@ export interface PersistOptions<State = Record<string, unknown>> extends Persist
 	onError?: (error: unknown) => void;
 	/** Debounce auto-flush writes by this many milliseconds (trailing edge). Useful for high-frequency mutations. */
 	debounce?: number;
+	/** Persist only these keys from the state. Cannot be used together with `omit`. */
+	pick?: (keyof State)[];
+	/** Exclude these keys from persistence. Cannot be used together with `pick`. */
+	omit?: (keyof State)[];
+	/** Time-to-live in milliseconds. Persisted state older than this is discarded on rehydration. */
+	ttl?: number;
 }
 
 export interface PersistController {

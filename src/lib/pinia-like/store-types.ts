@@ -28,8 +28,10 @@ export interface DefineStoreOptionsBase<State extends StoreState = StoreState, S
 	// plugins can augment definition options by extending this interface
 }
 
-export interface StoreSubscribeOptions {
+export interface StoreSubscribeOptions<State extends StoreState = StoreState> {
 	detached?: boolean;
+	select?: (state: State) => unknown;
+	equalityFn?: (previous: unknown, next: unknown) => boolean;
 }
 
 export interface StoreShellMethods<Id extends string, State extends StoreState, Store extends object> {
@@ -39,7 +41,7 @@ export interface StoreShellMethods<Id extends string, State extends StoreState, 
 	$reset(): void;
 	$subscribe(
 		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
-		options?: StoreSubscribeOptions
+		options?: StoreSubscribeOptions<State>
 	): () => void;
 	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
 	$dispose(): void;
@@ -84,6 +86,7 @@ export interface StoreActionHookContext<
 	readonly name: Name;
 	readonly store: Store;
 	readonly args: Args;
+	before(callback: () => boolean | void): void;
 	after(callback: (result: Result) => void): void;
 	onError(callback: (error: unknown) => void): void;
 }

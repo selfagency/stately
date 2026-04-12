@@ -60,6 +60,10 @@ function readPersistOptions(value: unknown): PersistOptions | undefined {
 		throw new Error('Invalid persist configuration: version must be a finite number.');
 	}
 
+	if (Array.isArray(persist.pick) && Array.isArray(persist.omit)) {
+		throw new Error('Invalid persist configuration: pick and omit cannot be used together.');
+	}
+
 	return persist as unknown as PersistOptions;
 }
 
@@ -72,6 +76,31 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		const persist = readPersistOptions(options);
 		if (!persist) {
 			return;
+		}
+
+		const pickKeys = persist.pick as string[] | undefined;
+		const omitKeys = persist.omit as string[] | undefined;
+
+		function filterState(snapshot: Record<string, unknown>): Record<string, unknown> {
+			if (pickKeys) {
+				const filtered: Record<string, unknown> = {};
+				for (const key of pickKeys) {
+					if (key in snapshot) {
+						filtered[key] = snapshot[key];
+					}
+				}
+				return filtered;
+			}
+			if (omitKeys) {
+				const filtered: Record<string, unknown> = {};
+				for (const key of Object.keys(snapshot)) {
+					if (!omitKeys.includes(key)) {
+						filtered[key] = snapshot[key];
+					}
+				}
+				return filtered;
+			}
+			return snapshot;
 		}
 
 		const key = persist.key ?? store.$id;
@@ -92,7 +121,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				return;
 			}
 
-			const snapshot = $state.snapshot(store.$state) as Record<string, unknown>;
+			const snapshot = filterState($state.snapshot(store.$state) as Record<string, unknown>);
 			const payload = serialize({
 				version: persist.version,
 				state: snapshot
@@ -106,6 +135,10 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				encoded = payload;
 			}
 
+			if (persist.ttl) {
+				encoded = JSON.stringify({ __stately_ttl: Date.now() + persist.ttl, data: encoded });
+			}
+
 			const queuedWrite = flushQueue
 				.catch(() => undefined)
 				.then(async () => {
@@ -116,9 +149,23 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		};
 
 		const rehydrate = async () => {
-			const raw = await persist.adapter.getItem(key);
+			let raw = await persist.adapter.getItem(key);
 			if (!raw) {
 				return false;
+			}
+
+			if (persist.ttl) {
+				try {
+					const wrapper = JSON.parse(raw);
+					if (isRecord(wrapper) && typeof wrapper.__stately_ttl === 'number' && typeof wrapper.data === 'string') {
+						if (Date.now() > wrapper.__stately_ttl) {
+							return false;
+						}
+						raw = wrapper.data;
+					}
+				} catch {
+					return false;
+				}
 			}
 
 			let source: string | undefined;
