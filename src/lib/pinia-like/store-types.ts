@@ -52,7 +52,6 @@ export type StoreInstance<
 	State extends StoreState = StoreState,
 	Getters extends StoreGetters = StoreGetters,
 	Actions extends StoreActions = StoreActions
-
 > = State &
 	Readonly<Getters> &
 	Actions &
