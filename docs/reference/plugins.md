@@ -80,8 +80,11 @@ Key behavior:
 
 ### `$timeTravel` controller
 
-`$timeTravel` is a read-only projection of the history stack.
-Use it when you want to render or navigate history without calling mutation methods.
+`$timeTravel` exposes the history stack for rendering and navigation. It does not
+expose mutation helpers such as `record`, `undo`, or `redo` — those belong to
+`$history`. However, `goTo(index)` **does** replay a past snapshot and mutates live
+store state; it is read-only only in the sense that it does not record a new history
+entry.
 
 | Property / Method | Description                                                                      |
 | ----------------- | -------------------------------------------------------------------------------- |

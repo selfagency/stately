@@ -74,7 +74,10 @@ jobs:
       - name: Build package and verify publish output
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: pnpm run build 2>&1 | tee build-output.log
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm run build 2>&1 | tee build-output.log
 
       - name: Upload build diagnostics
         if: ${{ always() }}

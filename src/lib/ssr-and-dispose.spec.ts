@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
+import { createStoreShell } from './runtime/store-shell.svelte.js';
 
 describe('SSR and server-side store safety', () => {
 	it('creates isolated store instances per manager (no shared singleton state)', () => {
@@ -109,29 +110,18 @@ describe('$dispose completeness', () => {
 		expect(() => store.$dispose()).not.toThrow();
 	});
 
-	it('calls onDispose callback exactly once', () => {
+	it('calls onDispose callback exactly once, even on double dispose', () => {
 		const onDispose = vi.fn();
 
-		// createStateManager accepts an onDispose option per-store registration;
-		// exercise the path by wrapping $dispose in a plugin to verify cleanup fires.
-		const manager = createStateManager();
-		manager.use(({ store }) => {
-			const storeWithDispose = store as { $dispose: () => void };
-			const original = storeWithDispose.$dispose.bind(storeWithDispose);
-			Object.defineProperty(storeWithDispose, '$dispose', {
-				configurable: true,
-				writable: true,
-				value() {
-					original();
-					onDispose();
-				}
-			});
-		});
+		// Exercise the real createStoreShell({ onDispose }) path directly.
+		// The guard inside $dispose (if disposed return) ensures onDispose fires
+		// at most once regardless of how many times $dispose is called.
+		const state = { x: 1 };
+		const store = {} as Record<string, unknown>;
+		const shell = createStoreShell({ id: 'dispose-callback', store, state, onDispose });
 
-		const useStore = defineStore('dispose-callback', { state: () => ({ x: 1 }) });
-		const store = useStore(manager);
-
-		store.$dispose();
+		shell.store.$dispose();
+		shell.store.$dispose(); // second call must be a no-op
 
 		expect(onDispose).toHaveBeenCalledOnce();
 	});

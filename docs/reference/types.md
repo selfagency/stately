@@ -86,8 +86,10 @@ The type exposed on `store.$timeTravel` when the history plugin is active.
 | `isReplaying`  | `boolean`                    | `true` while `goTo()` is replaying  |
 | `goTo(index)`  | `(index: number) => boolean` | Jump to a history snapshot by index |
 
-Use `$timeTravel` when you want read-only access to the history stack for rendering
-or navigation, and reserve `$history` for undo/redo mutation methods.
+Use `$timeTravel` when you want to render or navigate the history stack. Note that
+`goTo(index)` replays a past snapshot and changes live store state — it does not,
+however, record a new history entry. Reserve `$history` for undo/redo and `record()`
+mutations.
 
 `SyncMessage` is the wire format for cross-context synchronization. `mutationId`
 must increase monotonically per origin, while `timestamp` participates in
