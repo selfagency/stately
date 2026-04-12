@@ -1,10 +1,12 @@
 import { browser } from '$app/environment';
 import {
 	createAsyncPlugin,
+	createFsmPlugin,
 	createHistoryPlugin,
 	createPersistencePlugin,
 	createStateManager,
 	createSyncPlugin,
+	createValidationPlugin,
 	defineStore
 } from '../lib/index.js';
 import { createLocalStorageAdapter } from '../lib/persistence/adapters/local-storage.js';
@@ -133,6 +135,93 @@ function createInspectablePersistence(storeId: string) {
 	};
 }
 
+// ---------------------------------------------------------------------------
+// FSM store — wizard with explicit lifecycle states
+// ---------------------------------------------------------------------------
+
+const _useWizardStore = defineStore('showcase-wizard', {
+	state: () => ({ label: 'not started' }),
+	fsm: {
+		initial: 'idle',
+		states: {
+			idle: { start: 'running' },
+			running: { pause: 'paused', finish: 'done', fail: 'failed' },
+			paused: { resume: 'running', cancel: 'idle' },
+			done: {},
+			failed: { retry: 'running', cancel: 'idle' }
+		}
+	}
+} as {
+	state: () => { label: string };
+	fsm: {
+		initial: string;
+		states: Record<string, Record<string, string>>;
+	};
+});
+
+// ---------------------------------------------------------------------------
+// Validation store — form that rejects negative counts
+// ---------------------------------------------------------------------------
+
+const _useFormStore = defineStore('showcase-form', {
+	state: () => ({ quantity: 1, email: '' }),
+	validate(state: { quantity: number; email: string }) {
+		if (state.quantity < 1) return 'Quantity must be at least 1.';
+		if (state.quantity > 99) return 'Quantity must be 99 or less.';
+		if (state.email.length > 0 && !state.email.includes('@')) return 'Enter a valid email address.';
+		return true;
+	},
+	actions: {
+		setQuantity(this: { quantity: number }, value: number) {
+			this.quantity = value;
+		},
+		setEmail(this: { email: string }, value: string) {
+			this.email = value;
+		}
+	}
+} as {
+	state: () => { quantity: number; email: string };
+	validate: (state: { quantity: number; email: string }) => boolean | string;
+	actions: {
+		setQuantity(value: number): void;
+		setEmail(value: string): void;
+	};
+});
+
+// ---------------------------------------------------------------------------
+// Preferences store — persisted UI preferences for a second inspector target
+// ---------------------------------------------------------------------------
+
+const _preferencePersistence = createInspectablePersistence('showcase-preferences');
+
+const _usePreferencesStore = defineStore('showcase-preferences', {
+	state: () => ({ theme: 'light' as 'light' | 'dark', compact: false, fontSize: 14 }),
+	persist: {
+		adapter: _preferencePersistence.adapter,
+		key: _preferencePersistence.key,
+		version: 1
+	},
+	actions: {
+		toggleTheme(this: { theme: 'light' | 'dark' }) {
+			this.theme = this.theme === 'light' ? 'dark' : 'light';
+		},
+		setCompact(this: { compact: boolean }, value: boolean) {
+			this.compact = value;
+		},
+		setFontSize(this: { fontSize: number }, size: number) {
+			this.fontSize = Math.max(10, Math.min(24, size));
+		}
+	}
+} as {
+	state: () => { theme: 'light' | 'dark'; compact: boolean; fontSize: number };
+	persist: { adapter: import('../lib/persistence/types.js').PersistenceAdapter; key: string; version: number };
+	actions: {
+		toggleTheme(): void;
+		setCompact(value: boolean): void;
+		setFontSize(size: number): void;
+	};
+});
+
 export function createShowcaseDemo() {
 	const instanceId = nextShowcaseId++;
 	const syncBus = createSyncBus<SyncMessage<{ count: number; note: string }>>();
@@ -160,12 +249,22 @@ export function createShowcaseDemo() {
 			transports: [syncBus.createTransport()]
 		})
 	);
+	const fsmManager = createStateManager().use(createFsmPlugin());
+	const formManager = createStateManager().use(createValidationPlugin());
+	const preferencesManager = createStateManager().use(createPersistencePlugin());
+
 	const primary = _useShowcaseStore(primaryManager);
 	const peer = _useShowcaseStore(peerManager);
+	const wizard = _useWizardStore(fsmManager);
+	const form = _useFormStore(formManager);
+	const preferences = _usePreferencesStore(preferencesManager);
 
 	return {
 		primary,
 		peer,
+		wizard,
+		form,
+		preferences,
 		persistence: _showcasePersistence,
 		loadCount(target: number) {
 			return (primary.loadCount as unknown as (target: number) => Promise<number>)(target);
@@ -173,6 +272,9 @@ export function createShowcaseDemo() {
 		destroy() {
 			primary.$dispose();
 			peer.$dispose();
+			wizard.$dispose();
+			form.$dispose();
+			preferences.$dispose();
 		}
 	};
 }

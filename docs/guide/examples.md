@@ -1,6 +1,7 @@
 # Examples and Recipes
 
-Stately includes a collection of practical examples under `src/lib/examples/`. These examples demonstrate how to implement core features and plugin combinations using the public API.
+Stately includes a collection of practical examples under `src/lib/examples/`. These examples demonstrate how to
+implement core features and plugin combinations using the public API.
 
 ## Available Examples
 
@@ -75,7 +76,8 @@ export const usePreferencesStore = defineStore('example-setup-preferences', {
 
 ## Persisted State
 
-This pattern demonstrates how to persist store state to `localStorage` with optional compression. For SSR-safe configurations, see the [SvelteKit Guide](/guide/ssr-and-sveltekit).
+This pattern demonstrates how to persist store state to `localStorage` with optional compression. For SSR-safe
+configurations, see the [SvelteKit Guide](/guide/ssr-and-sveltekit).
 
 ```ts
 import {

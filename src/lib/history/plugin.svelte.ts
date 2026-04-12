@@ -39,7 +39,7 @@ function readHistoryOptions(value: unknown): HistoryOptions | undefined {
 }
 
 function snapshotOf(store: HistoryStore<Record<string, unknown>>) {
-	return $state.snapshot(store.$state) as Record<string, unknown>;
+	return structuredClone($state.snapshot(store.$state)) as Record<string, unknown>;
 }
 
 export function createHistoryPlugin(): StateManagerPlugin {

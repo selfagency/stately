@@ -107,6 +107,9 @@ Use [SvelteKit data loading](/guide/sveltekit-data-loading) for a concrete patte
 - Create the manager at the top of the request-owned tree.
 - Call `initializeStateManagerContext` inside a component `<script>` block, not in a `.ts` module or `load` function.
 - Provide it through context before any stores are instantiated.
+- Destructuring `storeToRefs(store)` is safe, but the result is a ref wrapper.
+  Keep reading and writing through `.value`; if you want plain values,
+  read from the store directly instead of unwrapping the refs.
 - Avoid shared module-level singletons on the server.
 - Keep persistence, sync, and browser APIs behind `browser` guards from `$app/environment`.
 - Treat `load` functions as data loaders, not as a place to mutate global state.

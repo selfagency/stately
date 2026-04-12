@@ -20,7 +20,7 @@ async function pruneReleaseExtras(directory) {
 		const entryPath = resolve(directory, entry.name);
 
 		if (entry.isDirectory()) {
-			if (entry.name === 'vitest-examples') {
+			if (entry.name === 'vitest-examples' || entry.name === '__snapshots__') {
 				await rm(entryPath, { recursive: true, force: true });
 				continue;
 			}
@@ -29,7 +29,7 @@ async function pruneReleaseExtras(directory) {
 			continue;
 		}
 
-		if (TEST_OUTPUT_PATTERN.test(entry.name)) {
+		if (TEST_OUTPUT_PATTERN.test(entry.name) || entry.name.endsWith('.snap')) {
 			await rm(entryPath, { force: true });
 		}
 	}

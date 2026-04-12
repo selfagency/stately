@@ -212,6 +212,7 @@ export function createPersistencePlugin(): StateManagerPlugin<
 					persist.onError(error);
 				} else {
 					reportStatelyInspectorNotice(`Flush failed for store "${store.$id}": ${String(error)}`);
+					console.error(`[Stately] Persistence flush failed for store "${store.$id}":`, error);
 				}
 			};
 

@@ -1,4 +1,3 @@
-import { SvelteMap } from 'svelte/reactivity';
 import type { FsmController, FsmDefinition, FsmStateDefinition, FsmTransitionContext } from './types.js';
 
 const RESERVED_KEYS = new Set(['_enter', '_exit']);
@@ -12,7 +11,8 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 		throw new Error(`Invalid FSM definition: initial state "${definition.initial}" is not defined in states.`);
 	}
 
-	const statesMap = new SvelteMap<string, FsmStateDefinition>(Object.entries(definition.states));
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- FSM definitions are static after initialization.
+	const statesMap = new Map<string, FsmStateDefinition>(Object.entries(definition.states));
 	let current = $state(definition.initial);
 
 	function resolveTransition(event: string, ...args: unknown[]): string | undefined {
@@ -64,9 +64,15 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 
 			current = nextState;
 
-			const enterHook = statesMap.get(nextState)?._enter;
-			if (typeof enterHook === 'function') {
-				enterHook(context);
+			try {
+				const enterHook = statesMap.get(nextState)?._enter;
+				if (typeof enterHook === 'function') {
+					enterHook(context);
+				}
+			} catch (error) {
+				// Roll back to the previous state if the _enter hook throws to keep the FSM consistent.
+				current = from;
+				throw error;
 			}
 
 			return current;

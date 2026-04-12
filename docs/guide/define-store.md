@@ -1,10 +1,12 @@
 # Defining Stores
 
-Stately supports two primary patterns for defining stores through the `defineStore()` function. Both provide the same public API, allowing you to choose the style that best fits your project's needs.
+Stately supports two primary patterns for defining stores through the `defineStore()` function. Both provide the same
+public API, allowing you to choose the style that best fits your project's needs.
 
 ## Option Stores
 
-Option stores organize `state`, `getters`, and `actions` into a single configuration object. This is the closest equivalent to the standard Pinia style.
+Option stores organize `state`, `getters`, and `actions` into a single configuration object.
+This is the closest equivalent to the standard Pinia style.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
@@ -26,7 +28,8 @@ export const useCartStore = defineStore('cart', {
 
 ## Setup Stores
 
-Setup stores allow you to compose reactive state using Svelte 5 runes directly. This is useful when you want to utilize custom logic or share typed plugin configurations within the store definition.
+Setup stores allow you to compose reactive state using Svelte 5 runes directly. This is useful when you want to utilize
+custom logic or share typed plugin configurations within the store definition.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
@@ -45,7 +48,8 @@ export const usePreferencesStore = defineStore('preferences', {
 });
 ```
 
-Setup stores can also return class instances. Stately resolves members from both the instance properties and the prototype chain.
+Setup stores can also return class instances. Stately resolves members from both the instance properties and the
+prototype chain.
 
 ```ts
 class CounterStore {
@@ -109,7 +113,8 @@ const { count, doubleCount } = storeToRefs(counter);
 
 ## Selective Subscriptions
 
-By default, `$subscribe()` observes every mutation. You can optimize this by providing a selector to only fire the callback when a specific slice of state changes.
+By default, `$subscribe()` observes every mutation. You can optimize this by providing a selector to only fire the
+callback when a specific slice of state changes.
 
 ```ts
 const unsubscribe = counter.$subscribe(

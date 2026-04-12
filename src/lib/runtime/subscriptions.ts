@@ -1,4 +1,5 @@
 import { onDestroy } from 'svelte';
+import { readMarker, writeMarker } from '../internal/marker-helpers.js';
 import type {
 	StoreActionHookContext,
 	StoreMutationContext,
@@ -174,8 +175,8 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 				}
 			};
 
-			if ((action as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
-				(wrapped as unknown as Record<symbol, boolean>)[ASYNC_ACTION_MARKER] = true;
+			if (readMarker<boolean>(action, ASYNC_ACTION_MARKER)) {
+				writeMarker<boolean>(wrapped, ASYNC_ACTION_MARKER, true);
 			}
 
 			return wrapped as Action;

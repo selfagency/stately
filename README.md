@@ -157,3 +157,7 @@ Visit [stately.self.agency](https://stately.self.agency/) for the full documenta
 - [**SSR & SvelteKit**](https://stately.self.agency/guide/ssr-and-sveltekit) — Best practices for server-side rendering.
 - [**Migration from Pinia**](https://stately.self.agency/guide/migration-from-pinia) — A guide for Vue developers.
 - [**API Reference**](https://stately.self.agency/reference/api) — Full technical details.
+
+## AI Agent Skill
+
+Stately ships an AI agent skill that helps LLM coding agents (Cursor, Windsurf, GitHub Copilot, etc.) work with the library correctly. See the [AI Agent Skill guide](https://stately.self.agency/guide/ai-agent-skill) for setup instructions.

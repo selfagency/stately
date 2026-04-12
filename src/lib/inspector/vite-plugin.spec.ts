@@ -56,6 +56,25 @@ describe('statelyVitePlugin', () => {
 		);
 	});
 
+	it('injects the inspector loader for normalized pnpm Vite client ids with query strings', async () => {
+		const plugin = statelyVitePlugin();
+		const transform = plugin.transform as (
+			code: string,
+			id: string,
+			options?: { ssr?: boolean }
+		) => Promise<{ code: string } | string | undefined> | { code: string } | string | undefined;
+
+		const transformed = await transform(
+			'export const client = true;',
+			'/virtual/node_modules/.pnpm/vite@7.1.7/node_modules/vite/dist/client/client.mjs?v=abcdef',
+			{ ssr: false }
+		);
+
+		expect(typeof transformed === 'string' ? transformed : transformed?.code).toContain(
+			"import('virtual:stately-inspector-path:load-inspector.ts')"
+		);
+	});
+
 	it('stays inert for SSR transforms and disabled mode', async () => {
 		const enabledPlugin = statelyVitePlugin();
 		const enabledTransform = enabledPlugin.transform as (
