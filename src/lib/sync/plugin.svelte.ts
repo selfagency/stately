@@ -1,6 +1,6 @@
-import type { StateManagerPlugin } from '../root/types.js';
-import type { StoreMutationContext } from '../pinia-like/store-types.js';
 import { sanitizeValue } from '../internal/sanitize.js';
+import type { StoreMutationContext } from '../pinia-like/store-types.js';
+import type { StateManagerPlugin } from '../root/types.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
@@ -24,6 +24,14 @@ export interface SyncPluginOptions<Message extends SyncMessage = SyncMessage> {
 	createTimestamp?: () => number;
 }
 
+interface SyncMutationClock {
+	origin: string;
+	mutationId: number;
+	timestamp: number;
+}
+
+const MAX_TRACKED_ORIGINS = 128;
+
 function createOrigin(): string {
 	return globalThis.crypto?.randomUUID?.() ?? `sync-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -40,6 +48,41 @@ function isReplayActive(store: SyncStore): boolean {
 	return (
 		'$timeTravel' in store && isRecord(store.$timeTravel) && Reflect.get(store.$timeTravel, 'isReplaying') === true
 	);
+}
+
+function compareOriginsDeterministically(left: string, right: string): number {
+	if (left === right) {
+		return 0;
+	}
+
+	return left < right ? -1 : 1;
+}
+
+function compareSyncMutationClocks(left: SyncMutationClock, right: SyncMutationClock): number {
+	if (left.timestamp !== right.timestamp) {
+		return left.timestamp - right.timestamp;
+	}
+
+	if (left.origin !== right.origin) {
+		return compareOriginsDeterministically(left.origin, right.origin);
+	}
+
+	return left.mutationId - right.mutationId;
+}
+
+function rememberOriginMutation(receivedMutationIds: Map<string, number>, origin: string, mutationId: number): void {
+	if (receivedMutationIds.has(origin)) {
+		receivedMutationIds.delete(origin);
+	}
+
+	receivedMutationIds.set(origin, mutationId);
+
+	if (receivedMutationIds.size > MAX_TRACKED_ORIGINS) {
+		const oldestOrigin = receivedMutationIds.keys().next().value;
+		if (oldestOrigin) {
+			receivedMutationIds.delete(oldestOrigin);
+		}
+	}
 }
 
 export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
@@ -72,6 +115,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 
 		let applyingRemote = false;
 		let nextOutgoingId = 0;
+		let latestAppliedClock: SyncMutationClock | undefined;
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map; used in event handler closures, not reactive context
 		const receivedMutationIds = new Map<string, number>();
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Set; used for key lookup only, not reactive
@@ -111,6 +155,17 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 						return;
 					}
 
+					const incomingClock = {
+						origin: parsed.origin,
+						mutationId: parsed.mutationId,
+						timestamp: parsed.timestamp
+					} satisfies SyncMutationClock;
+
+					if (latestAppliedClock && compareSyncMutationClocks(incomingClock, latestAppliedClock) <= 0) {
+						rememberOriginMutation(receivedMutationIds, parsed.origin, parsed.mutationId);
+						return;
+					}
+
 					const validatedState = filterToKnownKeys(parsed.state);
 					if (!validatedState) {
 						return;
@@ -119,7 +174,8 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 					applyingRemote = true;
 					try {
 						store.$patch(validatedState);
-						receivedMutationIds.set(parsed.origin, parsed.mutationId);
+						latestAppliedClock = incomingClock;
+						rememberOriginMutation(receivedMutationIds, parsed.origin, parsed.mutationId);
 					} finally {
 						applyingRemote = false;
 					}
@@ -135,14 +191,20 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			}
 
 			const mutationId = createId ? createId() : ++nextOutgoingId;
+			const timestamp = createTimestamp();
 			const message = {
 				storeId: store.$id,
 				origin,
 				version,
 				mutationId,
-				timestamp: createTimestamp(),
+				timestamp,
 				state: $state.snapshot(store.$state)
 			} as Message;
+			latestAppliedClock = {
+				origin,
+				mutationId,
+				timestamp
+			};
 
 			for (const transport of transports) {
 				try {

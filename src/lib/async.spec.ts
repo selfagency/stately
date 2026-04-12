@@ -257,6 +257,28 @@ describe('async runtime', () => {
 		expect(store.$async.untrackedAction).toBeUndefined();
 	});
 
+	it('include can opt promise-returning actions into tracking even without the async keyword', async () => {
+		const manager = createStateManager().use(createAsyncPlugin({ include: ['loadLegacy'] }));
+		const useStore = defineStore('async-legacy-promise', {
+			state: () => ({ count: 0 }),
+			actions: {
+				loadLegacy(amount: number) {
+					return Promise.resolve().then(() => {
+						this.count = amount;
+						return amount;
+					});
+				}
+			}
+		});
+		const store = useStore(manager);
+
+		expect(store.$async.loadLegacy).toBeDefined();
+		await expect(store.loadLegacy(7)).resolves.toBe(7);
+		expect(store.count).toBe(7);
+		expect(store.$async.loadLegacy.isLoading).toBe(false);
+		expect(store.$async.loadLegacy.lastSuccessAt).toBeDefined();
+	});
+
 	it('works with no options (default config)', async () => {
 		const manager = createStateManager().use(createAsyncPlugin());
 		const useStore = defineStore('async-default-opts', {

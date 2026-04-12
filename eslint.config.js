@@ -39,5 +39,11 @@ export default defineConfig(
 		rules: {
 			'svelte/no-navigation-without-resolve': 'warn'
 		}
+	},
+	{
+		files: ['src/lib/components/ui/button/button.svelte'],
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off'
+		}
 	}
 );

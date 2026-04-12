@@ -99,8 +99,8 @@ Useful manager methods:
 - `hasStore(id)` returns `true` if an instance has been created for that id.
 - `hasDefinition(id)` returns `true` if a definition has been registered under that id.
 - `getDefinition(id)` retrieves the registered `StoreDefinition` for an id.
-- `deleteStore(id)` removes both the instance and its definition.
-  A new call to `useMyStore(manager)` will re-create it from scratch.
+- `deleteStore(id)` disposes the current instance through `$dispose()`, then removes both the
+  instance and its definition. A new call to `useMyStore(manager)` will re-create it from scratch.
 - `clear()` disposes all active stores and removes all definitions and instances.
 - `plugins` is the readonly array of plugins registered on this manager.
 

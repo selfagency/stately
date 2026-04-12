@@ -1,8 +1,8 @@
-import type { StateManagerPlugin } from '../root/types.js';
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { StateManagerPlugin } from '../root/types.js';
+import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 import type { ConcurrencyMode } from './concurrency.js';
 import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
-import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 
 export interface AsyncActionRegistry {
 	[actionName: string]: AsyncActionState;
@@ -35,7 +35,9 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 				continue;
 			}
 
-			if (options.include && !options.include.includes(key)) {
+			const isExplicitlyIncluded = options.include?.includes(key) ?? false;
+
+			if (options.include && !isExplicitlyIncluded) {
 				continue;
 			}
 
@@ -44,12 +46,21 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 				continue;
 			}
 
-			// Only wrap actions that were originally declared async (marker propagated through wrappers).
-			if (!(value as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
+			// By default we only wrap actions that were originally declared async.
+			// `include` also acts as an explicit opt-in for Promise-returning actions declared without `async`.
+			if (!isExplicitlyIncluded && !(value as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
 				continue;
 			}
 
-			const tracked = trackAsyncAction(value.bind(store), {
+			const invoke = (...args: unknown[]) => {
+				try {
+					return Promise.resolve(value.apply(store, args));
+				} catch (error) {
+					return Promise.reject(error);
+				}
+			};
+
+			const tracked = trackAsyncAction(invoke, {
 				createTimestamp: options.createTimestamp,
 				policy: options.policies?.[key] ?? options.policy,
 				injectSignal: options.injectSignal
