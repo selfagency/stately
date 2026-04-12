@@ -1,7 +1,7 @@
 # Plugins and orchestration
 
-Plugins are opt-in. Attach them to a manager with
-`createStateManager().use(...)`, then opt stores into the relevant feature
+Each plugin is a modular addition to the manager. Attach them with
+`createStateManager().use(...)`, then opt individual stores into the matching feature
 through their definition options.
 
 ## How the plugin model fits together
@@ -22,11 +22,13 @@ const manager = createStateManager()
 	.use(createAsyncPlugin());
 ```
 
-Each plugin augments stores only when the store definition opts into the matching feature.
+Each plugin augments stores only when the store definition opts into the
+matching feature.
 
 ## `createPersistencePlugin()`
 
-The persistence plugin hydrates state from storage and writes snapshots back through the store’s mutation pipeline.
+The persistence plugin hydrates state from storage and writes snapshots back
+through the store’s mutation pipeline.
 
 Use it when a store should survive reloads, sessions, or app restarts.
 
@@ -74,6 +76,7 @@ Key behavior:
 - supports `undo()`, `redo()`, `goTo(index)`, `record(snapshot)`, `startBatch()`, and `endBatch()` through the history controller
 - replays snapshots without re-triggering history recording
 - avoids persistence and sync feedback loops during time travel
+- exposes `canUndo`, `canRedo`, `entries`, and `currentIndex` through `$history`
 
 ```ts
 import { createHistoryPlugin, createStateManager, defineStore } from '@selfagency/stately';
@@ -86,6 +89,45 @@ export const useDraftStore = defineStore('draft', {
 });
 ```
 
+Use `startBatch()` and `endBatch()` when several mutations should become one
+logical history entry.
+
+## `createFsmPlugin()`
+
+The FSM plugin adds explicit workflow state to stores that declare an `fsm`
+definition.
+
+Use it when a store should move through named states rather than coordinating a
+pile of booleans.
+
+Key behavior:
+
+- requires an `fsm` option with `initial` and `states`
+- adds `$fsm.current`, `$fsm.send()`, `$fsm.matches()`, and `$fsm.can()`
+- patches transitions through the store so history, persistence, and sync can
+  observe them
+- stores the current state in an internal `__stately_fsm` key for plugin
+  interoperability
+
+Read [Finite state machines](/reference/fsm) for the exact option and
+controller contracts.
+
+## `createValidationPlugin()`
+
+The validation plugin wraps `$patch()` for stores that declare `validate`.
+
+Use it when invalid state should be rolled back immediately.
+
+Key behavior:
+
+- runs after the patch is applied
+- accepts the mutation when `validate()` returns `true` or `undefined`
+- restores the previous snapshot and throws `Error('Validation failed')` when `validate()` returns `false`; calls `onValidationError` first if present
+- restores the previous snapshot when `validate()` returns an error string; calls `onValidationError` before throwing
+- restores the previous snapshot and rethrows if `validate()` itself throws
+
+Read [Validation](/reference/validation) for the full contract.
+
 ## `createSyncPlugin(options?)`
 
 The sync plugin publishes store snapshots across tabs or embedded
@@ -97,12 +139,21 @@ Key behavior:
 
 - ignores self-originated messages
 - rejects mismatched versions
-- rejects stale same-origin `mutationId` values and older cross-origin updates once a newer
-  mutation has been applied locally or remotely
-- uses a timestamp-first last-write-wins policy across origins, with deterministic
+- rejects stale same-origin `mutationId` values and older cross-origin updates
+  once a newer mutation has been applied locally or remotely
+- uses a timestamp-first ordering policy across origins, with deterministic
   origin and `mutationId` tie-breakers when timestamps match
 - only patches known state keys
 - cleans up transports during `$dispose()`
+
+Conflict ordering works like this:
+
+1. newer `timestamp` wins
+2. if timestamps match, origin name order breaks the tie deterministically
+3. if the origin also matches, higher `mutationId` wins
+
+That keeps the sync behavior deterministic even when two contexts publish at
+nearly the same time.
 
 Important options:
 
@@ -119,9 +170,13 @@ import { createStateManager, createSyncPlugin, defineStore } from '@selfagency/s
 const manager = createStateManager().use(createSyncPlugin({ origin: 'local-tab' }));
 ```
 
+If you need a custom wire format, supply `createMessage`.
+If you need a custom publish/subscribe bridge, supply `transports`.
+
 ## `createAsyncPlugin(options?)`
 
-The async plugin tracks action state and wraps matching actions with concurrency control.
+The async plugin tracks action state and wraps matching actions with
+concurrency control.
 
 Use it when actions can overlap, be cancelled, or need loading/error metadata.
 
@@ -143,6 +198,14 @@ Supported policies:
 - `enqueue`
 - `dedupe`
 
+Policy guidance:
+
+- `parallel` — let every invocation run
+- `restartable` — cancel the current request when a new one starts
+- `drop` — ignore new requests while one is active
+- `enqueue` — run requests sequentially
+- `dedupe` — reuse the active in-flight request
+
 ```ts
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
@@ -157,9 +220,14 @@ const manager = createStateManager().use(
 );
 ```
 
+If you expect cancellation to work, wire `injectSignal` so the wrapped action
+actually receives the `AbortSignal`. The plugin cannot guess your argument
+order.
+
 ## Working with plugin cleanup
 
-Plugins commonly extend `$dispose()` to clean up subscriptions, transports, or other external resources.
+Plugins commonly extend `$dispose()` to clean up subscriptions, transports, or
+other external resources.
 That means you should treat `$dispose()` as the store’s teardown point, not
 just a convenience method.
 

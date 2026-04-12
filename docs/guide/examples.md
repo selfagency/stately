@@ -1,23 +1,24 @@
-# Examples and recipes
+# Examples and Recipes
 
-Stately ships packaged examples under `src/lib/examples/` so you can inspect
-patterns that match the public API exactly.
+Stately includes a collection of practical examples under `src/lib/examples/`. These examples demonstrate how to implement core features and plugin combinations using the public API.
 
-Use this page as a cookbook: each example shows a real feature combination that
-users are likely to need in an app.
+## Available Examples
 
-## What is included
+The following patterns are available in the repository:
 
-- `src/lib/examples/option-store/counter.ts`
-- `src/lib/examples/setup-store/preferences.svelte.ts`
-- `src/lib/examples/plugins/persistence.ts`
-- `src/lib/examples/plugins/history.ts`
-- `src/lib/examples/plugins/sync.ts`
-- `src/lib/examples/plugins/async.ts`
+- **Option Store:** `src/lib/examples/option-store/counter.ts`
+- **Setup Store:** `src/lib/examples/setup-store/preferences.svelte.ts`
+- **Persistence:** `src/lib/examples/plugins/persistence.ts`
+- **History:** `src/lib/examples/plugins/history.ts`
+- **Multi-tab Sync:** `src/lib/examples/plugins/sync.ts`
+- **Async Logic:** `src/lib/examples/plugins/async.ts`
+- **Finite State Machine:** `src/lib/examples/plugins/fsm.ts`
 
-## Option store counter
+---
 
-This is the simplest example: a plain option store with state, getters, and actions.
+## Option Store (Counter)
+
+A standard implementation using `state`, `getters`, and `actions`.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
@@ -40,9 +41,9 @@ export const useCounterStore = defineStore('example-option-counter', {
 });
 ```
 
-## Setup store preferences
+## Setup Store (Preferences)
 
-Setup stores are useful when you want to use Svelte runes directly to manage reactive state with explicit control over reads and writes.
+Use a setup store when you want direct control over reactivity using Svelte 5 runes.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
@@ -72,45 +73,24 @@ export const usePreferencesStore = defineStore('example-setup-preferences', {
 });
 ```
 
-## Persisted preferences
+## Persisted State
 
-This example shows how to persist a user preference store while keeping SSR safe.
+This pattern demonstrates how to persist store state to `localStorage` with optional compression. For SSR-safe configurations, see the [SvelteKit Guide](/guide/ssr-and-sveltekit).
 
 ```ts
 import {
 	createLocalStorageAdapter,
 	createLzStringCompression,
-	createMemoryStorageAdapter,
 	createPersistencePlugin,
 	createStateManager,
 	defineStore
 } from '@selfagency/stately';
 
-const fallbackAdapter = createMemoryStorageAdapter();
-
-const safeLocalStorageAdapter = {
-	getItem(key: string) {
-		return typeof localStorage === 'undefined'
-			? fallbackAdapter.getItem(key)
-			: createLocalStorageAdapter().getItem(key);
-	},
-	setItem(key: string, value: string) {
-		return typeof localStorage === 'undefined'
-			? fallbackAdapter.setItem(key, value)
-			: createLocalStorageAdapter().setItem(key, value);
-	},
-	removeItem(key: string) {
-		return typeof localStorage === 'undefined'
-			? fallbackAdapter.removeItem(key)
-			: createLocalStorageAdapter().removeItem(key);
-	}
-};
-
 export const usePreferencesStore = defineStore('example-plugin-persistence', {
 	state: () => ({ theme: 'dark', compact: false }),
 	persist: {
-		adapter: safeLocalStorageAdapter,
-		key: 'stately:examples:persistence',
+		adapter: createLocalStorageAdapter(),
+		key: 'stately:store:prefs',
 		version: 1,
 		compression: createLzStringCompression()
 	}
@@ -119,19 +99,19 @@ export const usePreferencesStore = defineStore('example-plugin-persistence', {
 export const persistenceManager = createStateManager().use(createPersistencePlugin());
 ```
 
-## Undo and redo for drafts
+## History and Time Travel
 
-History is a good fit for draft editors and other state that benefits from time travel.
+The history plugin is ideal for features like draft editors that require undo/redo functionality.
 
 ```ts
 import { createHistoryPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
 export const useDraftStore = defineStore('example-plugin-history', {
-	state: () => ({ count: 0 }),
+	state: () => ({ content: '' }),
 	history: { limit: 25 },
 	actions: {
-		increment() {
-			this.count += 1;
+		updateContent(text: string) {
+			this.content = text;
 		}
 	}
 });
@@ -139,18 +119,15 @@ export const useDraftStore = defineStore('example-plugin-history', {
 export const historyManager = createStateManager().use(createHistoryPlugin());
 ```
 
-The store gets `$history` and `$timeTravel`, so the UI can move backward and
-forward without reimplementing the replay logic.
+## Multi-tab Synchronization
 
-## Multi-tab sync
-
-The sync example keeps a presence-style store aligned across contexts.
+Sync state across different browser contexts (tabs or windows) using the Sync plugin.
 
 ```ts
 import { createStateManager, createSyncPlugin, defineStore } from '@selfagency/stately';
 
 export const usePresenceStore = defineStore('example-plugin-sync', {
-	state: () => ({ count: 0, originLabel: 'local tab' }),
+	state: () => ({ count: 0 }),
 	actions: {
 		increment() {
 			this.count += 1;
@@ -159,54 +136,86 @@ export const usePresenceStore = defineStore('example-plugin-sync', {
 });
 
 export const createSyncedManager = (origin: string) =>
-	createStateManager().use(createSyncPlugin({ origin, channelName: 'stately-example-sync' }));
+	createStateManager().use(createSyncPlugin({ origin, channelName: 'stately-sync' }));
 ```
 
-This pattern is useful when multiple browser tabs should act like one shared workspace.
+## Async Operations with Cancellation
 
-## Async loading with cancellation
-
-The async example shows a restartable action with `AbortSignal` injection.
+Manage async actions with built-in concurrency policies like `restartable` and automatic `AbortSignal` injection.
 
 ```ts
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
-export const useAsyncCounterStore = defineStore('example-plugin-async', {
-	state: () => ({ count: 0 }),
+export const useAsyncStore = defineStore('example-plugin-async', {
+	state: () => ({ data: null }),
 	actions: {
-		async loadCount(signal: AbortSignal, target: number) {
-			await new Promise<void>((resolve, reject) => {
-				const timeout = setTimeout(resolve, 250);
-				signal.addEventListener(
-					'abort',
-					() => {
-						clearTimeout(timeout);
-						reject(new Error('Aborted'));
-					},
-					{ once: true }
-				);
-			});
-
-			this.count = target;
-			return target;
+		async fetchData(signal: AbortSignal, id: string) {
+			const response = await fetch(`/api/data/${id}`, { signal });
+			this.data = await response.json();
 		}
 	}
 });
 
 export const asyncManager = createStateManager().use(
 	createAsyncPlugin({
-		include: ['loadCount'],
-		policies: { loadCount: 'restartable' },
-		injectSignal(signal, args) {
-			return [signal, ...args];
-		}
+		include: ['fetchData'],
+		policies: { fetchData: 'restartable' },
+		injectSignal: (signal, args) => [signal, ...args]
 	})
 );
 ```
 
-## How to use the examples
+## Finite State Machine (FSM)
 
-- Start with the source file that matches the feature you want.
-- Copy the pattern into your app instead of copying internals.
-- Use the [reference](/reference/api) when you want the exact contract for a helper or plugin.
-- Use the guide pages when you want the surrounding usage pattern and trade-offs.
+Use the FSM plugin to define explicit states and valid transitions for complex workflows.
+
+```ts
+import { createFsmPlugin, createStateManager, defineStore } from '@selfagency/stately';
+
+const manager = createStateManager().use(createFsmPlugin());
+
+export const useWizardStore = defineStore('wizard', {
+	state: () => ({ step: 1 }),
+	fsm: {
+		initial: 'editing',
+		states: {
+			editing: { next: 'review' },
+			review: { back: 'editing', submit: 'submitted' },
+			submitted: {}
+		}
+	}
+});
+
+const wizard = useWizardStore(manager);
+
+// Use the FSM controller to trigger transitions
+wizard.$fsm.send('next');
+
+// Check the current state
+if (wizard.$fsm.matches('review')) {
+	// Proceed to the review step
+}
+```
+
+## State Validation
+
+The validation plugin automatically rolls back patches if they fail to meet defined criteria.
+
+```ts
+import { createStateManager, createValidationPlugin, defineStore } from '@selfagency/stately';
+
+const manager = createStateManager().use(createValidationPlugin());
+
+export const useProfileStore = defineStore('profile', {
+	state: () => ({ name: '', age: 18 }),
+	validate(state) {
+		return state.name.trim() ? true : 'Name is required';
+	}
+});
+```
+
+## Usage Tips
+
+- **Implementation:** Copy these patterns into your project as a starting point.
+- **Reference:** Check the [API Reference](/reference/api) for detailed type definitions.
+- **Concepts:** Review the [Guide](/guide/) for deeper explanations of trade-offs and best practices.

@@ -1,12 +1,10 @@
-# Define stores
+# Defining Stores
 
-Stately supports both option stores and setup stores through the same `defineStore()` entry point.
-That keeps the public API compact while letting you choose the definition style that matches the store.
+Stately supports two primary patterns for defining stores through the `defineStore()` function. Both provide the same public API, allowing you to choose the style that best fits your project's needs.
 
-## Option stores
+## Option Stores
 
-Option stores combine `state`, `getters`, and `actions` in one definition object.
-They are the closest equivalent to Pinia's default style.
+Option stores organize `state`, `getters`, and `actions` into a single configuration object. This is the closest equivalent to the standard Pinia style.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
@@ -26,10 +24,9 @@ export const useCartStore = defineStore('cart', {
 });
 ```
 
-## Setup stores
+## Setup Stores
 
-Setup stores let you compose reactive state with Svelte 5 runes directly.
-Use the setup-options object form when you also want typed plugin configuration on the same store.
+Setup stores allow you to compose reactive state using Svelte 5 runes directly. This is useful when you want to utilize custom logic or share typed plugin configurations within the store definition.
 
 ```ts
 import { defineStore } from '@selfagency/stately';
@@ -48,8 +45,7 @@ export const usePreferencesStore = defineStore('preferences', {
 });
 ```
 
-Setup stores can also return class instances.
-Stately resolves setup members from both own properties and the prototype chain.
+Setup stores can also return class instances. Stately resolves members from both the instance properties and the prototype chain.
 
 ```ts
 class CounterStore {
@@ -69,33 +65,29 @@ export const useCounterStore = defineStore('counter', {
 });
 ```
 
-## Store helpers in practice
+## Store API & Helpers
 
-Every store instance exposes the same helper surface:
+Every store instance provides a consistent set of built-in helpers:
 
-- `$id`
-- `$state`
-- `$patch(...)`
-- `$reset()`
-- `$subscribe(...)`
-- `$onAction(...)`
-- `$dispose()`
+- `$id`: The unique identifier of the store.
+- `$state`: Direct access to the state object.
+- `$patch()`: Apply partial updates or grouped mutations.
+- `$reset()`: Revert the store to its initial state.
+- `$subscribe()`: Watch for state changes.
+- `$onAction()`: Intercept or observe action execution.
+- `$dispose()`: Stop reactivity and clean up listeners.
 
-The helpers are designed to fit different jobs:
-
-- Use `$patch({ ... })` when you already have a partial update object.
-- Use `$patch((state) => { ... })` when you want grouped state mutations.
-- Use `$subscribe()` when you need persistence, logging, or a timeline.
-- Use `$onAction()` when you need to observe action start, success, or failure.
-- Use `$reset()` when you want the store back at its initial state.
-- Use `$dispose()` when the store should stop reacting and clean up listeners.
+### Usage Examples
 
 ```ts
 const unsubscribe = counter.$subscribe((mutation, state) => {
 	console.log(mutation.type, state.count);
 });
 
+// Patch with an object
 counter.$patch({ count: 3 });
+
+// Patch with a function for grouped mutations
 counter.$patch((state) => {
 	state.count += 1;
 });
@@ -104,20 +96,68 @@ counter.$reset();
 unsubscribe();
 ```
 
-The store also implements the Svelte store contract:
+Stately stores also implement the **Svelte store contract**:
 
-- `subscribe()` emits the full state whenever it changes.
+- `subscribe()` emits the full state on every change.
 - `set()` replaces the current state snapshot.
 
-Use `storeToRefs()` when you need safe destructuring for reactive properties
-without breaking reactivity.
+Use `storeToRefs()` when you need to destructure properties from a store while maintaining reactivity.
 
 ```ts
 const { count, doubleCount } = storeToRefs(counter);
 ```
 
-## When to choose each store shape
+## Selective Subscriptions
 
-- Use an option store when the state model is simple and you want explicit `state`, `getters`, and `actions` blocks.
-- Use a setup store when you want to compose Svelte runes directly or share plugin options from the same definition.
-- Use whichever shape keeps the reactive intent easiest to read; the helper surface is the same either way.
+By default, `$subscribe()` observes every mutation. You can optimize this by providing a selector to only fire the callback when a specific slice of state changes.
+
+```ts
+const unsubscribe = counter.$subscribe(
+	(_mutation, state) => {
+		console.log('count changed to', state.count);
+	},
+	{
+		detached: true,
+		select: (state) => state.count
+	}
+);
+```
+
+You can also provide a custom `equalityFn` for complex data types:
+
+```ts
+store.$subscribe(callback, {
+	select: (state) => state.items,
+	equalityFn: (prev, next) => prev.length === next.length && prev.every((v, i) => v === next[i])
+});
+```
+
+## Action Hooks and Guards
+
+`$onAction()` allows you to react to actions and even intercept them before they run using the `before()` hook.
+
+```ts
+store.$onAction(({ args, before }) => {
+	before(() => {
+		const amount = args[0] as number;
+		if (amount > 10) {
+			return false; // Cancels the action
+		}
+	});
+});
+```
+
+- Returning `false` from a `before()` guard cancels the action.
+- Cancelled actions return `undefined` and do not trigger `after()` or `onError()` hooks.
+
+## Choosing a Store Style
+
+- **Option Stores:** Best for simple state models where clear separation of state, getters, and actions is preferred.
+- **Setup Stores:** Best for complex logic, direct use of Svelte runes, or stores that require specific plugin configurations.
+
+## Related Documentation
+
+- [Plugins](/guide/plugins)
+- [Validation](/guide/validation)
+- [SSR and SvelteKit](/guide/ssr-and-sveltekit)
+- [Core Runtime Reference](/reference/core)

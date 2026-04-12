@@ -1,7 +1,14 @@
 # SSR and SvelteKit
 
-Stately is designed to work with SvelteKit SSR safely, but the safety comes from how you create managers.
-The recommended pattern is request-scoped manager creation plus Svelte context.
+Stately is safe on the server — provided you configure it correctly.
+The safety comes from **how you create managers**.
+
+The short version:
+
+- create a fresh manager per request
+- provide it through Svelte context
+- keep browser-only adapters behind browser guards
+- do **not** use `getDefaultStateManager()` on the server
 
 ## SSR-safe pattern
 
@@ -50,7 +57,11 @@ const manager = getDefaultStateManager();
 ```
 
 That is fine for client-only apps and demos.
-It is not the right default for SvelteKit because it reuses process-wide state.
+
+Do **not** use it in SvelteKit SSR code.
+On the server, a shared default manager means shared process state.
+Shared process state means one request can observe or overwrite another
+request's store data. That is not a cute quirk. That is a data leak.
 
 ## Persistence adapters and SSR
 
@@ -58,7 +69,7 @@ Persistence adapters that access browser storage (`localStorage`, `sessionStorag
 are **browser-only**. Referencing them on the server throws a `ReferenceError` because those
 globals do not exist in a Node.js environment.
 
-Use the memory adapter as a server-safe fallback:
+Use a browser guard or a server-safe fallback adapter:
 
 ```ts
 import { browser } from '$app/environment';
@@ -66,14 +77,30 @@ import { createLocalStorageAdapter, createMemoryStorageAdapter } from '@selfagen
 
 const useMyStore = defineStore('my-store', {
 	state: () => ({ count: 0 }),
-	options: {
-		persist: {
-			adapter: browser ? createLocalStorageAdapter() : createMemoryStorageAdapter(),
-			key: 'my-store'
-		}
+	persist: {
+		adapter: browser ? createLocalStorageAdapter() : createMemoryStorageAdapter(),
+		version: 1,
+		key: 'my-store'
 	}
 });
 ```
+
+If your app is truly browser-only, you can keep the browser adapter directly.
+If the store definition is shared by server and client, guard the adapter
+choice.
+
+## Hydrating stores from `load` data
+
+Do not mutate shared modules from `load` functions.
+
+Instead:
+
+1. fetch data in `+layout.server.ts`, `+page.server.ts`, or another server `load`
+2. return plain serialized data
+3. create the manager in a layout or component `<script>` block
+4. patch the request-scoped store from that returned data during component initialization
+
+Use [SvelteKit data loading](/guide/sveltekit-data-loading) for a concrete pattern.
 
 ## Practical SvelteKit guidance
 
@@ -82,6 +109,7 @@ const useMyStore = defineStore('my-store', {
 - Provide it through context before any stores are instantiated.
 - Avoid shared module-level singletons on the server.
 - Keep persistence, sync, and browser APIs behind `browser` guards from `$app/environment`.
+- Treat `load` functions as data loaders, not as a place to mutate global state.
 
 ## Why this matters
 

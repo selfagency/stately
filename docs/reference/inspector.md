@@ -1,5 +1,8 @@
 # Inspector reference
 
+The inspector’s helpers and Vite integration, documented for those who prefer to know exactly
+what their tools are doing.
+
 ## `statelyVitePlugin(options?)`
 
 Creates the dev-only Vite plugin that injects the inspector loader into Vite's

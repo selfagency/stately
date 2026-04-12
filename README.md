@@ -1,10 +1,11 @@
 # Stately
 
-[![CI](https://github.com/selfagency/stately/actions/workflows/ci.yml/badge.svg)](https://github.com/selfagency/stately/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/selfagency/stately/graph/badge.svg?token=9F7ZcOIrh1)](https://codecov.io/gh/selfagency/stately)
+[![CI](https://github.com/selfagency/stately/actions/workflows/ci.yml/badge.svg)](https://github.com/selfagency/stately/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/selfagency/stately/graph/badge.svg?token=9F7ZcOIrh1)](https://codecov.io/gh/selfagency/stately)
 
-Stately is a Pinia-inspired reactive state library for Svelte 5 runes and SvelteKit. It gives you a familiar
-`defineStore()` API, direct mutation ergonomics, request-scoped managers for SSR, and opt-in plugins for persistence,
-history, sync, and async orchestration.
+Stately is a Pinia-inspired state management library built specifically for Svelte 5 runes and SvelteKit. It provides a familiar `defineStore()` API, direct mutation ergonomics, and SSR-safe patterns, with an extensible plugin system for advanced features.
+
+If you’ve used Pinia, you’ll feel at home. Stately provides a structured way to define shared state, mutate it directly, and observe changes. It includes built-in support for persistence, history, synchronization, and async orchestration without the boilerplate of manual state management.
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -12,30 +13,32 @@ history, sync, and async orchestration.
 </p>
 <!-- markdownlint-enable MD033 -->
 
-## Read the docs
+## Why Stately?
 
-The full documentation lives at [`stately.self.agency`](https://stately.self.agency/).
+Stately is designed for those that need a store model that scales from simple counters to complex application workflows while maintaining Svelte 5 semantics and avoiding SSR pitfalls.
 
-- [Guide](https://stately.self.agency/guide/) — install the package, define stores, use SSR-safe managers, and configure
-  plugins.
-- [API reference](https://stately.self.agency/reference/api) — browse the exported runtime surface.
-- [Migration from Pinia](https://stately.self.agency/guide/migration-from-pinia) — map familiar Pinia patterns to Stately.
-- [Testing and releases](https://stately.self.agency/guide/testing-and-releases) — contributor workflows, hooks, and
-  release automation.
+It bridges the gap between simple writable stores and complex state frameworks, offering an API that is powerful yet intuitive.
 
-## Quick summary
+### Key Features
 
-Use Stately when you want one store model that scales from simple counters to product workflows with persistence,
-undo/redo, time travel, multi-tab coordination, and cancellable async actions. The core runtime stays small, while plugins
-add advanced behavior only when you ask for it.
+- **Flexible Definitions:** `defineStore()` supporting both **option stores** and **setup stores**.
+- **Intuitive API:** Direct mutations plus `$patch()`, `$reset()`, `$subscribe()`, and `$onAction()`.
+- **SSR Ready:** Request-scoped state managers designed for SvelteKit safety.
+- **Persistence:** Support for `localStorage`, `sessionStorage`, IndexedDB, and custom serializers with TTL and compression.
+- **History:** Built-in undo, redo, and time-travel debugging.
+- **Finite State Machines:** Manage complex UI logic with transitions and lifecycle hooks.
+- **Multi-tab Sync:** Synchronize state across tabs using `BroadcastChannel`.
+- **Async Workflow:** Track loading/error states with built-in concurrency policies (restartable, drop, enqueue, etc.).
+- **Validation:** Prevent invalid state updates with pre-commit validation.
+- **DevTools:** A dedicated inspector drawer and Vite integration for real-time debugging.
 
-## Install
+## Installation
 
 ```sh
 pnpm add @selfagency/stately svelte
 ```
 
-## Tiny example
+## Quick Start
 
 ```ts
 import { createStateManager, defineStore } from '@selfagency/stately';
@@ -60,24 +63,97 @@ const counter = useCounterStore(manager);
 counter.increment();
 ```
 
-## In this repository
+**Note for SvelteKit:** When using SSR, avoid `getDefaultStateManager()`. Instead, create a request-scoped manager and provide it via Svelte context. See the [SSR documentation](https://stately.self.agency/guide/ssr-and-sveltekit) for details.
 
-- `src/lib/` contains the package source.
-- `src/lib/examples/` contains packaged usage examples.
-- `src/routes/+page.svelte` is the interactive showcase app.
-- `docs/` contains the VitePress documentation site.
+## The Inspector
 
-## Local docs development
+Stately includes a development-only inspector that allows you to visualize your state, track mutations in real-time, and test history playback.
 
-```sh
-pnpm run docs:dev
+Enable it in your `vite.config.ts`:
+
+```ts
+import { defineConfig } from 'vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
+
+export default defineConfig({
+	plugins: [
+		sveltekit(),
+		statelyVitePlugin({
+			buttonPosition: 'right-bottom',
+			panelSide: 'right'
+		})
+	]
+});
 ```
 
-## Validation
+## Advanced Usage
 
-```sh
-pnpm run check
-pnpm run lint
-pnpm run test
-pnpm run build
+Stately is built for real-world complexity. You can easily compose plugins to handle persistence, history, and sync in a single store:
+
+```ts
+import {
+	createAsyncPlugin,
+	createHistoryPlugin,
+	createPersistencePlugin,
+	createStateManager,
+	createSyncPlugin
+} from '@selfagency/stately';
+
+const manager = createStateManager()
+	.use(createPersistencePlugin())
+	.use(createHistoryPlugin())
+	.use(createSyncPlugin({ origin: 'app-instance' }))
+	.use(createAsyncPlugin());
 ```
+
+For complex workflows, use the Finite State Machine (FSM) plugin to replace "boolean soup" with explicit states:
+
+```ts
+import { createFsmPlugin, createStateManager, defineStore } from '@selfagency/stately';
+
+const manager = createStateManager().use(createFsmPlugin());
+
+export const useWizardStore = defineStore('wizard', {
+	state: () => ({ step: 1 }),
+	fsm: {
+		initial: 'editing',
+		states: {
+			editing: { next: 'review' },
+			review: { back: 'editing', submit: 'submitted' },
+			submitted: {}
+		}
+	}
+});
+
+const wizard = useWizardStore(manager);
+
+// Check current state
+console.log(wizard.$fsm.current); // 'editing'
+
+// Transition to the next state
+wizard.$fsm.send('next');
+console.log(wizard.$fsm.matches('review')); // true
+```
+
+## Examples & Resources
+
+The repository includes several practical examples under `src/lib/examples/`:
+
+- **Counter:** Simple option store usage.
+- **Preferences:** Setup store using Svelte runes.
+- **Persistence:** SSR-safe storage with compression.
+- **History:** Time-travel and undo/redo setup.
+- **Async:** Request cancellation and concurrency management.
+- **FSM:** Manage complex workflows and validation.
+
+## Documentation
+
+Visit [stately.self.agency](https://stately.self.agency/) for the full documentation:
+
+- [**Getting Started**](https://stately.self.agency/guide/) — Core concepts and patterns.
+- [**Defining Stores**](https://stately.self.agency/guide/define-store) — Options, setup stores, and subscriptions.
+- [**Plugins**](https://stately.self.agency/guide/plugins) — Extending functionality.
+- [**SSR & SvelteKit**](https://stately.self.agency/guide/ssr-and-sveltekit) — Best practices for server-side rendering.
+- [**Migration from Pinia**](https://stately.self.agency/guide/migration-from-pinia) — A guide for Vue developers.
+- [**API Reference**](https://stately.self.agency/reference/api) — Full technical details.

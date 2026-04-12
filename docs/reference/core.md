@@ -1,8 +1,8 @@
 # Core runtime
 
-The core runtime is the small, SSR-aware surface that everything else in
-Stately builds on. It covers store creation, manager lifecycles, store
-helpers, Svelte interop, and the bridge for external reactive systems.
+The core runtime is the foundation of Stately: a small, SSR-aware surface that everything else builds on.
+It covers store creation, manager lifecycles, store helpers, Svelte interop,
+and the bridge for external reactive systems.
 
 ## `defineStore(id, definition)`
 
@@ -181,6 +181,42 @@ const unsubscribe = store.$subscribe(callback, { detached: true });
 - When `detached` is omitted or `false`, `$subscribe` registers an `onDestroy` handler so the
   subscription is torn down automatically with the component.
 
+`$subscribe()` also supports selective subscriptions:
+
+```ts
+store.$subscribe(callback, {
+	detached: true,
+	select: (state) => state.count,
+	equalityFn: (prev, next) => prev === next
+});
+```
+
+- `select` derives the value that should drive subscription equality
+- `equalityFn` overrides the default `Object.is` comparison for that selected
+  value
+
+`$onAction()` exposes action lifecycle hooks:
+
+```ts
+store.$onAction(({ name, args, before, after, onError }) => {
+	before(() => {
+		if (name === 'save' && args.length === 0) {
+			return false;
+		}
+	});
+
+	after((result) => {
+		console.log('completed with', result);
+	});
+
+	onError((error) => {
+		console.error(error);
+	});
+});
+```
+
+If a `before()` guard returns `false`, the action is cancelled.
+
 Practical rules:
 
 - Use direct mutation inside actions when you want the normal mutation pipeline.
@@ -188,6 +224,8 @@ Practical rules:
 - Use `$patch((state) => { ... })` when you need a grouped mutation.
 - Use `$subscribe()` for persistence, logging, or timelines.
 - Use `$onAction()` when you need to observe action start/success/failure.
+- Use `before()` inside `$onAction()` when an action should be cancelled before
+  it mutates state.
 
 ## `createExternalSubscriber()`
 
