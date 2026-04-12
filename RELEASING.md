@@ -5,13 +5,41 @@ The published npm artifact comes from `dist/`, not from the workspace root packa
 
 ## Normal maintainer flow
 
-1. Add or update a changeset with `pnpm changeset` while preparing a user-visible package change.
-2. Merge the pull request into `main` and wait for the GitHub checks to pass.
-3. Let Changesets update the version and changelog on `main`.
-4. Create and push the release tag from the maintainer machine once the release commit is ready.
-5. Run `pnpm release` locally to build `dist/` and publish `./dist` to npm.
-6. Let `.github/workflows/release.yml` validate the tag, verify the tested
-   `main` commit, and create the GitHub Release assets.
+Run the release script from the `main` branch on your local machine:
+
+```sh
+pnpm release <version>
+# e.g. pnpm release 1.2.3
+```
+
+The script handles the entire flow end-to-end:
+
+1. Verifies npm credentials and GitHub auth (`GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth login`).
+2. Confirms the working tree is clean and HEAD is on `main`.
+3. Runs `changeset version` to consume any pending changesets and update `CHANGELOG.md`.
+4. Asserts the requested version in `package.json`.
+5. Commits the version bump and changelog, then pushes to `main`.
+6. Polls GitHub Actions until the **CI** workflow passes on that commit.
+7. Creates an annotated tag (`v<version>`) and pushes it.
+8. Polls GitHub Actions until the **Release** workflow completes and the GitHub Release is published.
+9. Builds `dist/` and runs `npm publish ./dist`.
+
+If anything fails after the commit has been pushed, the script rolls back the remote tag and prints guidance for the commit.
+
+## Prerequisites
+
+- Authenticated with npm: `npm login` or `NPM_TOKEN` set in your environment.
+- Authenticated with GitHub: `GH_TOKEN` / `GITHUB_TOKEN` env var, or `gh auth login`.
+- Node.js ≥ 20 (uses native `fetch` for GitHub API calls).
+- Must be on the `main` branch with a clean working tree.
+
+## Dry run
+
+Preview what the script would do without pushing or publishing:
+
+```sh
+pnpm release:dry-run <version>
+```
 
 ## Release package shape
 
@@ -26,27 +54,25 @@ The release build writes a minimal `dist/package.json` that keeps only consumer-
 It intentionally drops workspace-only fields such as dev dependencies, local scripts, and contributor tooling.
 The release build also removes generated spec files and other test-only artifacts from `dist/` before publishing.
 
-## Local dry run
+## GitHub Release workflow
 
-Run the full release dry run locally before changing release automation:
+The `.github/workflows/release.yml` workflow fires on every `v*` tag push. It:
+
+1. Verifies the tag points to the latest `main` commit and that CI passed on it.
+2. Rebuilds the package from source.
+3. Packs a tarball and attaches it to the GitHub Release.
+
+**The GitHub workflow does not publish to npm.** npm publishing is done locally by the release script.
+
+## Manual npm publish (recovery)
+
+If the release script completed through the GitHub Release step but the npm publish failed,
+re-run the publish step manually:
 
 ```sh
-pnpm install
-pnpm release:dry-run
+pnpm build
+npm publish ./dist --tag latest --registry https://registry.npmjs.org/ --no-provenance
 ```
-
-The dry run validates the package, builds the release-ready `dist/` output, writes the stripped release manifest, copies
-the changelog and release assets, and performs an `npm publish --dry-run` against `./dist`.
-
-## Publishing requirements
-
-The local release command expects one of these setups:
-
-- `npm login` already run on the maintainer machine
-- `NPM_TOKEN` configured in the local shell or npm config as a fallback
-
-The GitHub workflow does not publish to npm. It only validates the tagged
-release, rebuilds the package, and creates the GitHub Release artifacts.
 
 For provenance-enabled publishing, keep the `repository` metadata and
 `publishConfig.provenance` values in `package.json` accurate.

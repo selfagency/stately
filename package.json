@@ -92,7 +92,7 @@
 		"prepare": "husky && svelte-kit sync || echo ''",
 		"preview": "vite preview",
 		"release": "node scripts/release.js",
-		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && node scripts/release.js --dry-run",
+		"release:dry-run": "node scripts/release.js --dry-run",
 		"release:version": "changeset version",
 		"test": "pnpm run build:inspector-css && vitest run",
 		"test:coverage": "pnpm run build:inspector-css && vitest run --coverage",
