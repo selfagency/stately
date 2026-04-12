@@ -54,3 +54,11 @@ These types exist so plugins can extend store definitions and store instances wi
 Most of these types are used indirectly through plugin options or store
 augmentation, but keeping them public means custom integrations can stay typed
 end-to-end.
+
+`SyncMessage` is the wire format for cross-context synchronization. `mutationId`
+must increase monotonically per origin, while `timestamp` participates in
+cross-origin last-write-wins ordering.
+
+`AsyncPluginOptions` controls which actions are tracked and how concurrency is
+handled. `include` can also be used as an explicit opt-in for promise-returning
+actions that are wrapped or declared without the `async` keyword.

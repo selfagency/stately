@@ -146,4 +146,145 @@ describe('createSyncPlugin', () => {
 		store.$dispose();
 		expect(destroyed).toEqual(['outer', 'transport']);
 	});
+
+	it('rejects stale cross-origin messages when a newer local mutation already won', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => {
+					listeners.delete(listener);
+				};
+			},
+			destroy() {
+				listeners.clear();
+			}
+		};
+		const manager = createStateManager().use(
+			createSyncPlugin({
+				origin: 'local-origin',
+				createId: () => 1,
+				createTimestamp: () => 200,
+				transports: [transport]
+			})
+		);
+		const useStore = defineStore('cross-origin-ordering', { state: () => ({ count: 0 }) });
+		const store = useStore(manager);
+
+		store.$patch({ count: 10 });
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'cross-origin-ordering',
+				origin: 'remote-origin',
+				mutationId: 5,
+				timestamp: 100,
+				version: 1,
+				state: { count: 2 }
+			});
+		}
+
+		expect(store.count).toBe(10);
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'cross-origin-ordering',
+				origin: 'remote-origin',
+				mutationId: 6,
+				timestamp: 300,
+				version: 1,
+				state: { count: 12 }
+			});
+		}
+
+		expect(store.count).toBe(12);
+	});
+
+	it('deduplicates the same remote mutation delivered by multiple transports', () => {
+		const firstListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const secondListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const createTransport = (
+			listeners: Set<(message: SyncMessage<Record<string, unknown>>) => void>
+		): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
+			publish() {},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => {
+					listeners.delete(listener);
+				};
+			},
+			destroy() {
+				listeners.clear();
+			}
+		});
+		const manager = createStateManager().use(
+			createSyncPlugin({
+				origin: 'local-origin',
+				transports: [createTransport(firstListeners), createTransport(secondListeners)]
+			})
+		);
+		const useStore = defineStore('duplicate-transport-delivery', { state: () => ({ count: 0 }) });
+		const store = useStore(manager);
+		const mutations: string[] = [];
+
+		store.$subscribe((mutation) => {
+			mutations.push(mutation.type);
+		});
+
+		const duplicatedMessage = {
+			storeId: 'duplicate-transport-delivery',
+			origin: 'remote-origin',
+			mutationId: 1,
+			timestamp: 500,
+			version: 1,
+			state: { count: 9 }
+		} satisfies SyncMessage<Record<string, unknown>>;
+
+		for (const listener of firstListeners) {
+			listener(duplicatedMessage);
+		}
+		for (const listener of secondListeners) {
+			listener(duplicatedMessage);
+		}
+
+		expect(store.count).toBe(9);
+		expect(mutations).toEqual(['patch-object']);
+	});
+
+	it('uses a deterministic origin tie-breaker when timestamps match', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => {
+					listeners.delete(listener);
+				};
+			},
+			destroy() {
+				listeners.clear();
+			}
+		};
+		const manager = createStateManager().use(
+			createSyncPlugin({ origin: 'alpha', createId: () => 1, createTimestamp: () => 250, transports: [transport] })
+		);
+		const useStore = defineStore('timestamp-tie-breaker', { state: () => ({ count: 0 }) });
+		const store = useStore(manager);
+
+		store.$patch({ count: 1 });
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'timestamp-tie-breaker',
+				origin: 'beta',
+				mutationId: 1,
+				timestamp: 250,
+				version: 1,
+				state: { count: 2 }
+			});
+		}
+
+		expect(store.count).toBe(2);
+	});
 });
