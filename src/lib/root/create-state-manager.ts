@@ -35,7 +35,7 @@ export function createStateManager(): StateManager {
 			return Object.freeze([...plugins]);
 		},
 		use(plugin) {
-			plugins.push(plugin);
+			plugins.push(plugin as StateManagerPlugin);
 			return manager;
 		},
 		register(definition) {
@@ -131,4 +131,5 @@ export function resetDefaultStateManager(): void {
 	defaultStateManager = undefined;
 }
 
-export type { StateManager, StateManagerPlugin, StoreDefinition } from './types.js';
+export type { StateManager, StateManagerPlugin, StoreDefinition, TypedStateManagerPlugin } from './types.js';
+export { defineStateManagerPlugin } from './types.js';

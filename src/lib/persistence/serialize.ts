@@ -58,7 +58,7 @@ export function deserializePersistedState<State>(
 			ok: true,
 			envelope: {
 				version: options.version,
-				state: sanitizeValue(options.migrate(parsed.state, parsed.version))
+				state: sanitizeValue(options.migrate(parsed.state as import('./types.js').JsonObject, parsed.version)) as State
 			}
 		};
 	} catch (e) {

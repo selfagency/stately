@@ -11,13 +11,39 @@ export interface StateManagerPluginContext<Definition extends StoreDefinition = 
 	readonly store: Store;
 }
 
-export type StateManagerPlugin<Definition extends StoreDefinition = StoreDefinition, Store = unknown> = (
-	context: StateManagerPluginContext<Definition, Store>
-) => void | Partial<Store>;
+type DefaultPluginAugmentation<Store> = Store extends object ? Partial<Store> : Record<PropertyKey, unknown>;
+
+export type StateManagerPlugin<
+	Definition extends StoreDefinition = StoreDefinition,
+	Store = unknown,
+	Augmentation extends object = DefaultPluginAugmentation<Store>
+> = (context: StateManagerPluginContext<Definition, Store>) => void | Augmentation;
+
+export type TypedStateManagerPlugin<
+	Definition extends StoreDefinition = StoreDefinition,
+	Store = unknown,
+	Augmentation extends object = DefaultPluginAugmentation<Store>
+> = StateManagerPlugin<Definition, Store, Augmentation>;
+
+export function defineStateManagerPlugin<
+	Definition extends StoreDefinition = StoreDefinition,
+	Store = unknown,
+	Augmentation extends object = DefaultPluginAugmentation<Store>
+>(
+	plugin: TypedStateManagerPlugin<Definition, Store, Augmentation>
+): TypedStateManagerPlugin<Definition, Store, Augmentation> {
+	return plugin;
+}
 
 export interface StateManager {
 	readonly plugins: readonly StateManagerPlugin[];
-	use(plugin: StateManagerPlugin): StateManager;
+	use<
+		Definition extends StoreDefinition = StoreDefinition,
+		Store = unknown,
+		Augmentation extends object = DefaultPluginAugmentation<Store>
+	>(
+		plugin: StateManagerPlugin<Definition, Store, Augmentation>
+	): StateManager;
 	register(definition: StoreDefinition): void;
 	hasDefinition(id: string): boolean;
 	getDefinition<Definition extends StoreDefinition = StoreDefinition>(id: string): Definition | undefined;

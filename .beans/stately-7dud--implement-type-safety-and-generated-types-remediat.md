@@ -1,7 +1,7 @@
 ---
 # stately-7dud
-title: "Implement type-safety and generated-types remediations"
-status: in-progress
+title: 'Implement type-safety and generated-types remediations'
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-12T18:58:25Z
@@ -20,13 +20,15 @@ Implement the type-safety and generated-types remediation plan for the Stately l
 - [x] Make persistence option exclusivity and payload boundaries more strongly typed.
 - [x] Verify generated declaration output for root, inspector, and inspector/vite subpaths.
 - [x] Update public docs for plugin typing and generated type expectations.
-- [ ] Run check, lint, test, and build. *(check/test/build passed; lint is currently blocked by an existing ESLint flat-config compatibility issue in the repo config.)*
+- [x] Run check, lint, test, and build.
 
 ## Summary of Changes
 
-- Added regression coverage for typed subscription selectors, typed validation/persistence options, and inspector Vite plugin virtual-module typing.
+- Added regression coverage for typed subscription selectors, setup-store overload inference, typed validation/persistence options, typed plugin augmentations, JSON payload helper types, and inspector Vite plugin virtual-module typing.
 - Tightened `StoreSubscribeOptions` so `select` and `equalityFn` share the same selected value type.
-- Made validation option augmentation type the `state` parameter from the actual store state.
+- Added `defineStateManagerPlugin()` and `TypedStateManagerPlugin` so plugin augmentation objects can be checked against explicit contracts while preserving the existing module-augmentation extension model.
+- Added exported JSON helper types (`JsonPrimitive`, `JsonObject`, `JsonArray`, `JsonValue`) for persistence and sync payload boundaries.
 - Made persistence `pick` and `omit` mutually exclusive at the type level while preserving runtime validation.
 - Updated packaging so the published inspector Vite declaration carries the ambient `virtual:stately-inspector-options` typing.
-- Updated public docs for typed subscription options, plugin authoring guidance, and inspector Vite type behavior.
+- Migrated the flat ESLint config entrypoint to `eslint.config.mjs` and updated lint/format scripts so `pnpm run lint` is green again.
+- Verified the full change set with `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build`.

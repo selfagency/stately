@@ -1,5 +1,10 @@
 export type MaybePromise<T> = T | Promise<T>;
 
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonObject = { [Key in string]: JsonValue };
+export type JsonArray = JsonValue[] | readonly JsonValue[];
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+
 export interface PersistenceAdapter {
 	getItem(key: string): MaybePromise<string | null>;
 	setItem(key: string, value: string): MaybePromise<void>;
@@ -15,7 +20,7 @@ export interface PersistEnvelope<State = Record<string, unknown>> {
 
 export interface PersistDeserializeOptions<State> {
 	version: number;
-	migrate?: (state: Record<string, unknown>, fromVersion: number) => State;
+	migrate?: (state: JsonObject, fromVersion: number) => State;
 }
 
 type PersistSelectionOptions<State> =
@@ -41,7 +46,7 @@ export type PersistOptions<State = Record<string, unknown>> = PersistDeserialize
 		key?: string;
 		compression?: PersistCompression;
 		serialize?: (envelope: PersistEnvelope<State>) => string;
-		deserialize?: (raw: string) => PersistEnvelope<Record<string, unknown>> | undefined;
+		deserialize?: (raw: string) => PersistEnvelope<JsonObject> | undefined;
 		/** Called when an auto-flush write to the adapter fails. If omitted, a notice is emitted to the Stately inspector. */
 		onError?: (error: unknown) => void;
 		/** Debounce auto-flush writes by this many milliseconds (trailing edge). Useful for high-frequency mutations. */

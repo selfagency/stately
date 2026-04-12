@@ -40,17 +40,14 @@ describe('store-types', () => {
 		});
 
 		const counter = useCounterStore(manager);
-		const unsubscribe = counter.$subscribe(
-			() => undefined,
-			{
-				select: (state) => state.count,
-				equalityFn(previous, next) {
-					expectTypeOf(previous).toEqualTypeOf<number>();
-					expectTypeOf(next).toEqualTypeOf<number>();
-					return previous === next;
-				}
+		const unsubscribe = counter.$subscribe(() => undefined, {
+			select: (state) => state.count,
+			equalityFn(previous, next) {
+				expectTypeOf(previous).toEqualTypeOf<number>();
+				expectTypeOf(next).toEqualTypeOf<number>();
+				return previous === next;
 			}
-		);
+		});
 
 		unsubscribe();
 		expect(true).toBe(true);
@@ -91,6 +88,41 @@ describe('store-types', () => {
 			}
 		});
 
+		expect(true).toBe(true);
+	});
+
+	it('preserves strong typing for setup-store overloads', () => {
+		const manager = createStateManager();
+		const useSetupStore = defineStore('setup-types', () => ({
+			count: 0,
+			label: 'ready',
+			get summary() {
+				return `${this.label}:${this.count}`;
+			},
+			increment(step: number) {
+				this.count += step;
+				return this.count;
+			}
+		}));
+		const useSetupOptionsStore = defineStore('setup-options-types', {
+			setup: () => ({
+				enabled: true,
+				toggle() {
+					this.enabled = !this.enabled;
+					return this.enabled;
+				}
+			})
+		});
+
+		const setupStore = useSetupStore(manager);
+		const setupOptionsStore = useSetupOptionsStore(manager);
+
+		expectTypeOf(setupStore.count).toEqualTypeOf<number>();
+		expectTypeOf(setupStore.label).toEqualTypeOf<string>();
+		expectTypeOf(setupStore.summary).toEqualTypeOf<string>();
+		expectTypeOf(setupStore.increment).toEqualTypeOf<(step: number) => number>();
+		expectTypeOf(setupOptionsStore.enabled).toEqualTypeOf<boolean>();
+		expectTypeOf(setupOptionsStore.toggle).toEqualTypeOf<() => boolean>();
 		expect(true).toBe(true);
 	});
 

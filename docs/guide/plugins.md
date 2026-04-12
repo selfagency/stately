@@ -8,10 +8,14 @@ Type-safe plugin authoring in Stately relies on module augmentation:
 - augment `DefineStoreOptionsBase` for definition options
 - augment `StoreCustomProperties` for store instance properties
 - prefer store-state generics over `Record<string, unknown>` when the plugin is
-	operating on the live store state
+  operating on the live store state
 
 Persistence options also enforce `pick`/`omit` mutual exclusivity at the type
 level, mirroring the runtime validation.
+
+When a plugin returns new store properties, prefer
+`defineStateManagerPlugin()` with an explicit augmentation type so the returned
+descriptor object is checked against the contract you intend to install.
 
 Use the [reference pages](/reference/api) when you need exact API shapes and
 return values. Use this guide when you want to decide which plugin to reach for

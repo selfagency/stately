@@ -199,7 +199,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 				mutationId,
 				timestamp,
 				state: $state.snapshot(store.$state)
-			} as Message;
+			} as unknown as Message;
 			latestAppliedClock = {
 				origin,
 				mutationId,

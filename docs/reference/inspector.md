@@ -36,7 +36,7 @@ Behavior notes:
 - mounts a singleton browser inspector host
 - should not be combined with a second manually rendered `InspectorDrawer`
 - ships typed support for the internal `virtual:stately-inspector-options`
-	module used by the loader bridge
+  module used by the loader bridge
 
 ### Options
 

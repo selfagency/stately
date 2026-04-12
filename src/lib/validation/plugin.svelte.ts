@@ -1,4 +1,4 @@
-import type { StateManagerPlugin } from '../root/types.js';
+import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 
 interface ValidatableStore<State = Record<string, unknown>> {
 	readonly $id: string;
@@ -39,8 +39,8 @@ declare module '../pinia-like/store-types.js' {
 	}
 }
 
-export function createValidationPlugin(): StateManagerPlugin {
-	return ({ options, store }) => {
+export function createValidationPlugin(): StateManagerPlugin<StoreDefinition, ValidatableStore> {
+	return defineStateManagerPlugin<StoreDefinition, ValidatableStore>(({ options, store }) => {
 		if (!isValidatableStore(store)) {
 			return;
 		}
@@ -85,5 +85,5 @@ export function createValidationPlugin(): StateManagerPlugin {
 				throw new Error(errorMessage);
 			}
 		});
-	};
+	});
 }
