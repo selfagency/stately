@@ -1,8 +1,8 @@
-import type { StateManagerPlugin } from '../root/types.js';
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { StateManagerPlugin } from '../root/types.js';
+import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 import type { ConcurrencyMode } from './concurrency.js';
 import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
-import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 
 export interface AsyncActionRegistry {
 	[actionName: string]: AsyncActionState;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createStateManager } from '../root/create-state-manager.js';
 import { defineStore } from '../define-store.svelte.js';
+import { createStateManager } from '../root/create-state-manager.js';
 import { createSyncPlugin } from './plugin.svelte.js';
 import type { SyncMessage, SyncTransport } from './types.js';
 

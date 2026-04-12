@@ -1,6 +1,6 @@
-import type { StateManagerPlugin } from '../root/types.js';
-import type { StoreMutationContext } from '../pinia-like/store-types.js';
 import { sanitizeValue } from '../internal/sanitize.js';
+import type { StoreMutationContext } from '../pinia-like/store-types.js';
+import type { StateManagerPlugin } from '../root/types.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
