@@ -55,13 +55,13 @@ async function rollback(tag) {
 	}
 
 	if (tagPushed) {
-		try {
-			console.error(`🔁 Rolling back: deleting remote tag ${tag}...`);
-			run('git', ['push', 'origin', `--delete`, tag], { allowFailure: true });
-			run('git', ['tag', '-d', tag], { allowFailure: true });
-		} catch (err) {
-			console.error('Rollback failed:', err instanceof Error ? err.message : err);
+		console.error(`🔁 Rolling back: deleting remote tag ${tag}…`);
+		const { status } = run('git', ['push', 'origin', `--delete`, tag], { allowFailure: true });
+		if (status !== 0) {
+			console.error(`⚠️  Could not delete remote tag ${tag} — repository rules may prevent it.`);
+			console.error(`   Delete it manually at: https://github.com/${OWNER}/${REPO}/releases/tag/${tag}`);
 		}
+		run('git', ['tag', '-d', tag], { allowFailure: true });
 	}
 
 	if (commitPushed) {
@@ -248,10 +248,18 @@ async function main() {
 	run('git', ['fetch', 'origin', 'main']);
 	run('git', ['pull', '--ff-only', 'origin', 'main']);
 
-	// Check for existing tag.
+	// Check for existing local tag.
 	const localTag = run('git', ['tag', '-l', tag], { capture: true }).stdout;
 	if (localTag) {
-		console.error(`Tag ${tag} already exists locally.`);
+		console.error(`Tag ${tag} already exists locally. Run: git tag -d ${tag}`);
+		process.exit(1);
+	}
+
+	// Check for existing remote tag — avoids a rejected push mid-release.
+	const remoteTag = run('git', ['ls-remote', '--tags', 'origin', `refs/tags/${tag}`], { capture: true }).stdout;
+	if (remoteTag) {
+		console.error(`Tag ${tag} already exists on remote. Delete it before re-running:`);
+		console.error(`  https://github.com/${OWNER}/${REPO}/releases/tag/${tag}`);
 		process.exit(1);
 	}
 
