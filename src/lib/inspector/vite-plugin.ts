@@ -54,7 +54,7 @@ export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {
 			}
 
 			if (id.startsWith(runtimePath)) {
-				const file = path.normalize(cleanInspectorUrl(id));
+				const file = normalizePath(cleanInspectorUrl(id));
 				if (file.startsWith(runtimePath) && fs.existsSync(file)) {
 					return fs.readFileSync(file, 'utf8');
 				}

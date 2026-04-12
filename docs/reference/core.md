@@ -93,10 +93,16 @@ const counter = useCounterStore(manager);
 Useful manager methods:
 
 - `use(plugin)` registers a plugin before stores are created.
-- `register(definition)` adds a store definition.
+- `register(definition)` adds a store definition without creating an instance.
 - `createStore(definition, factory)` creates or reuses a store instance.
-- `getStore(id)` returns a created store if one exists.
-- `clear()` removes cached definitions and instances.
+- `getStore(id)` returns a created store if one exists, or `undefined`.
+- `hasStore(id)` returns `true` if an instance has been created for that id.
+- `hasDefinition(id)` returns `true` if a definition has been registered under that id.
+- `getDefinition(id)` retrieves the registered `StoreDefinition` for an id.
+- `deleteStore(id)` removes both the instance and its definition.
+  A new call to `useMyStore(manager)` will re-create it from scratch.
+- `clear()` disposes all active stores and removes all definitions and instances.
+- `plugins` is the readonly array of plugins registered on this manager.
 
 ## `getDefaultStateManager()`
 
@@ -161,6 +167,19 @@ store.$subscribe((mutation, state) => {
 	// state => latest store state snapshot/proxy
 });
 ```
+
+`$subscribe()` accepts an optional second argument with lifecycle options:
+
+```ts
+const unsubscribe = store.$subscribe(callback, { detached: true });
+```
+
+- `detached: true` — the subscription **will not** be automatically cleaned up when the enclosing
+  Svelte component is destroyed. You are responsible for calling the returned `unsubscribe` function.
+  Use this when subscribing from outside a component, or when the subscription must outlive the
+  component (e.g. plugins, devtools adapters, test harnesses).
+- When `detached` is omitted or `false`, `$subscribe` registers an `onDestroy` handler so the
+  subscription is torn down automatically with the component.
 
 Practical rules:
 

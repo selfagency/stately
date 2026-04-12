@@ -58,6 +58,10 @@
 		"./inspector/vite": {
 			"types": "./dist/inspector/vite-plugin.d.ts",
 			"svelte": "./dist/inspector/vite-plugin.js"
+		},
+		"./testing": {
+			"types": "./dist/testing.d.ts",
+			"svelte": "./dist/testing.js"
 		}
 	},
 	"svelte": "./dist/index.js",

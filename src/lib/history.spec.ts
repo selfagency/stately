@@ -146,4 +146,49 @@ describe('history runtime', () => {
 		expect(store.$history.entries.length).toBe(2);
 		expect(store.$history.entries[1]!.snapshot).toEqual({ a: 1, b: 2 });
 	});
+
+	it('goTo() returns false for out-of-bounds indices', () => {
+		const manager = createStateManager().use(createHistoryPlugin());
+		const useStore = defineStore('history-goto-bounds', {
+			state: () => ({ count: 0 }),
+			history: { limit: 10 }
+		});
+		const store = useStore(manager);
+
+		store.count = 1;
+
+		expect(store.$timeTravel.goTo(-1)).toBe(false);
+		expect(store.$timeTravel.goTo(999)).toBe(false);
+		expect(store.count).toBe(1);
+	});
+
+	it('$timeTravel.entries reflects current history content', () => {
+		const manager = createStateManager().use(createHistoryPlugin());
+		const useStore = defineStore('history-timetravel-entries', {
+			state: () => ({ x: 0 }),
+			history: { limit: 10 }
+		});
+		const store = useStore(manager);
+
+		store.x = 10;
+		store.x = 20;
+
+		expect(store.$timeTravel.entries).toHaveLength(3);
+		expect(store.$timeTravel.entries.map((e) => (e.snapshot as { x: number }).x)).toEqual([0, 10, 20]);
+	});
+
+	it('$history.record() manually pushes a snapshot', () => {
+		const manager = createStateManager().use(createHistoryPlugin());
+		const useStore = defineStore('history-manual-record', {
+			state: () => ({ value: 'initial' }),
+			history: { limit: 10 }
+		});
+		const store = useStore(manager);
+
+		const countBefore = store.$history.entries.length;
+		store.$history.record({ value: 'manual' });
+
+		expect(store.$history.entries.length).toBe(countBefore + 1);
+		expect(store.$history.entries.at(-1)!.snapshot).toEqual({ value: 'manual' });
+	});
 });

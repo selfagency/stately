@@ -238,6 +238,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 	const defineAction = (key: PropertyKey, action: AnyFunction): void => {
 		const actionWithMutationInference = function (this: unknown, ...args: unknown[]) {
 			const mutationCountBeforeAction = mutationCount;
+			// Snapshot the state before the action so we can detect direct mutations after it runs.
+			// NOTE: $state.snapshot() is O(n) in state size. This snapshot is only compared when
+			// no explicit mutation (via $patch, $reset, etc.) was recorded during the action —
+			// if mutationCount changed, flushInferredDirectMutation returns early without diff-ing.
 			const beforeState = cloneState(config.state);
 
 			const flushInferredDirectMutation = () => {

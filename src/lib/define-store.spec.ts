@@ -247,4 +247,30 @@ describe('defineStore', () => {
 
 		expect(log).toEqual(['before:increment', 'after:increment:1']);
 	});
+
+	it('rejects a whitespace-only store ID', () => {
+		expect(() => defineStore('   ', { state: () => ({}) })).toThrow(/id/i);
+	});
+
+	it('exposes $id matching the registered store ID', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('my-id-store', { state: () => ({}) });
+		const store = useStore(manager);
+
+		expect(store.$id).toBe('my-id-store');
+	});
+
+	it('isolates stores created from the same definition across different managers', () => {
+		const managerA = createStateManager();
+		const managerB = createStateManager();
+		const useStore = defineStore('multi-manager-isolation', { state: () => ({ count: 0 }) });
+
+		const storeA = useStore(managerA);
+		const storeB = useStore(managerB);
+
+		storeA.count = 10;
+
+		expect(storeA.count).toBe(10);
+		expect(storeB.count).toBe(0);
+	});
 });

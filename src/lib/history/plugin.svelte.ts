@@ -62,6 +62,9 @@ export function createHistoryPlugin(): StateManagerPlugin {
 		});
 
 		const unsubscribeHistory = store.$subscribe(() => {
+			// Guard relies on $subscribe delivering callbacks synchronously. Svelte 5 runes
+			// flush subscriber notifications synchronously within the same microtask, so
+			// isReplaying is still true when this callback fires during a $patch replay.
 			if (controller.isReplaying) {
 				return;
 			}

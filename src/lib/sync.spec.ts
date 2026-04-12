@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
+import { createHistoryPlugin } from './history/plugin.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
 import { createSyncPlugin } from './sync/plugin.svelte.js';
 import type { SyncMessage, SyncTransport } from './sync/types.js';
@@ -282,5 +283,69 @@ describe('sync runtime', () => {
 			});
 		}
 		expect(store.count).toBe(6);
+	});
+
+	it('discards inbound messages whose version does not match the plugin version', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => listeners.delete(listener);
+			},
+			destroy() {}
+		};
+
+		const useStore = defineStore('sync-version-discard', { state: () => ({ count: 0 }) });
+		const manager = createStateManager().use(
+			createSyncPlugin({ origin: 'local', version: 2, transports: [transport] })
+		);
+		const store = useStore(manager);
+
+		// v1 message — should be discarded
+		for (const listener of listeners) {
+			listener({
+				storeId: 'sync-version-discard',
+				origin: 'remote',
+				version: 1,
+				mutationId: 1,
+				timestamp: Date.now(),
+				state: { count: 99 }
+			});
+		}
+		expect(store.count).toBe(0);
+	});
+
+	it('does not publish during time-travel replay to avoid sync feedback loops', () => {
+		const published: unknown[] = [];
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish(message) {
+				published.push(message);
+			},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => listeners.delete(listener);
+			},
+			destroy() {}
+		};
+
+		const manager = createStateManager()
+			.use(createHistoryPlugin())
+			.use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+		const useStore = defineStore('sync-replay-suppress', {
+			state: () => ({ count: 0 }),
+			history: { limit: 10 }
+		});
+		const store = useStore(manager);
+
+		store.count = 1;
+		store.count = 2;
+		const publishedBeforeReplay = published.length;
+
+		store.$timeTravel.goTo(0);
+
+		expect(published).toHaveLength(publishedBeforeReplay);
+		expect(store.count).toBe(0);
 	});
 });

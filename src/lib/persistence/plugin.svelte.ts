@@ -83,6 +83,10 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		let flushQueue = Promise.resolve();
 		let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
+		// flush() resolves when the write it enqueued completes, but does NOT wait for
+		// previously-enqueued writes that were already in-flight. Callers that need a full
+		// drain should await $persist.flush() in a loop until flushQueue settles, or simply
+		// call $persist.flush() from an async action after ensuring all mutations are done.
 		const flush = async () => {
 			if (paused || rehydrating || isReplayActive(store)) {
 				return;

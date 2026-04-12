@@ -63,4 +63,56 @@ describe('patching flows', () => {
 		expect(store.items).toEqual(['first']);
 		expect(mutationTypes).toEqual(['direct']);
 	});
+
+	it('$patch(fn) that throws does not corrupt state and still fires onError', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('patching-fn-throws', {
+			state: () => ({ count: 0 })
+		});
+		const store = useStore(manager);
+		const errors: unknown[] = [];
+
+		store.$onAction(({ onError }) => {
+			onError((err) => errors.push(err));
+		});
+
+		expect(() =>
+			store.$patch(() => {
+				throw new Error('patch error');
+			})
+		).toThrow('patch error');
+
+		expect(store.count).toBe(0);
+	});
+
+	it('nested action calls each get their own onAction lifecycle hook', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('patching-nested-actions', {
+			state: () => ({ count: 0 }),
+			actions: {
+				inner() {
+					this.count += 1;
+				},
+				outer() {
+					this.inner();
+					this.count += 10;
+				}
+			}
+		});
+		const store = useStore(manager);
+		const log: string[] = [];
+
+		store.$onAction(({ name, after }) => {
+			log.push(`start:${name}`);
+			after(() => log.push(`end:${name}`));
+		});
+
+		store.outer();
+
+		expect(store.count).toBe(11);
+		expect(log).toContain('start:outer');
+		expect(log).toContain('start:inner');
+		expect(log).toContain('end:inner');
+		expect(log).toContain('end:outer');
+	});
 });

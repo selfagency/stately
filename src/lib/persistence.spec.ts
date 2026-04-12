@@ -215,8 +215,10 @@ describe('persistence runtime', () => {
 		const raw = storage.get('persistence-compression');
 		expect(raw).toMatch(/^compressed:/);
 
-		// New store instance reading from the same storage
-		const store2 = useStore(manager);
+		// New store instance reading from the same storage — must use a fresh
+		// manager to avoid the cached instance and actually test rehydration.
+		const rehydrationManager = createStateManager().use(createPersistencePlugin());
+		const store2 = useStore(rehydrationManager);
 		await store2.$persist.ready;
 		expect(store2.label).toBe('hello');
 	});
@@ -251,5 +253,142 @@ describe('persistence runtime', () => {
 		await store.$persist.ready;
 
 		expect(store.count).toBe(7);
+	});
+
+	it('runs the migrate function when stored version differs from current version', async () => {
+		const storage = new Map<string, string>();
+		storage.set('persistence-migrate', JSON.stringify({ version: 1, state: { legacyField: 42 } }));
+
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('persistence-migrate', {
+			state: () => ({ count: 0 }),
+			persist: {
+				version: 2,
+				migrate(storedState) {
+					const legacy = storedState as { legacyField: number };
+					return { count: legacy.legacyField };
+				},
+				adapter: {
+					async getItem(key) {
+						return storage.get(key) ?? null;
+					},
+					async setItem(key, value) {
+						storage.set(key, value);
+					},
+					async removeItem(key) {
+						storage.delete(key);
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+		await store.$persist.ready;
+
+		expect(store.count).toBe(42);
+	});
+
+	it('uses a custom key option instead of the store ID', async () => {
+		const storage = new Map<string, string>();
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('persistence-custom-key-store', {
+			state: () => ({ value: 'hello' }),
+			persist: {
+				version: 1,
+				key: 'my-custom-key',
+				adapter: {
+					async getItem(key) {
+						return storage.get(key) ?? null;
+					},
+					async setItem(key, value) {
+						storage.set(key, value);
+					},
+					async removeItem(key) {
+						storage.delete(key);
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+		await store.$persist.ready;
+
+		store.value = 'world';
+		await store.$persist.flush();
+
+		expect(storage.has('persistence-custom-key-store')).toBe(false);
+		expect(storage.get('my-custom-key')).toBe(JSON.stringify({ version: 1, state: { value: 'world' } }));
+	});
+
+	it('uses a custom serialize function for writing', async () => {
+		const storage = new Map<string, string>();
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('persistence-custom-serialize', {
+			state: () => ({ n: 0 }),
+			persist: {
+				version: 1,
+				serialize: (envelope) => `CUSTOM:${JSON.stringify(envelope)}`,
+				adapter: {
+					async getItem(key) {
+						return storage.get(key) ?? null;
+					},
+					async setItem(key, value) {
+						storage.set(key, value);
+					},
+					async removeItem(key) {
+						storage.delete(key);
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+		await store.$persist.ready;
+
+		store.n = 5;
+		await store.$persist.flush();
+
+		const saved = storage.get('persistence-custom-serialize');
+		expect(saved).toMatch(/^CUSTOM:/);
+	});
+
+	it('pause() stops auto-flush; resume() re-enables writes', async () => {
+		const storage = new Map<string, string>();
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('persistence-pause-flush', {
+			state: () => ({ count: 0 }),
+			persist: {
+				version: 1,
+				adapter: {
+					async getItem(key) {
+						return storage.get(key) ?? null;
+					},
+					async setItem(key, value) {
+						storage.set(key, value);
+					},
+					async removeItem(key) {
+						storage.delete(key);
+					}
+				}
+			}
+		});
+		const store = useStore(manager);
+		await store.$persist.ready;
+
+		store.count = 1;
+		await store.$persist.flush();
+		const snap1 = storage.get('persistence-pause-flush');
+
+		store.$persist.pause();
+		store.count = 99;
+
+		// Auto-flush is suppressed during pause
+		expect(storage.get('persistence-pause-flush')).toBe(snap1);
+
+		// Manual flush is also suppressed during pause (by design)
+		await store.$persist.flush();
+		expect(storage.get('persistence-pause-flush')).toBe(snap1);
+
+		// After resume, a manual flush writes the latest state
+		store.$persist.resume();
+		await store.$persist.flush();
+		expect(storage.get('persistence-pause-flush')).toBe(JSON.stringify({ version: 1, state: { count: 99 } }));
 	});
 });
