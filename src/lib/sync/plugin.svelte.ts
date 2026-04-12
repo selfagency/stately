@@ -50,13 +50,21 @@ function isReplayActive(store: SyncStore): boolean {
 	);
 }
 
+function compareOriginsDeterministically(left: string, right: string): number {
+	if (left === right) {
+		return 0;
+	}
+
+	return left < right ? -1 : 1;
+}
+
 function compareSyncMutationClocks(left: SyncMutationClock, right: SyncMutationClock): number {
 	if (left.timestamp !== right.timestamp) {
 		return left.timestamp - right.timestamp;
 	}
 
 	if (left.origin !== right.origin) {
-		return left.origin.localeCompare(right.origin);
+		return compareOriginsDeterministically(left.origin, right.origin);
 	}
 
 	return left.mutationId - right.mutationId;
@@ -154,6 +162,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 					} satisfies SyncMutationClock;
 
 					if (latestAppliedClock && compareSyncMutationClocks(incomingClock, latestAppliedClock) <= 0) {
+						rememberOriginMutation(receivedMutationIds, parsed.origin, parsed.mutationId);
 						return;
 					}
 
