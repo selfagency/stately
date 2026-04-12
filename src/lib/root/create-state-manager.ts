@@ -26,7 +26,8 @@ function disposeStore(store: unknown): void {
 }
 
 export function createStateManager(): StateManager {
-	const plugins: StateManagerPlugin[] = [];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const plugins: StateManagerPlugin<any, any, any>[] = [];
 	const definitions = new Map<string, StoreDefinition>();
 	const stores = new Map<string, unknown>();
 
@@ -35,7 +36,7 @@ export function createStateManager(): StateManager {
 			return Object.freeze([...plugins]);
 		},
 		use(plugin) {
-			plugins.push(plugin as StateManagerPlugin);
+			plugins.push(plugin);
 			return manager;
 		},
 		register(definition) {

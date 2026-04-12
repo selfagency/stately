@@ -22,6 +22,12 @@ export interface SyncPluginOptions<Message extends SyncMessage = SyncMessage> {
 	transports?: SyncTransport<Message>[];
 	createId?: () => number;
 	createTimestamp?: () => number;
+	/**
+	 * Produce the outgoing `Message` from a fully-populated `SyncMessage` base.
+	 * Required when `Message` extends `SyncMessage` with additional fields;
+	 * omit when `Message` is exactly `SyncMessage`.
+	 */
+	createMessage?: (base: SyncMessage) => Message;
 }
 
 interface SyncMutationClock {
@@ -192,14 +198,15 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 
 			const mutationId = createId ? createId() : ++nextOutgoingId;
 			const timestamp = createTimestamp();
-			const message = {
+			const base: SyncMessage = {
 				storeId: store.$id,
 				origin,
 				version,
 				mutationId,
 				timestamp,
-				state: $state.snapshot(store.$state)
-			} as unknown as Message;
+				state: $state.snapshot(store.$state) as Record<string, unknown>
+			};
+			const message = (options.createMessage?.(base) ?? base) as Message;
 			latestAppliedClock = {
 				origin,
 				mutationId,

@@ -46,4 +46,26 @@ describe('persistence serialization', () => {
 		expect(nestedPoisoned).toEqual({ ok: true, envelope: { version: 2, state: { profile: { name: 'safe' } } } });
 		expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
 	});
+
+	it('sanitizes migrate input before passing to the migration callback', () => {
+		// __proto__ as an own enumerable key (from JSON.parse) must be stripped
+		// before the migrate callback receives the state, not only in the result.
+		const seenKeys: string[] = [];
+
+		const result = deserializePersistedState<{ name: string }>(
+			JSON.stringify({ version: 1, state: { name: 'safe', __proto__: { injected: true } } }),
+			{
+				version: 2,
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				migrate(state, fromVersion) {
+					seenKeys.push(...Object.keys(state));
+					return { name: state.name as string };
+				}
+			}
+		);
+
+		expect(result).toEqual({ ok: true, envelope: { version: 2, state: { name: 'safe' } } });
+		expect(seenKeys).not.toContain('__proto__');
+		expect(({} as { injected?: boolean }).injected).toBeUndefined();
+	});
 });
