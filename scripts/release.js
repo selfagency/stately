@@ -7,8 +7,8 @@
  * Flow:
  *   1.  Validate version arg and verify prerequisites (git, npm auth, GitHub token).
  *   2.  Confirm working tree is clean and HEAD is on main.
- *   3.  Run `changeset version` to consume pending changesets and update CHANGELOG.md.
- *   4.  Re-assert the requested version in package.json.
+ *   3.  Use GitHub API to generate release notes from commits since the last tag.
+ *   4.  Update package.json to the requested version and prepend release notes to CHANGELOG.md.
  *   5.  Commit and push to main.
  *   6.  Poll GitHub Actions until the CI workflow passes on that commit.
  *   7.  Create an annotated tag and push it.
@@ -16,22 +16,28 @@
  *   9.  Build dist/ and publish to npm (--no-provenance when running locally).
  *
  * Rollback:
- *   If any step fails after the commit has been pushed, the script attempts to
- *   delete the remote tag (if it was pushed) and warns about the commit.
- *   npm publish is never retried; if it fails, re-run with `pnpm release:publish`.
+ *   Automatically triggered on failure or SIGINT/SIGTERM.
+ *   - If tag was pushed: deletes it from remote and local.
+ *   - If commit was pushed: runs `git revert HEAD && git push origin main`.
+ *   - If commit was only local: runs `git reset --hard HEAD~1`.
+ *   - npm publish is never retried automatically.
  */
 
+// Disable husky so pre-push hooks don't re-run tests on every git push we make.
+process.env.HUSKY = '0';
+
+import { Octokit } from '@octokit/rest';
 import { spawnSync } from 'node:child_process';
 import { constants } from 'node:fs';
 import { access, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ora from 'ora';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
-const GITHUB_API = 'https://api.github.com';
 const OWNER = 'selfagency';
 const REPO = 'stately';
 const NPM_REGISTRY = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org/';
@@ -44,6 +50,7 @@ const isDryRun = args.includes('--dry-run');
 // Rollback state
 // ---------------------------------------------------------------------------
 
+let commitLocal = false;
 let commitPushed = false;
 let tagPushed = false;
 let npmPublished = false;
@@ -65,7 +72,23 @@ async function rollback(tag) {
 	}
 
 	if (commitPushed) {
-		console.error(`⚠️  Release commit was pushed to origin/main. Fix the issue and re-run, or revert manually.`);
+		console.error('🔁 Rolling back: reverting release commit on origin/main…');
+		const { status } = run('git', ['revert', '--no-edit', 'HEAD'], { allowFailure: true });
+		if (status === 0) {
+			run('git', ['push', 'origin', 'main'], { allowFailure: true });
+			console.error('↩️  Release commit reverted and pushed.');
+		} else {
+			console.error('❌ Auto-revert failed. Manually run:');
+			console.error('   git revert HEAD && git push origin main');
+		}
+	} else if (commitLocal) {
+		console.error('🔁 Rolling back: resetting local release commit…');
+		const { status } = run('git', ['reset', '--hard', 'HEAD~1'], { allowFailure: true });
+		if (status === 0) {
+			console.error('↩️  Local release commit removed. Working tree restored.');
+		} else {
+			console.error('❌ Reset failed. Manually run: git reset --hard HEAD~1');
+		}
 	}
 }
 
@@ -105,74 +128,66 @@ function run(command, args, { allowFailure = false, capture = false } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// GitHub API helpers (native fetch, Node 20+)
+// Workflow polling
 // ---------------------------------------------------------------------------
 
-function githubHeaders(token) {
-	return {
-		Accept: 'application/vnd.github+json',
-		Authorization: `Bearer ${token}`,
-		'X-GitHub-Api-Version': '2022-11-28',
-		'User-Agent': 'stately-release-script'
-	};
-}
-
-async function githubGet(path, token) {
-	const res = await fetch(`${GITHUB_API}${path}`, { headers: githubHeaders(token) });
-	if (!res.ok) throw new Error(`GitHub API ${path} → ${res.status} ${res.statusText}`);
-	return res.json();
-}
-
 /**
- * Polls until the named workflow has a completed run for `headSha` on main.
- * Returns the final conclusion string.
- *
+ * @param {Octokit} octokit
  * @param {string} workflowName
  * @param {string} headSha
- * @param {string} token
+ * @param {ReturnType<typeof ora>} spinner
  * @param {{ pollMs?: number, timeoutMs?: number, branch?: string | null }} [opts]
  */
 async function waitForWorkflow(
+	octokit,
 	workflowName,
 	headSha,
-	token,
+	spinner,
 	{ pollMs = 15_000, timeoutMs = 3_600_000, branch = 'main' } = {}
 ) {
-	const workflows = await githubGet(`/repos/${OWNER}/${REPO}/actions/workflows?per_page=100`, token);
-	const workflow = workflows.workflows.find((w) => w.name === workflowName);
-
+	const {
+		data: { workflows }
+	} = await octokit.actions.listRepoWorkflows({ owner: OWNER, repo: REPO, per_page: 100 });
+	const workflow = workflows.find((w) => w.name === workflowName);
 	if (!workflow) throw new Error(`Workflow "${workflowName}" not found in repository.`);
 
 	const deadline = Date.now() + timeoutMs;
-	const branchParam = branch ? `&branch=${encodeURIComponent(branch)}` : '';
+	const cancelledRunIds = new Set();
 
 	while (Date.now() < deadline) {
-		const runs = await githubGet(
-			`/repos/${OWNER}/${REPO}/actions/workflows/${workflow.id}/runs?head_sha=${headSha}${branchParam}&per_page=10`,
-			token
-		);
+		const {
+			data: { workflow_runs }
+		} = await octokit.actions.listWorkflowRuns({
+			owner: OWNER,
+			repo: REPO,
+			workflow_id: workflow.id,
+			head_sha: headSha,
+			...(branch ? { branch } : {}),
+			per_page: 10
+		});
 
-		const run = runs.workflow_runs[0];
+		const run = workflow_runs.find((r) => !cancelledRunIds.has(r.id));
 
-		if (run) {
-			const status = run.status;
-			const conclusion = run.conclusion;
-
-			if (status === 'completed') {
-				if (conclusion === 'success') {
-					return conclusion;
-				}
-				throw new Error(`Workflow "${workflowName}" completed with conclusion: ${conclusion}. See: ${run.html_url}`);
-			}
-
-			process.stdout.write(`\r  ${workflowName}: ${status}…`);
+		if (!run) {
+			spinner.text = `${workflowName}: waiting for run to appear…`;
+		} else if (run.status !== 'completed') {
+			const elapsed = Math.round((Date.now() - new Date(run.created_at).getTime()) / 1000);
+			spinner.text = `${workflowName}: ${run.status} (${elapsed}s)`;
+		} else if (run.conclusion === 'success') {
+			spinner.succeed(`${workflowName}: passed`);
+			return;
+		} else if (run.conclusion === 'cancelled') {
+			cancelledRunIds.add(run.id);
+			spinner.text = `${workflowName}: run cancelled, waiting for retry…`;
 		} else {
-			process.stdout.write(`\r  ${workflowName}: waiting for run to appear…`);
+			spinner.fail(`${workflowName}: ${run.conclusion}`);
+			throw new Error(`Workflow "${workflowName}" completed with conclusion: ${run.conclusion}. See: ${run.html_url}`);
 		}
 
-		await new Promise((resolve) => setTimeout(resolve, pollMs));
+		await new Promise((r) => setTimeout(r, pollMs));
 	}
 
+	spinner.fail(`${workflowName}: timed out`);
 	throw new Error(`Timed out waiting for workflow "${workflowName}" on ${headSha}.`);
 }
 
@@ -205,22 +220,22 @@ async function main() {
 
 	const tag = `v${version}`;
 
-	// --- Prerequisites -------------------------------------------------------
+	// --- GitHub auth ---------------------------------------------------------
 
-	const githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
+	let githubToken = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
 	if (!githubToken) {
-		// Try to get token from gh CLI.
 		const { status, stdout } = run('gh', ['auth', 'token'], { capture: true, allowFailure: true });
 		if (status !== 0 || !stdout) {
 			console.error('GitHub token not found. Set GH_TOKEN, GITHUB_TOKEN, or run `gh auth login`.');
 			process.exit(1);
 		}
-		process.env.GH_TOKEN = stdout;
+		githubToken = stdout;
 	}
 
-	const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
+	const octokit = new Octokit({ auth: githubToken });
 
-	// Verify npm credentials before touching git.
+	// --- npm credentials -----------------------------------------------------
+
 	if (!isDryRun) {
 		console.log('🔑 Verifying npm credentials…');
 		const { status } = run('npm', ['whoami', '--registry', NPM_REGISTRY], { allowFailure: true, capture: true });
@@ -263,10 +278,34 @@ async function main() {
 		process.exit(1);
 	}
 
-	// --- Changeset version + explicit version assertion ----------------------
+	// --- Resolve previous tag for release notes diff ------------------------
 
-	console.log('🧩 Consuming changesets…');
-	run('pnpm', ['changeset', 'version'], { allowFailure: true });
+	const { data: matchingRefs } = await octokit.git.listMatchingRefs({ owner: OWNER, repo: REPO, ref: 'tags/v' });
+	const previousTag =
+		matchingRefs
+			.map((r) => r.ref.replace('refs/tags/', ''))
+			.filter((t) => t !== tag)
+			.sort((a, b) => {
+				const parse = (v) => v.replace(/^v/, '').split('.').map(Number);
+				const [aMaj, aMin, aPatch] = parse(a);
+				const [bMaj, bMin, bPatch] = parse(b);
+				return aMaj - bMaj || aMin - bMin || aPatch - bPatch;
+			})
+			.at(-1) ?? '';
+
+	// --- Generate release notes via GitHub API --------------------------------
+
+	console.log(`📝 Generating release notes for ${tag}…`);
+	const { data: notesData } = await octokit.repos.generateReleaseNotes({
+		owner: OWNER,
+		repo: REPO,
+		tag_name: tag,
+		target_commitish: 'main',
+		...(previousTag ? { previous_tag_name: previousTag } : {})
+	});
+	const releaseNotes = notesData.body?.trim() || '- No notable changes.';
+
+	// --- Update package.json -------------------------------------------------
 
 	const pkgPath = resolve(ROOT, 'package.json');
 	const pkg = await readJson(pkgPath);
@@ -275,22 +314,51 @@ async function main() {
 		await writeJson(pkgPath, pkg);
 	}
 
+	// --- Update CHANGELOG.md -------------------------------------------------
+
+	const changelogPath = resolve(ROOT, 'CHANGELOG.md');
+	const date = new Date().toISOString().slice(0, 10);
+	const heading = `## [${version}] - ${date}`;
+	const sourceLine = previousTag ? `\n\n_Source: changes from ${previousTag} to ${tag}._` : '';
+	const section = `\n${heading}\n\n${releaseNotes}${sourceLine}\n`;
+
+	let changelog;
+	try {
+		changelog = await readFile(changelogPath, 'utf8');
+	} catch {
+		changelog = '# Changelog\n\n## [Unreleased]\n';
+	}
+
+	if (!changelog.includes(heading)) {
+		const marker = '## [Unreleased]';
+		const idx = changelog.indexOf(marker);
+		const updated =
+			idx >= 0
+				? `${changelog.slice(0, idx + marker.length)}\n${section}${changelog.slice(idx + marker.length)}`
+				: `${changelog}\n${section}`;
+		await writeFile(changelogPath, updated, 'utf8');
+	} else {
+		console.log('ℹ️  CHANGELOG already contains this release heading; skipping.');
+	}
+
 	// --- Dry run exit --------------------------------------------------------
 
 	if (isDryRun) {
 		console.log(`\n[dry-run] Would commit, push, wait for CI, tag ${tag}, push tag, wait for Release, then publish.`);
 		console.log(`[dry-run] package.json version: ${version}`);
+		console.log(`[dry-run] Release notes preview:\n${releaseNotes}`);
 		return;
 	}
 
 	// --- Commit + push to main -----------------------------------------------
 
-	const hasChanges = run('git', ['diff', '--name-only', '--', 'package.json', 'CHANGELOG.md', '.changeset'], {
+	const hasChanges = run('git', ['diff', '--name-only', '--', 'package.json', 'CHANGELOG.md'], {
 		capture: true
 	}).stdout;
 	if (hasChanges) {
-		run('git', ['add', '--', 'package.json', 'CHANGELOG.md', '.changeset']);
+		run('git', ['add', '--', 'package.json', 'CHANGELOG.md']);
 		run('git', ['commit', '-m', `chore: release ${tag}`]);
+		commitLocal = true;
 	} else {
 		console.log('No file changes to commit (version may already match).');
 	}
@@ -298,15 +366,16 @@ async function main() {
 	console.log('🚀 Pushing main…');
 	run('git', ['push', 'origin', 'main']);
 	commitPushed = true;
+	commitLocal = false;
 
 	const headSha = run('git', ['rev-parse', 'HEAD'], { capture: true }).stdout;
 
 	// --- Wait for CI ---------------------------------------------------------
 
 	console.log(`\n🔎 Waiting for CI on ${headSha.slice(0, 7)}…`);
-	await new Promise((r) => setTimeout(r, 10_000)); // Give GitHub time to register the push.
-	await waitForWorkflow('CI', headSha, token);
-	process.stdout.write('\n');
+	await new Promise((r) => setTimeout(r, 10_000));
+	const ciSpinner = ora('CI: queued').start();
+	await waitForWorkflow(octokit, 'CI', headSha, ciSpinner);
 	console.log('✅ CI passed.');
 
 	// --- Tag + push ----------------------------------------------------------
@@ -318,9 +387,8 @@ async function main() {
 
 	// --- Wait for Release workflow -------------------------------------------
 
-	console.log(`\n🔎 Waiting for Release workflow…`);
-	await waitForWorkflow('Release', headSha, token, { branch: null });
-	process.stdout.write('\n');
+	const releaseSpinner = ora('Release: waiting for workflow to trigger…').start();
+	await waitForWorkflow(octokit, 'Release', headSha, releaseSpinner, { branch: null });
 	console.log('✅ GitHub Release created.');
 
 	// --- Build + publish to npm ----------------------------------------------
