@@ -1,7 +1,8 @@
 # Testing and releases
 
-The repository validates the library with the same commands used in CI and release review.
-Run them locally before opening a pull request or changing release automation.
+The repository holds itself to a proper standard: the same validation commands used in CI and
+release review are available to you locally.
+Run them before opening a pull request or changing release automation.
 
 ## Validation commands
 

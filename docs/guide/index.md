@@ -1,23 +1,23 @@
 # Guide
 
-Stately gives you a Pinia-style store API adapted for Svelte 5 runes and SvelteKit.
-Use this guide to get from install to production-ready store patterns quickly.
+This guide provides a step-by-step approach to setting up Stately, from initial installation to production-ready configurations.
 
-If you already know the basics, the most useful next reads are
-[Define stores](/guide/define-store), [Plugins](/guide/plugins), [Inspector](/guide/inspector), and
-[Examples and recipes](/guide/examples).
+The documentation is organized by task:
 
-## Install the package
+- Start with a single store.
+- Add plugins to solve specific state challenges.
+- Implement SSR-safe patterns for SvelteKit.
+- Use the reference pages for detailed API contracts.
 
-Install the package and the Svelte peer dependency:
+## Installation
 
 ```sh
 pnpm add @selfagency/stately svelte
 ```
 
-## Define your first store
+## Defining Your First Store
 
-Create a manager and a store definition, then instantiate the store from that manager:
+To get started, create a state manager and a store definition, then instantiate the store:
 
 ```ts
 import { createStateManager, defineStore } from '@selfagency/stately';
@@ -42,11 +42,39 @@ const counter = useCounterStore(manager);
 counter.increment();
 ```
 
-## What to read next
+---
 
-- [Define stores](/guide/define-store) for option stores, setup stores, and store helpers.
-- [SSR and SvelteKit](/guide/ssr-and-sveltekit) for request-scoped manager patterns.
-- [Plugins](/guide/plugins) for persistence, history, sync, and async orchestration.
-- [Inspector](/guide/inspector) for the dev-only drawer and Vite integration.
-- [Examples and recipes](/guide/examples) for advanced usage patterns you can copy into real stores.
-- [Testing and releases](/guide/testing-and-releases) for local validation and release automation.
+## Navigation by Task
+
+### Core Concepts
+
+- [**Defining Stores**](/guide/define-store) — Learn about option stores, setup stores, patches, and subscriptions.
+- [**Examples & Recipes**](/guide/examples) — Practical, copyable patterns for common use cases.
+
+### Adding Advanced Behavior
+
+- [**Plugins**](/guide/plugins) — A guide to selecting and implementing plugins.
+- [**State Machines (FSM)**](/guide/fsm) — Model explicit workflows and state transitions.
+- [**Validation**](/guide/validation) — Ensure state consistency by rejecting invalid updates.
+
+### SSR & SvelteKit
+
+- [**SSR & SvelteKit**](/guide/ssr-and-sveltekit) — Best practices for request-scoped managers and avoiding memory leaks.
+- [**SvelteKit Data Loading**](/guide/sveltekit-data-loading) — Hydrate stores from `load` functions safely.
+
+### Tooling & Maintenance
+
+- [**Inspector**](/guide/inspector) — Set up the development drawer and Vite integration.
+- [**Troubleshooting**](/guide/troubleshooting) — Solutions for common implementation mistakes.
+- [**Testing & Releases**](/guide/testing-and-releases) — Guidance on validation and release workflows.
+
+### Migration
+
+- [**Migration from Pinia**](/guide/migration-from-pinia) — A specialized guide for developers transitioning from Vue/Pinia.
+
+---
+
+## Documentation Strategy
+
+- Use the **Guide** when you want to understand recommended patterns and architectural trade-offs.
+- Use the [**API Reference**](/reference/api) when you need exact option shapes, function signatures, or TypeScript definitions.

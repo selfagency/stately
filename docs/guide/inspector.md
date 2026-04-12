@@ -1,7 +1,7 @@
 # Inspector
 
-The inspector is a dev-only Vite integration that mounts a drawer in the browser,
-shows active Stately stores, renders live snapshots, displays timeline entries,
+The inspector is Stately’s development panel: a drawer in the browser that
+shows active stores, renders live snapshots, displays timeline entries,
 and exposes history replay controls when a store uses the history plugin.
 
 Use it when you want a live development view of:

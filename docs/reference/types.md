@@ -1,8 +1,8 @@
 # Public types
 
-Stately exports the most important types from the package root so plugin
-authors and app code can keep strong inference all the way through the store
-lifecycle.
+Stately exports its type contracts from the package root so that plugin authors and application code
+may maintain proper inference all the way through the store lifecycle —
+no guesswork, no unpleasant surprises.
 
 ## Store and manager types
 

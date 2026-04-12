@@ -1,6 +1,6 @@
 # Migration from Pinia
 
-If you already know Pinia, Stately should feel familiar.
+If you already know Pinia, Stately will feel familiar.
 The main shift is that Stately is built for Svelte 5 runes and SvelteKit SSR rather than Vue refs.
 
 ## Mental model mapping

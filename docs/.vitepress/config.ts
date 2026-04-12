@@ -30,8 +30,11 @@ export default defineConfig({
 					items: [
 						{ text: 'Overview', link: '/guide/' },
 						{ text: 'Define stores', link: '/guide/define-store' },
-						{ text: 'SSR and SvelteKit', link: '/guide/ssr-and-sveltekit' },
 						{ text: 'Plugins', link: '/guide/plugins' },
+						{ text: 'Finite state machines', link: '/guide/fsm' },
+						{ text: 'Validation', link: '/guide/validation' },
+						{ text: 'SSR and SvelteKit', link: '/guide/ssr-and-sveltekit' },
+						{ text: 'SvelteKit data loading', link: '/guide/sveltekit-data-loading' },
 						{ text: 'Inspector', link: '/guide/inspector' },
 						{ text: 'Examples and recipes', link: '/guide/examples' }
 					]
@@ -52,6 +55,8 @@ export default defineConfig({
 						{ text: 'API hub', link: '/reference/api' },
 						{ text: 'Core runtime', link: '/reference/core' },
 						{ text: 'Plugins and orchestration', link: '/reference/plugins' },
+						{ text: 'Finite state machines', link: '/reference/fsm' },
+						{ text: 'Validation', link: '/reference/validation' },
 						{ text: 'Inspector', link: '/reference/inspector' },
 						{ text: 'Persistence helpers', link: '/reference/persistence' },
 						{ text: 'Public types', link: '/reference/types' }
