@@ -1,6 +1,7 @@
 import { mount, unmount } from 'svelte';
 import InspectorDrawer from './InspectorDrawer.svelte';
 import { createStatelyInspectorHook, getStatelyInspectorHook, installStatelyInspectorHook } from './hook.js';
+import type { StatelyInspectorButtonPosition, StatelyInspectorPanelSide } from './types.js';
 
 const statelyInspectorHostId = 'stately-inspector-host';
 
@@ -22,14 +23,23 @@ function ensureHost(): HTMLElement {
 	return host;
 }
 
-export function mountStatelyInspector(): void {
+export function mountStatelyInspector(options?: {
+	initiallyOpen?: boolean;
+	buttonPosition?: StatelyInspectorButtonPosition;
+	panelSide?: StatelyInspectorPanelSide;
+}): void {
 	if (app) {
 		return;
 	}
 
 	app = mount(InspectorDrawer, {
 		target: ensureHost(),
-		props: { hook: ensureHook() }
+		props: {
+			hook: ensureHook(),
+			initiallyOpen: options?.initiallyOpen ?? false,
+			buttonPosition: options?.buttonPosition,
+			panelSide: options?.panelSide
+		}
 	});
 }
 

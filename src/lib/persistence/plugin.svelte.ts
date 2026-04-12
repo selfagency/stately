@@ -1,6 +1,6 @@
+import { reportStatelyInspectorNotice } from '../inspector/notice.js';
 import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
-import { reportStatelyInspectorNotice } from '../inspector/notice.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
 import type { PersistController, PersistOptions, PersistenceAdapter } from './types.js';
 

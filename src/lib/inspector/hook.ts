@@ -20,17 +20,25 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 	const stores = new Map<string, StatelyInspectorStoreAdapter>();
 	const notices: StatelyInspectorNotice[] = [];
 	const listeners = new Set<() => void>();
+	let nextAdapterId = 1;
 
 	const hook: StatelyInspectorHook = {
 		registerStore(adapter) {
-			stores.set(adapter.id, adapter);
+			const duplicateCount = [...stores.values()].filter((store) => store.label === adapter.label).length;
+			const registeredAdapter = {
+				...adapter,
+				id: `${adapter.id}::${nextAdapterId++}`,
+				label: duplicateCount === 0 ? adapter.label : `${adapter.label} (${duplicateCount + 1})`
+			} satisfies StatelyInspectorStoreAdapter;
+
+			stores.set(registeredAdapter.id, registeredAdapter);
 			notify(listeners);
 
 			return () => {
-				if (stores.get(adapter.id) !== adapter) {
+				if (stores.get(registeredAdapter.id) !== registeredAdapter) {
 					return;
 				}
-				stores.delete(adapter.id);
+				stores.delete(registeredAdapter.id);
 				notify(listeners);
 			};
 		},

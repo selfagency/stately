@@ -23,6 +23,8 @@ describe('statelyVitePlugin', () => {
 
 		const optionsModule = await load(VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID);
 		expect(optionsModule).toContain('export default');
+		expect(optionsModule).toContain('right-bottom');
+		expect(optionsModule).toContain('right');
 
 		const runtimeModule = await load(runtimeId as string);
 		expect(runtimeModule).toContain('../bootstrap-client.js');
@@ -61,5 +63,14 @@ describe('statelyVitePlugin', () => {
 				ssr: false
 			})
 		).toBeFalsy();
+	});
+
+	it('serializes custom button and panel positions into the virtual options module', async () => {
+		const plugin = statelyVitePlugin({ buttonPosition: 'left-top', panelSide: 'left' });
+		const load = plugin.load as (id: string) => Promise<string | undefined> | string | undefined;
+
+		const optionsModule = await load(VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID);
+		expect(optionsModule).toContain('left-top');
+		expect(optionsModule).toContain('left');
 	});
 });

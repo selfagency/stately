@@ -1,5 +1,5 @@
-import type { PersistenceAdapter } from '../types.js';
 import { reportStatelyInspectorNotice } from '../../inspector/notice.js';
+import type { PersistenceAdapter } from '../types.js';
 
 interface StorageLike {
 	getItem(key: string): string | null;

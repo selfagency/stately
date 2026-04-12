@@ -13,6 +13,8 @@ const viteClientPattern = /vite\/dist\/client\/client\.mjs(?:\?|$)/;
 
 export interface StatelyInspectorVitePluginOptions {
 	enabled?: boolean;
+	buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
+	panelSide?: 'left' | 'right';
 }
 
 function getInspectorRuntimePath(): string {
@@ -22,6 +24,8 @@ function getInspectorRuntimePath(): string {
 export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {}): Plugin {
 	const runtimePath = getInspectorRuntimePath();
 	const enabled = options.enabled ?? true;
+	const buttonPosition = options.buttonPosition ?? 'right-bottom';
+	const panelSide = options.panelSide ?? 'right';
 
 	return {
 		name: 'vite-plugin-stately-inspector',
@@ -46,7 +50,7 @@ export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {
 			}
 
 			if (id === VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID) {
-				return `export default ${JSON.stringify({ enabled })}`;
+				return `export default ${JSON.stringify({ enabled, buttonPosition, panelSide })}`;
 			}
 
 			if (id.startsWith(runtimePath)) {

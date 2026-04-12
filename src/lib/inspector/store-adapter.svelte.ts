@@ -1,10 +1,10 @@
+import { SvelteSet } from 'svelte/reactivity';
 import type {
 	InspectableStore,
 	StatelyInspectorHistoryCapableStore,
 	StatelyInspectorStoreAdapter,
 	TimelineReader
 } from './types.js';
-import { SvelteSet } from 'svelte/reactivity';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
@@ -46,6 +46,7 @@ export function createStatelyInspectorStoreAdapter<State extends Record<string, 
 
 	return {
 		id: config.store.$id,
+		label: config.store.$id,
 		read() {
 			const snapshot = {
 				id: config.store.$id,

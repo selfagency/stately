@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
-import { createStatelyInspectorHook, installStatelyInspectorHook, resetStatelyInspectorHookForTests } from './hook.js';
 import { disposeStatelyInspector, mountStatelyInspector } from './bootstrap-client.js';
+import { createStatelyInspectorHook, installStatelyInspectorHook, resetStatelyInspectorHookForTests } from './hook.js';
 
 afterEach(() => {
 	disposeStatelyInspector();
@@ -21,12 +21,10 @@ describe('bootstrap client', () => {
 		});
 		useStore(manager);
 
-		mountStatelyInspector();
+		mountStatelyInspector({ initiallyOpen: true });
 
-		await expect.element(page.getByText('Open Stately')).toBeInTheDocument();
-		await page.getByText('Open Stately').click();
 		await expect.element(page.getByRole('heading', { level: 2 })).toHaveTextContent('Stately inspector');
-		await expect.element(page.getByRole('button', { name: 'Select store bootstrap-counter' })).toBeInTheDocument();
+		await expect.element(page.getByRole('combobox', { name: 'Select store bootstrap-counter' })).toBeInTheDocument();
 
 		disposeStatelyInspector();
 

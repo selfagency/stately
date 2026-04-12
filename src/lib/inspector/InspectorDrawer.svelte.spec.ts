@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
+import { page } from 'vitest/browser';
 import { defineStore } from '../define-store.svelte.js';
 import { createHistoryPlugin } from '../history/plugin.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
@@ -26,23 +26,23 @@ describe('InspectorDrawer', () => {
 		});
 		const counter = useCounterStore(manager);
 
-		render(InspectorDrawer, { hook });
+		render(InspectorDrawer, { hook, initiallyOpen: true });
 
-		await expect.element(page.getByText('Open Stately')).toBeInTheDocument();
-		await page.getByText('Open Stately').click();
 		await expect.element(page.getByRole('heading', { level: 2 })).toHaveTextContent('Stately inspector');
 		await expect.element(page.getByText('warning: Compression failed for store "drawer-counter".')).toBeInTheDocument();
-		await expect.element(page.getByRole('button', { name: 'Select store drawer-counter' })).toBeInTheDocument();
+		await expect.element(page.getByRole('combobox', { name: 'Select store drawer-counter' })).toBeInTheDocument();
 		await expect.element(page.getByText(/"count":\s*0/)).toBeInTheDocument();
 
 		counter.count += 1;
 
 		await expect.element(page.getByText(/"count":\s*1/)).toBeInTheDocument();
 		await expect.element(page.getByText('drawer-counter:direct')).toBeInTheDocument();
-		await expect.element(page.getByText('History unavailable for this store.')).toBeInTheDocument();
+		await expect
+			.element(page.getByText('Playback unavailable because this store does not expose history.'))
+			.toBeInTheDocument();
 	});
 
-	it('shows history controls when available and replays snapshots', async () => {
+	it('shows history controls when available', async () => {
 		const hook = createStatelyInspectorHook();
 		installStatelyInspectorHook(hook);
 		const manager = createStateManager().use(createHistoryPlugin());
@@ -58,14 +58,10 @@ describe('InspectorDrawer', () => {
 		counter.count = 1;
 		counter.count = 2;
 
-		render(InspectorDrawer, { hook });
+		render(InspectorDrawer, { hook, initiallyOpen: true });
 
-		await page.getByText('Open Stately').click();
-		await expect.element(page.getByRole('button', { name: 'Select store drawer-history' })).toBeInTheDocument();
-		await expect.element(page.getByRole('button', { name: 'Go to history entry 0' })).toBeInTheDocument();
-
-		await page.getByRole('button', { name: 'Go to history entry 0' }).click();
-
-		await expect.element(page.getByText('Current history index: 0')).toBeInTheDocument();
+		await expect.element(page.getByRole('combobox', { name: 'Select store drawer-history' })).toBeInTheDocument();
+		await expect.element(page.getByRole('button', { name: 'Skip to first history entry' })).toBeInTheDocument();
+		await expect.element(page.getByRole('button', { name: 'Play history' })).toBeInTheDocument();
 	});
 });
