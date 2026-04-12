@@ -7,23 +7,27 @@ const execFileAsync = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
+const shouldWatch = process.argv.includes('--watch');
 
 async function main() {
-	await execFileAsync(
-		'pnpm',
-		[
-			'exec',
-			'tailwindcss',
-			'-i',
-			'./src/lib/inspector/inspector.tailwind.css',
-			'-o',
-			'./src/lib/inspector/style.css',
-			'--minify'
-		],
-		{
-			cwd: ROOT
-		}
-	);
+	const args = [
+		'exec',
+		'tailwindcss',
+		'-i',
+		'./src/lib/inspector/inspector.tailwind.css',
+		'-o',
+		'./src/lib/inspector/style.css'
+	];
+
+	if (shouldWatch) {
+		args.push('--watch');
+	} else {
+		args.push('--minify');
+	}
+
+	await execFileAsync('pnpm', args, {
+		cwd: ROOT
+	});
 }
 
 main().catch((error) => {
