@@ -37,12 +37,21 @@ export function createInspectorDrawerState(config: { hook: StatelyInspectorHook 
 	};
 
 	const unsubscribeHook = config.hook.subscribe(() => {
-		state.notices = config.hook.listNotices();
-		state.stores = config.hook.listStores();
+		const previousSelectedStoreId = state.selectedStoreId;
+		const nextNotices = config.hook.listNotices();
+		const nextStores = config.hook.listStores();
+
+		state.notices = nextNotices;
+		state.stores = nextStores;
 		if (!state.stores.some((store) => store.id === state.selectedStoreId)) {
 			state.selectedStoreId = state.stores[0]?.id ?? null;
 		}
-		syncSelection();
+
+		const previousStoreStillExists =
+			previousSelectedStoreId !== null && state.stores.some((store) => store.id === previousSelectedStoreId);
+		if (state.selectedStoreId !== previousSelectedStoreId || !previousStoreStillExists) {
+			syncSelection();
+		}
 	});
 
 	syncSelection();

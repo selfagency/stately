@@ -1,4 +1,3 @@
-import { SvelteSet } from 'svelte/reactivity';
 import type {
 	InspectableStore,
 	StatelyInspectorHistoryCapableStore,
@@ -10,17 +9,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
-function hasHistory<State extends Record<string, unknown>>(
+function hasHistory<State extends object>(
 	store: InspectableStore<State>
 ): store is InspectableStore<State> & StatelyInspectorHistoryCapableStore<State> {
 	return '$history' in store && '$timeTravel' in store && isRecord(store.$history) && isRecord(store.$timeTravel);
 }
 
-export function createStatelyInspectorStoreAdapter<State extends Record<string, unknown>>(config: {
+export function createStatelyInspectorStoreAdapter<State extends object>(config: {
 	store: InspectableStore<State>;
 	timeline: TimelineReader;
 }): StatelyInspectorStoreAdapter<State> {
-	const listeners = new SvelteSet<() => void>();
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- listeners are never consumed reactively
+	const listeners = new Set<() => void>();
 
 	const emit = (): void => {
 		for (const listener of listeners) {

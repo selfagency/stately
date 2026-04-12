@@ -36,10 +36,10 @@ export interface StatelyInspectorStoreAdapter<State = unknown> {
 	dispose(): void;
 }
 
-export interface InspectableStore<State extends Record<string, unknown> = Record<string, unknown>> {
+export interface InspectableStore<State extends object = object> {
 	readonly $id: string;
 	readonly $state: State;
-	$subscribe(callback: () => void, options?: { detached?: boolean }): () => void;
+	$subscribe(callback: (...args: unknown[]) => void, options?: { detached?: boolean }): () => void;
 	$onAction(
 		callback: (context: {
 			after(cb: (result: unknown) => void): void;
@@ -62,7 +62,7 @@ export interface StatelyInspectorHook {
 	subscribe(callback: () => void): () => void;
 }
 
-export interface StatelyInspectorHistoryCapableStore<State = Record<string, unknown>> {
+export interface StatelyInspectorHistoryCapableStore<State extends object = object> {
 	readonly $history: {
 		readonly entries: Array<{ snapshot: State; timestamp: number }>;
 		readonly currentIndex: number;

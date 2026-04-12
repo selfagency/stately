@@ -1,6 +1,11 @@
 import { mount, unmount } from 'svelte';
 import InspectorDrawer from './InspectorDrawer.svelte';
-import { createStatelyInspectorHook, getStatelyInspectorHook, installStatelyInspectorHook } from './hook.js';
+import {
+	createStatelyInspectorHook,
+	getStatelyInspectorHook,
+	installStatelyInspectorHook,
+	resetStatelyInspectorHook
+} from './hook.js';
 import type { StatelyInspectorButtonPosition, StatelyInspectorPanelSide } from './types.js';
 
 const statelyInspectorHostId = 'stately-inspector-host';
@@ -43,11 +48,15 @@ export function mountStatelyInspector(options?: {
 	});
 }
 
-export function disposeStatelyInspector(): void {
+export function disposeStatelyInspector(options?: { resetHook?: boolean }): void {
 	if (app) {
 		unmount(app);
 		app = undefined;
 	}
 
 	document.getElementById(statelyInspectorHostId)?.remove();
+
+	if (options?.resetHook) {
+		resetStatelyInspectorHook();
+	}
 }

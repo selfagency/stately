@@ -24,7 +24,7 @@ import { createInspectorDrawerState } from './state.svelte.js';
 import type { StatelyInspectorButtonPosition, StatelyInspectorHook, StatelyInspectorPanelSide } from './types.js';
 
 let {
-	hook = getStatelyInspectorHook(),
+	hook,
 	initiallyOpen = false,
 	buttonPosition = 'right-bottom',
 	panelSide = 'right'
@@ -83,7 +83,7 @@ function stopPlayback() {
 
 function closeStorePicker() {
 	storePickerOpen = false;
-	tick().then(() => {
+	void tick().then(() => {
 		storeTriggerRef?.focus();
 	});
 }
@@ -145,12 +145,17 @@ function togglePlayback() {
 }
 
 $effect(() => {
-	if (!didInitializeOpen) {
-		isOpen = initiallyOpen;
-		didInitializeOpen = true;
+	if (didInitializeOpen) {
+		return;
 	}
 
-	const nextDrawer = hook ? createInspectorDrawerState({ hook }) : null;
+	isOpen = initiallyOpen;
+	didInitializeOpen = true;
+});
+
+$effect(() => {
+	const activeHook = hook ?? getStatelyInspectorHook();
+	const nextDrawer = activeHook ? createInspectorDrawerState({ hook: activeHook }) : null;
 	drawer = nextDrawer;
 
 	return () => {

@@ -3,7 +3,12 @@ import { page } from 'vitest/browser';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
 import { disposeStatelyInspector, mountStatelyInspector } from './bootstrap-client.js';
-import { createStatelyInspectorHook, installStatelyInspectorHook, resetStatelyInspectorHookForTests } from './hook.js';
+import {
+	createStatelyInspectorHook,
+	getStatelyInspectorHook,
+	installStatelyInspectorHook,
+	resetStatelyInspectorHookForTests
+} from './hook.js';
 
 afterEach(() => {
 	disposeStatelyInspector();
@@ -29,5 +34,17 @@ describe('bootstrap client', () => {
 		disposeStatelyInspector();
 
 		await expect.element(page.getByText('Stately inspector')).not.toBeInTheDocument();
+	});
+
+	it('can optionally reset the installed global hook when disposing', async () => {
+		const hook = createStatelyInspectorHook();
+		installStatelyInspectorHook(hook);
+
+		mountStatelyInspector({ initiallyOpen: true });
+		await expect.element(page.getByRole('heading', { level: 2 })).toHaveTextContent('Stately inspector');
+
+		disposeStatelyInspector({ resetHook: true });
+
+		expect(getStatelyInspectorHook()).toBeUndefined();
 	});
 });

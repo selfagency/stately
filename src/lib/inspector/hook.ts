@@ -21,14 +21,16 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 	const notices: StatelyInspectorNotice[] = [];
 	const listeners = new Set<() => void>();
 	let nextAdapterId = 1;
+	const nextLabelSuffixByBaseLabel = new Map<string, number>();
 
 	const hook: StatelyInspectorHook = {
 		registerStore(adapter) {
-			const duplicateCount = [...stores.values()].filter((store) => store.label === adapter.label).length;
+			const nextLabelSuffix = nextLabelSuffixByBaseLabel.get(adapter.label) ?? 0;
+			nextLabelSuffixByBaseLabel.set(adapter.label, nextLabelSuffix + 1);
 			const registeredAdapter = {
 				...adapter,
 				id: `${adapter.id}::${nextAdapterId++}`,
-				label: duplicateCount === 0 ? adapter.label : `${adapter.label} (${duplicateCount + 1})`
+				label: nextLabelSuffix === 0 ? adapter.label : `${adapter.label} (${nextLabelSuffix})`
 			} satisfies StatelyInspectorStoreAdapter;
 
 			stores.set(registeredAdapter.id, registeredAdapter);
@@ -91,6 +93,10 @@ export function installStatelyInspectorHook(hook: StatelyInspectorHook): Stately
 	return hook;
 }
 
-export function resetStatelyInspectorHookForTests(): void {
+export function resetStatelyInspectorHook(): void {
 	Reflect.deleteProperty(globalThis, statelyInspectorHookKey);
+}
+
+export function resetStatelyInspectorHookForTests(): void {
+	resetStatelyInspectorHook();
 }
