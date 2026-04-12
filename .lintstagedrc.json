@@ -1,4 +1,9 @@
 {
-	"*.{js,ts,svelte}": ["eslint --fix", "prettier --write"],
+	"*.{js,ts,svelte}": [
+		"svelte-check --tsconfig ./tsconfig.json --tsgo",
+		"eslint --fix",
+		"prettier --write",
+		"pnpm run build:inspector-css && vitest run"
+	],
 	"*.{json,md,yml,yaml}": ["prettier --write"]
 }

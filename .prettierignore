@@ -9,3 +9,4 @@ bun.lockb
 /static/
 /.agents/
 src/lib/inspector/style.css
+CHANGELOG.md

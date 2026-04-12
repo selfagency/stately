@@ -3,6 +3,7 @@
 	"version": "0.1.0",
 	"description": "Pinia-inspired state management for Svelte 5 and SvelteKit with persistence, history, sync, and async orchestration.",
 	"private": false,
+	"description": "Pinia-inspired state management for Svelte 5 and SvelteKit with persistence, history, sync, and async orchestration.",
 	"keywords": [
 		"svelte",
 		"sveltekit",
@@ -26,6 +27,11 @@
 		"url": "git+https://github.com/selfagency/stately.git"
 	},
 	"license": "MIT",
+	"author": {
+		"name": "Daniel Sieradski",
+		"email": "daniel@self.agency",
+		"url": "https://self.agency"
+	},
 	"sideEffects": [
 		"**/*.css"
 	],
@@ -75,7 +81,6 @@
 	"scripts": {
 		"build": "pnpm run build:inspector-css && vite build && pnpm run package:dist",
 		"build:inspector-css": "node scripts/build-inspector-css.js",
-		"watch:inspector-css": "node scripts/build-inspector-css.js --watch",
 		"changeset": "changeset",
 		"changeset:version": "changeset version",
 		"check": "pnpm run build:inspector-css && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --tsgo",
@@ -87,18 +92,22 @@
 		"format": "eslint . --fix --concurrency 6 && prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "pnpm run build:inspector-css && eslint . --concurrency 6 && prettier --check .",
-		"package:dist": "svelte-kit sync && svelte-package && node scripts/write-dist-package.js && publint",
 		"prepack": "pnpm run build:inspector-css && pnpm run package:dist",
+		"package:dist": "svelte-kit sync && svelte-package && node scripts/write-dist-package.js && publint",
 		"prepare": "husky && svelte-kit sync || echo ''",
 		"preview": "vite preview",
 		"release": "node scripts/release.js",
-		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && node scripts/release.js --dry-run",
-		"release:version": "changeset version",
+		"release:dry-run": "node scripts/release.js --dry-run",
 		"test": "pnpm run build:inspector-css && vitest run",
 		"test:coverage": "pnpm run build:inspector-css && vitest run --coverage",
 		"test:unit": "pnpm run build:inspector-css && vitest",
-		"validate:pre-push": "pnpm run check && pnpm run test",
-		"validate:staged": "lint-staged"
+		"validate:staged": "lint-staged",
+		"watch:inspector-css": "node scripts/build-inspector-css.js --watch"
+	},
+	"dependencies": {
+		"@lucide/svelte": "^1.8.0",
+		"class-variance-authority": "^0.7.1",
+		"lz-string": "^1.5.0"
 	},
 	"devDependencies": {
 		"@changesets/changelog-git": "^0.2.1",
@@ -107,6 +116,7 @@
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
 		"@internationalized/date": "^3.12.0",
+		"@octokit/rest": "^22.0.1",
 		"@shikijs/langs": "^4.0.2",
 		"@shikijs/themes": "^4.0.2",
 		"@sveltejs/adapter-auto": "^7.0.1",
@@ -129,6 +139,7 @@
 		"husky": "^9.1.7",
 		"lint-staged": "^16.4.0",
 		"mode-watcher": "^1.1.0",
+		"ora": "^9.3.0",
 		"playwright": "^1.59.1",
 		"prettier": "^3.8.2",
 		"prettier-plugin-organize-attributes": "^1.0.0",
@@ -148,11 +159,6 @@
 		"vitepress": "^1.6.4",
 		"vitest": "^4.1.4",
 		"vitest-browser-svelte": "^2.1.0"
-	},
-	"dependencies": {
-		"@lucide/svelte": "^1.8.0",
-		"class-variance-authority": "^0.7.1",
-		"lz-string": "^1.5.0"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0"
