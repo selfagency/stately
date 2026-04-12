@@ -14,6 +14,17 @@ function applyDescriptorAugmentation(target: object, source: object): void {
 	}
 }
 
+function disposeStore(store: unknown): void {
+	if (
+		typeof store === 'object' &&
+		store !== null &&
+		'$dispose' in store &&
+		typeof (store as Record<string, unknown>).$dispose === 'function'
+	) {
+		(store as { $dispose: () => void }).$dispose();
+	}
+}
+
 export function createStateManager(): StateManager {
 	const plugins: StateManagerPlugin[] = [];
 	const definitions = new Map<string, StoreDefinition>();
@@ -79,19 +90,13 @@ export function createStateManager(): StateManager {
 			return store;
 		},
 		deleteStore(id) {
+			disposeStore(stores.get(id));
 			definitions.delete(id);
 			return stores.delete(id);
 		},
 		clear() {
 			for (const store of stores.values()) {
-				if (
-					typeof store === 'object' &&
-					store !== null &&
-					'$dispose' in store &&
-					typeof (store as Record<string, unknown>).$dispose === 'function'
-				) {
-					(store as { $dispose: () => void }).$dispose();
-				}
+				disposeStore(store);
 			}
 			stores.clear();
 			definitions.clear();
