@@ -89,7 +89,7 @@ describe('selective subscriptions', () => {
 				select: (state) => state.items,
 				equalityFn: (prev, next) => {
 					if (!Array.isArray(prev) || !Array.isArray(next)) return false;
-					return prev.length === next.length && prev.every((v, i) => v === next[i]);
+					return prev.length === next.length && prev.every((v, i) => v === next.at(i));
 				}
 			}
 		);

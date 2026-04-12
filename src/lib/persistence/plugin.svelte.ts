@@ -83,22 +83,10 @@ export function createPersistencePlugin(): StateManagerPlugin {
 
 		function filterState(snapshot: Record<string, unknown>): Record<string, unknown> {
 			if (pickKeys) {
-				const filtered: Record<string, unknown> = {};
-				for (const key of pickKeys) {
-					if (key in snapshot) {
-						filtered[key] = snapshot[key];
-					}
-				}
-				return filtered;
+				return Object.fromEntries(Object.entries(snapshot).filter(([key]) => pickKeys.includes(key)));
 			}
 			if (omitKeys) {
-				const filtered: Record<string, unknown> = {};
-				for (const key of Object.keys(snapshot)) {
-					if (!omitKeys.includes(key)) {
-						filtered[key] = snapshot[key];
-					}
-				}
-				return filtered;
+				return Object.fromEntries(Object.entries(snapshot).filter(([key]) => !omitKeys.includes(key)));
 			}
 			return snapshot;
 		}
@@ -168,8 +156,9 @@ export function createPersistencePlugin(): StateManagerPlugin {
 						}
 						raw = wrapper.data;
 					}
+					// If wrapper doesn't match TTL envelope shape, fall through with raw as-is
 				} catch {
-					return false;
+					// JSON.parse failed; not a TTL envelope — fall through with raw as the persisted payload
 				}
 			}
 

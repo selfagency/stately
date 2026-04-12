@@ -1,4 +1,5 @@
-import type { FsmController, FsmDefinition, FsmTransitionContext } from './types.js';
+import { SvelteMap } from 'svelte/reactivity';
+import type { FsmController, FsmDefinition, FsmStateDefinition, FsmTransitionContext } from './types.js';
 
 const RESERVED_KEYS = new Set(['_enter', '_exit']);
 
@@ -11,10 +12,11 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 		throw new Error(`Invalid FSM definition: initial state "${definition.initial}" is not defined in states.`);
 	}
 
+	const statesMap = new SvelteMap<string, FsmStateDefinition>(Object.entries(definition.states));
 	let current = $state(definition.initial);
 
 	function resolveTransition(event: string, ...args: unknown[]): string | undefined {
-		const stateDefinition = definition.states[current];
+		const stateDefinition = statesMap.get(current);
 		if (!stateDefinition) {
 			return undefined;
 		}
@@ -43,7 +45,7 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 
 		send(event: string, ...args: unknown[]): string {
 			const nextState = resolveTransition(event, ...args);
-			if (nextState === undefined || !(nextState in definition.states)) {
+			if (nextState === undefined || !statesMap.has(nextState)) {
 				return current;
 			}
 
@@ -55,14 +57,14 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 				args
 			};
 
-			const exitHook = definition.states[from]?._exit;
+			const exitHook = statesMap.get(from)?._exit;
 			if (typeof exitHook === 'function') {
 				exitHook(context);
 			}
 
 			current = nextState;
 
-			const enterHook = definition.states[nextState]?._enter;
+			const enterHook = statesMap.get(nextState)?._enter;
 			if (typeof enterHook === 'function') {
 				enterHook(context);
 			}
@@ -79,7 +81,7 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 		},
 
 		setCurrent(state: string): void {
-			if (state in definition.states) {
+			if (statesMap.has(state)) {
 				current = state;
 			}
 		}

@@ -10,6 +10,7 @@ export type FsmTransitionTarget = string | ((...args: unknown[]) => string | voi
 export interface FsmStateDefinition {
 	_enter?: (context: FsmTransitionContext) => void;
 	_exit?: (context: FsmTransitionContext) => void;
+	/** Event transition handlers return the target state name, or `undefined` to stay in the current state. */
 	[event: string]: FsmTransitionTarget | ((context: FsmTransitionContext) => void) | undefined;
 }
 

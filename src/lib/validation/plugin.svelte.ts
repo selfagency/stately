@@ -32,7 +32,8 @@ function readValidateOptions(value: unknown):
 }
 
 declare module '../pinia-like/store-types.js' {
-	interface DefineStoreOptionsBase {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface DefineStoreOptionsBase<State, Store> {
 		validate?: (state: Record<string, unknown>) => boolean | string;
 		onValidationError?: (error: string) => void;
 	}
@@ -57,15 +58,26 @@ export function createValidationPlugin(): StateManagerPlugin {
 			configurable: true,
 			writable: true,
 			value(patch: Partial<Record<string, unknown>> | ((state: Record<string, unknown>) => void)) {
-				const snapshot = structuredClone($state.snapshot(validatable.$state)) as Partial<Record<string, unknown>>;
+				const snapshot = structuredClone($state.snapshot(validatable.$state)) as Record<string, unknown>;
+				const restoreSnapshot = () => {
+					validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
+				};
+
 				originalPatch(patch);
 
-				const result = config.validate(validatable.$state);
+				let result: boolean | string | undefined;
+				try {
+					result = config.validate(validatable.$state as Record<string, unknown>);
+				} catch (error) {
+					restoreSnapshot();
+					throw error;
+				}
+
 				if (result === true || result === undefined) {
 					return;
 				}
 
-				originalPatch(snapshot);
+				restoreSnapshot();
 				const errorMessage = typeof result === 'string' ? result : 'Validation failed';
 				if (config.onValidationError) {
 					config.onValidationError(errorMessage);

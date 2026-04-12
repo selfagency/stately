@@ -57,6 +57,11 @@ export function createFsmPlugin(): StateManagerPlugin {
 
 		const controller = createFsmController(definition);
 
+		// Initialize FSM state in store state through $patch so history/persistence/sync observe it
+		store.$patch((state: Record<string, unknown>) => {
+			state[FSM_STATE_KEY] = controller.current;
+		});
+
 		const originalSend = controller.send.bind(controller);
 		const patchingSend = (event: string, ...args: unknown[]): string => {
 			const prev = controller.current;
@@ -75,9 +80,6 @@ export function createFsmPlugin(): StateManagerPlugin {
 				controller.setCurrent(persisted);
 			}
 		});
-
-		// Store the initial FSM state in store state for history tracking
-		(store.$state as Record<string, unknown>)[FSM_STATE_KEY] = controller.current;
 
 		return {
 			$fsm: {

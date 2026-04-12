@@ -122,6 +122,9 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 
 				for (const guard of beforeGuards) {
 					if (guard() === false) {
+						if ((action as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
+							return Promise.resolve(undefined) as ReturnType<Action>;
+						}
 						return undefined as ReturnType<Action>;
 					}
 				}
