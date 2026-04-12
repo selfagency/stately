@@ -93,8 +93,8 @@
 		"release": "node scripts/release.js",
 		"release:dry-run": "pnpm run check && pnpm run lint && pnpm run test && pnpm run build && node scripts/release.js --dry-run",
 		"release:version": "changeset version",
-		"test": "pnpm run test:unit -- --run",
-		"test:coverage": "pnpm run build:inspector-css && vitest --run --coverage",
+		"test": "pnpm run build:inspector-css && vitest run",
+		"test:coverage": "pnpm run build:inspector-css && vitest run --coverage",
 		"test:unit": "pnpm run build:inspector-css && vitest",
 		"validate:pre-push": "pnpm run check && pnpm run test",
 		"validate:staged": "lint-staged"
