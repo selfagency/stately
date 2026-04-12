@@ -1,153 +1,24 @@
-<style>
-:global(body) {
-	margin: 0;
-	font-family:
-		Inter,
-		ui-sans-serif,
-		system-ui,
-		-apple-system,
-		BlinkMacSystemFont,
-		'Segoe UI',
-		sans-serif;
-	background:
-		radial-gradient(circle at top, rgb(37 99 235 / 0.16), transparent 32%),
-		linear-gradient(180deg, #07111f 0%, #0f172a 100%);
-	color: #e2e8f0;
-}
-
-.page-shell {
-	max-width: 1180px;
-	margin: 0 auto;
-	padding: 3rem 1.25rem 4rem;
-}
-
-.grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-	gap: 1rem;
-}
-
-.card {
-	background: rgb(15 23 42 / 0.84);
-	border: 1px solid rgb(148 163 184 / 0.2);
-	border-radius: 1.25rem;
-	box-shadow: 0 22px 55px rgb(15 23 42 / 0.28);
-	backdrop-filter: blur(16px);
-}
-
-.hero {
-	display: grid;
-	grid-template-columns: 1.7fr 1fr;
-	gap: 1.5rem;
-	padding: 1.5rem;
-	margin-bottom: 1rem;
-}
-
-.hero-stats,
-.tab-grid,
-.button-row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-}
-
-.hero-stats > div,
-.panel {
-	flex: 1 1 180px;
-	padding: 1rem;
-	border-radius: 1rem;
-	background: rgb(30 41 59 / 0.8);
-	border: 1px solid rgb(148 163 184 / 0.16);
-}
-
-.section-block {
-	padding: 1.25rem;
-}
-
-.eyebrow {
-	margin: 0 0 0.5rem;
-	color: #7dd3fc;
-	font-size: 0.8rem;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-}
-
-h1,
-h2,
-h3 {
-	margin: 0 0 0.65rem;
-}
-
-.lede,
-p {
-	line-height: 1.6;
-}
-
-button {
-	border: 0;
-	border-radius: 999px;
-	padding: 0.75rem 1rem;
-	font: inherit;
-	font-weight: 700;
-	color: #eff6ff;
-	background: linear-gradient(135deg, #2563eb, #7c3aed);
-	cursor: pointer;
-}
-
-button:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-pre {
-	overflow-x: auto;
-	padding: 1rem;
-	border-radius: 1rem;
-	background: rgb(2 6 23 / 0.8);
-	border: 1px solid rgb(148 163 184 / 0.16);
-	white-space: pre-wrap;
-}
-
-ol {
-	padding-left: 1.25rem;
-}
-
-.active {
-	color: #7dd3fc;
-	font-weight: 700;
-}
-
-.activity {
-	margin-top: 1rem;
-	color: #cbd5e1;
-}
-
-@media (max-width: 800px) {
-	.hero {
-		grid-template-columns: 1fr;
-	}
-}
-</style>
-
 <script lang="ts">
 import { browser } from '$app/environment';
-import { onMount } from 'svelte';
-import InspectorDrawer from '../lib/inspector/InspectorDrawer.svelte';
+import ShowcaseHero from '$lib/components/ShowcaseHero.svelte';
+import ShowcaseSection from '$lib/components/ShowcaseSection.svelte';
+import { Button } from '$lib/components/ui/button/index.js';
+import * as Card from '$lib/components/ui/card/index.js';
+import { mountStatelyInspector } from '$lib/inspector/bootstrap-client.js';
 import {
 	createStatelyInspectorHook,
 	getStatelyInspectorHook,
 	installStatelyInspectorHook
-} from '../lib/inspector/hook.js';
+} from '$lib/inspector/hook.js';
+import { onMount } from 'svelte';
 import { createShowcaseDemo } from './showcase-demo.js';
 
-const inspectorHook = browser
-	? installStatelyInspectorHook(getStatelyInspectorHook() ?? createStatelyInspectorHook())
-	: undefined;
+if (browser) {
+	installStatelyInspectorHook(getStatelyInspectorHook() ?? createStatelyInspectorHook());
+}
 const demo = createShowcaseDemo();
 const primary = demo.primary;
 const peer = demo.peer;
-let showInspector = $state(false);
 let savedSnapshot = $state('No manually saved snapshot yet.');
 let persistenceMode = $state<'live' | 'paused'>('live');
 let activity = $state('Ready for experimentation.');
@@ -194,6 +65,14 @@ const timelineEntries = $derived(
 );
 
 const ssrPattern = `const manager = createStateManager()\n\t.use(createPersistencePlugin())\n\t.use(createHistoryPlugin());\n\nsetStateManager(manager); // request-scoped in context`;
+
+const syncPattern = `const manager = createStateManager()\n\t.use(createSyncPlugin({ channel: 'demo-counter' }));\n\nexport const useCounterStore = defineStore('counter', {\n\tstate: () => ({ count: 0 })\n});`;
+
+const persistencePattern = `export const useDraftStore = defineStore('draft', {\n\tstate: () => ({ content: '' }),\n\tpersist: {\n\t\tadapter: createLocalStorageAdapter(),\n\t\tversion: 1\n\t}\n});`;
+
+const historyPattern = `const manager = createStateManager().use(createHistoryPlugin());\n\nstore.$history.startBatch();\nstore.increment();\nstore.increment();\nstore.$history.endBatch();\nstore.$timeTravel.goTo(0);`;
+
+const asyncPattern = `const manager = createStateManager().use(createAsyncPlugin());\n\nawait store.loadCount(12);\nstore.$async.loadCount.abort();\nif (store.$async.loadCount.isLoading) {\n\t// show pending UI\n}`;
 
 async function refreshSavedSnapshot() {
 	savedSnapshot = (await demo.persistence.read()) ?? 'No manually saved snapshot yet.';
@@ -284,11 +163,10 @@ function cancelPendingAsyncLoad() {
 }
 
 onMount(() => {
-	showInspector = true;
+	mountStatelyInspector();
 	void refreshSavedSnapshot();
 
 	return () => {
-		showInspector = false;
 		demo.destroy();
 	};
 });
@@ -302,116 +180,166 @@ onMount(() => {
 </svelte:head>
 
 <svelte:boundary>
-	<div class="page-shell">
-		<section class="hero card">
-			<div>
-				<p class="eyebrow">Pinia-style state for Svelte 5</p>
-				<h1>Stately showcase</h1>
-				<p class="lede">
-					Exercise persistence, undo/redo, time travel, multi-tab sync, and async cancellation from one polished demo
-					page.
-				</p>
-			</div>
-			<div class="hero-stats">
-				<div>
-					<span>Primary</span>
-					<strong>Primary tab value: {primary.count}</strong>
-				</div>
-				<div>
-					<span>Peer</span>
-					<strong>Peer tab value: {peer.count}</strong>
-				</div>
-				<div>
-					<span>Derived</span>
-					<strong>Double count: {primary.doubleCount}</strong>
-				</div>
-			</div>
-		</section>
+	<div class="relative container mx-auto px-4 py-8 md:px-6 lg:py-12">
+		<div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 overflow-hidden">
+			<div class="absolute -top-24 left-8 h-48 w-48 rounded-full bg-primary/10 blur-3xl"></div>
+			<div class="absolute right-12 top-12 h-40 w-40 rounded-full bg-secondary/12 blur-3xl"></div>
+		</div>
 
-		<section class="grid">
-			<article class="card section-block">
-				<h2>Synced tabs</h2>
-				<p>Both panels use the same store definition in different managers bridged by the sync plugin.</p>
-				<div class="tab-grid">
-					<div class="panel">
-						<h3>Tab A</h3>
-						<p>Tab A count: {primary.count}</p>
-						<p>{primary.note}</p>
-						<button type="button" onclick={incrementPrimary}>Increment tab A</button>
+		<div class="space-y-10">
+			<ShowcaseHero primaryCount={primary.count} peerCount={peer.count} doubleCount={primary.doubleCount} />
+
+			<div class="space-y-8">
+				<ShowcaseSection
+					label="Use case 01"
+					tag="Cross-tab cart stepper"
+					title="Sync a shared counter between two browser contexts"
+					description="Simulate collaborative state like a cart quantity, presence counter, or shared checklist where both surfaces react immediately."
+					code={syncPattern}>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+							<div class="space-y-5">
+								<div class="space-y-1">
+									<p class="text-muted-foreground text-sm font-medium">Tab A</p>
+									<p data-testid="tab-a-count" class="text-4xl font-semibold tracking-tight text-foreground">
+										{primary.count}
+									</p>
+								</div>
+								<Button type="button" onclick={incrementPrimary}>Increment Tab A by 1</Button>
+							</div>
+						</div>
+						<div class="rounded-xl border border-border/80 bg-card/85 p-5 shadow-xs">
+							<div class="space-y-5">
+								<div class="space-y-1">
+									<p class="text-muted-foreground text-sm font-medium">Tab B</p>
+									<p data-testid="tab-b-count" class="text-4xl font-semibold tracking-tight text-foreground">
+										{peer.count}
+									</p>
+								</div>
+								<Button type="button" variant="outline" onclick={incrementPeer}>Increment Tab B by 1</Button>
+							</div>
+						</div>
 					</div>
-					<div class="panel">
-						<h3>Tab B</h3>
-						<p>Tab B count: {peer.count}</p>
-						<p>{peer.note}</p>
-						<button type="button" onclick={incrementPeer}>Increment tab B</button>
+					<Card.Root size="sm" class="shadow-xs">
+						<Card.Header>
+							<Card.Description>Current state</Card.Description>
+						</Card.Header>
+						<Card.Content class="pt-0">
+							<pre class="overflow-x-auto text-sm whitespace-pre-wrap">{JSON.stringify(
+									{
+										count: primary.count,
+										note: primary.note
+									},
+									null,
+									2
+								)}</pre>
+						</Card.Content>
+					</Card.Root>
+				</ShowcaseSection>
+
+				<ShowcaseSection
+					label="Use case 02"
+					tag="Draft restoration"
+					title="Pause writes, make a risky local edit, and restore the saved version"
+					description="Good for editors, settings panels, and recovery flows where “last saved” must remain explicit instead of silently drifting."
+					status={`Persistence mode: ${persistenceMode}`}
+					code={persistencePattern}>
+					<div class="flex flex-wrap gap-3">
+						<Button type="button" onclick={saveCurrentSnapshot}>Save current snapshot</Button>
+						<Button type="button" variant="outline" onclick={makeUnsavedLocalChange}>Make unsaved local change</Button>
+						<Button type="button" variant="outline" onclick={restoreSavedSnapshot}>Restore saved snapshot</Button>
+						<Button type="button" variant="outline" onclick={clearSavedSnapshot}>Clear saved snapshot</Button>
 					</div>
-				</div>
-			</article>
+					<Card.Root size="sm">
+						<Card.Content>
+							<pre class="overflow-x-auto text-sm whitespace-pre-wrap">{savedSnapshot}</pre>
+						</Card.Content>
+					</Card.Root>
+				</ShowcaseSection>
 
-			<article class="card section-block">
-				<h2>Persistence demo</h2>
-				<p>
-					Manual save plus a paused write mode makes the restore flow visible instead of quietly overwriting itself.
-				</p>
-				<p><strong>Persistence mode:</strong> {persistenceMode}</p>
-				<div class="button-row">
-					<button type="button" onclick={saveCurrentSnapshot}>Save current snapshot</button>
-					<button type="button" onclick={makeUnsavedLocalChange}>Make unsaved local change</button>
-					<button type="button" onclick={restoreSavedSnapshot}>Restore saved snapshot</button>
-					<button type="button" onclick={clearSavedSnapshot}>Clear saved snapshot</button>
-				</div>
-				<pre>{savedSnapshot}</pre>
-			</article>
+				<ShowcaseSection
+					label="Use case 03"
+					tag="Wizard checkpoints"
+					title="Batch several mutations into a single undo step, then jump back in time"
+					description="Perfect for multi-step forms, pricing builders, or staged configuration screens where rollback should feel intentional."
+					code={historyPattern}>
+					<div class="flex flex-wrap gap-3">
+						<Button type="button" onclick={batchAddFive}>Batch add five</Button>
+						<Button type="button" variant="outline" onclick={undoLastChange} disabled={!primary.$history.canUndo}
+							>Undo last change</Button>
+						<Button type="button" variant="outline" onclick={redoLastChange} disabled={!primary.$history.canRedo}
+							>Redo last change</Button>
+						<Button type="button" variant="outline" onclick={jumpToFirstSnapshot}>Jump to first snapshot</Button>
+					</div>
+					<Card.Root size="sm">
+						<Card.Header>
+							<Card.Description>Recorded snapshots</Card.Description>
+						</Card.Header>
+						<Card.Content>
+							<ol class="space-y-2 pl-5 text-sm text-muted-foreground">
+								{#each timelineEntries as entry (entry.index)}
+									<li class:font-semibold={entry.active}>
+										Snapshot {entry.index}: count {entry.count}
+									</li>
+								{/each}
+							</ol>
+						</Card.Content>
+					</Card.Root>
+				</ShowcaseSection>
 
-			<article class="card section-block">
-				<h2>History and time travel</h2>
-				<p>
-					Batching collapses multiple direct mutations into one logical undo step, while time travel replays snapshots
-					locally.
-				</p>
-				<div class="button-row">
-					<button type="button" onclick={batchAddFive}>Batch add five</button>
-					<button type="button" onclick={undoLastChange} disabled={!primary.$history.canUndo}>
-						Undo last change
-					</button>
-					<button type="button" onclick={redoLastChange} disabled={!primary.$history.canRedo}>
-						Redo last change
-					</button>
-					<button type="button" onclick={jumpToFirstSnapshot}>Jump to first snapshot</button>
-				</div>
-				<ol>
-					{#each timelineEntries as entry (entry.index)}
-						<li class:active={entry.active}>Snapshot {entry.index}: count {entry.count}</li>
-					{/each}
-				</ol>
-			</article>
+				<ShowcaseSection
+					label="Use case 04"
+					tag="Cancelable requests"
+					title="Keep async UI honest when the latest request should win"
+					description="Ideal for search, dashboard refreshes, and background fetches where stale responses must not clobber the latest state."
+					code={asyncPattern}>
+					<div class="flex flex-wrap gap-3">
+						<Button type="button" onclick={() => loadAsyncTarget(12)}>Load 12 asynchronously</Button>
+						<Button type="button" variant="outline" onclick={() => loadAsyncTarget(24)}>Load 24 asynchronously</Button>
+						<Button
+							type="button"
+							variant="outline"
+							onclick={cancelPendingAsyncLoad}
+							disabled={!primary.$async.loadCount.isLoading}>Cancel pending async load</Button>
+					</div>
+					<Card.Root size="sm">
+						<Card.Header>
+							<Card.Description>Async status</Card.Description>
+							<Card.Title class="text-base">{asyncStatus}</Card.Title>
+							<Card.Description>Primary count: {primary.count}</Card.Description>
+							<Card.Description>Peer count: {peer.count}</Card.Description>
+						</Card.Header>
+					</Card.Root>
+				</ShowcaseSection>
 
-			<article class="card section-block">
-				<h2>Async orchestration</h2>
-				<p>The async plugin tracks loading state and lets the latest request replace the previous one.</p>
-				<div class="button-row">
-					<button type="button" onclick={() => loadAsyncTarget(12)}>Load 12 asynchronously</button>
-					<button type="button" onclick={() => loadAsyncTarget(24)}>Load 24 asynchronously</button>
-					<button type="button" onclick={cancelPendingAsyncLoad} disabled={!primary.$async.loadCount.isLoading}>
-						Cancel pending async load
-					</button>
-				</div>
-				<p>{asyncStatus}</p>
-			</article>
+				<ShowcaseSection
+					label="Reference"
+					tag="SSR note"
+					title="Keep managers request-scoped in SvelteKit"
+					description="Server rendering should create a fresh state manager per request and push it through context instead of relying on a shared singleton."
+					code={ssrPattern}>
+					<Card.Root size="sm">
+						<Card.Content>
+							<p class="text-muted-foreground text-sm">
+								Use request-scoped managers in SvelteKit. Treat singleton helpers as SPA-only convenience.
+							</p>
+						</Card.Content>
+					</Card.Root>
+				</ShowcaseSection>
+			</div>
 
-			<article class="card section-block">
-				<h2>SSR-safe manager pattern</h2>
-				<p>
-					Create a manager per request and put it in Svelte context. Reserve
-					<code>getDefaultStateManager()</code> for SPA-only convenience.
-				</p>
-				<pre>{ssrPattern}</pre>
-			</article>
-		</section>
-
-		<p aria-live="polite" role="status" class="activity">{activity}</p>
+			<Card.Root class="border-border/70 bg-card/60 shadow-sm">
+				<Card.Content class="flex items-center justify-between gap-4 py-4">
+					<div>
+						<p class="text-muted-foreground text-xs font-semibold uppercase tracking-[0.2em]">Live activity</p>
+						<p aria-live="polite" role="status" class="text-sm font-medium text-foreground">{activity}</p>
+					</div>
+					<div class="hidden text-right md:block">
+						<p class="text-muted-foreground text-xs uppercase tracking-[0.2em]">Inspector</p>
+						<p class="text-sm text-foreground">Always-on developer view</p>
+					</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
 	</div>
-	{#if showInspector && inspectorHook}
-		<InspectorDrawer hook={inspectorHook} />
-	{/if}
 </svelte:boundary>
