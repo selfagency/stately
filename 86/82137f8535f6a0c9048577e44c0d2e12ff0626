@@ -1,0 +1,80 @@
+src/lib/components/ShowcaseSection.svelte
+  42ecf91cc68590ed 5
+  8d7b1215cc3117a3 64
+  5872c7553ad3439b 60-63
+  4058a8cb5caa19bc 4,7
+src/routes/+page.svelte
+  f94ca2857c62ff33 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "8682137f8535f6a0c9048577e44c0d2e12ff0626",
+  "prompts": {
+    "4058a8cb5caa19bc": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775948454550",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    },
+    "42ecf91cc68590ed": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775948662618",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "5872c7553ad3439b": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775948489305",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    },
+    "8d7b1215cc3117a3": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775950693031",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "f94ca2857c62ff33": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1775947821050",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
