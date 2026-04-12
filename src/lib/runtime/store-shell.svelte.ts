@@ -147,12 +147,36 @@ function syncState<State extends StoreState>(target: State, next: Partial<State>
 	}
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+	if (typeof value !== 'object' || value === null) {
+		return false;
+	}
+	const proto = Object.getPrototypeOf(value);
+	return proto === Object.prototype || proto === null;
+}
+
 export function createStoreShell<Id extends string, State extends StoreState, Store extends object>(config: {
 	id: Id;
 	store: Store;
 	state: State;
 	onDispose?: () => void;
 }): StoreShellBuilder<Id, State, Store> {
+	if (!isPlainObject(config.state)) {
+		throw new Error(
+			`[Stately] Store "${config.id}" state() must return a plain object. Received: ${Object.prototype.toString.call(config.state)}.`
+		);
+	}
+
+	if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+		for (const [key, value] of Object.entries(config.state)) {
+			if (value instanceof Map || value instanceof Set) {
+				console.warn(
+					`[Stately] Store "${config.id}" initialized with a native ${value.constructor.name} at key "${key}". Svelte 5 deep reactivity does not proxy native Maps or Sets. Consider using SvelteMap or SvelteSet from 'svelte/reactivity'.`
+				);
+			}
+		}
+	}
+
 	let suppressDirectMutation = false;
 	let disposed = false;
 	let mutationCount = 0;
@@ -162,6 +186,9 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 		storeId: config.id,
 		readSnapshot: () => cloneState(config.state)
 	});
+	// Store subscriptions are the explicit side-effect boundary for the runtime.
+	// This keeps listener lifecycle under manual control for detached subscriptions,
+	// plugin wrappers, and $dispose cleanup instead of relying on implicit $effect teardown.
 	const subscriptions = createSubscriptions({
 		storeId: config.id,
 		state: () => shellStore.$state,
@@ -327,6 +354,8 @@ export function createStoreShell<Id extends string, State extends StoreState, St
 				}
 
 				mutationQueue.run('patch-object', patch, () => {
+					// Direct property setters already enqueue mutation records. Suppress them here so
+					// object patches emit a single coherent mutation through the shared pipeline.
 					suppressDirectMutation = true;
 					try {
 						for (const [key, value] of Object.entries(patch)) {

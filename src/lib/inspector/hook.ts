@@ -67,6 +67,9 @@ export function createStatelyInspectorHook(): StatelyInspectorHook {
 		},
 		notifyNotice(notice) {
 			notices.unshift(notice);
+			if (notices.length > 200) {
+				notices.length = 200;
+			}
 			notify(listeners);
 		},
 		clearNotices() {

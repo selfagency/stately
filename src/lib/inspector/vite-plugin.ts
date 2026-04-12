@@ -9,8 +9,6 @@ import {
 	VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX
 } from './virtual.js';
 
-const viteClientPattern = /vite\/dist\/client\/client\.mjs(?:\?|$)/;
-
 export interface StatelyInspectorVitePluginOptions {
 	enabled?: boolean;
 	buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
@@ -19,6 +17,11 @@ export interface StatelyInspectorVitePluginOptions {
 
 function getInspectorRuntimePath(): string {
 	return normalizePath(path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'runtime'));
+}
+
+function isViteClientModule(id: string): boolean {
+	const normalizedId = normalizePath(cleanInspectorUrl(id));
+	return normalizedId.endsWith('/vite/dist/client/client.mjs');
 }
 
 export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {}): Plugin {
@@ -61,7 +64,7 @@ export function statelyVitePlugin(options: StatelyInspectorVitePluginOptions = {
 			}
 		},
 		transform(code, id, transformOptions) {
-			if (!enabled || transformOptions?.ssr || !viteClientPattern.test(id)) {
+			if (!enabled || transformOptions?.ssr || !isViteClientModule(id)) {
 				return;
 			}
 
