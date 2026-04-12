@@ -1,13 +1,11 @@
 ---
 # stately-qwur
-title: 'Implement stately inspector vite plugin'
-status: in-progress
+title: Implement stately inspector vite plugin
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-11T19:19:57Z
-updated_at: 2026-04-11T19:55:14Z
-branch: feature/qwur-stately-inspector-vite-plugin
-pr: 10
+updated_at: 2026-04-12T15:37:18Z
 ---
 
 ## Todo

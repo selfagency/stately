@@ -1,12 +1,11 @@
 ---
 # stately-16ef
-title: 'Implement remediation setup-store and mutation pipeline fixes'
-status: in-progress
+title: Implement remediation setup-store and mutation pipeline fixes
+status: completed
 type: task
 priority: high
-branch: fix/16ef-setup-store-mutation-remediation
 created_at: 2026-04-11T18:22:02Z
-updated_at: 2026-04-11T18:22:02Z
+updated_at: 2026-04-12T15:37:21Z
 ---
 
 ## Goal
