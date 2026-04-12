@@ -185,6 +185,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Assert tag matches package version
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkg_version="v$(node -p "require('./package.json').version")"
+          tag="${{ needs.verify-tag.outputs.release_tag }}"
+          if [[ "$tag" != "$pkg_version" ]]; then
+            echo "Release blocked: tag '$tag' does not match package version '$pkg_version'." >&2
+            exit 1
+          fi
+
       - name: Build package
         run: pnpm run build
 

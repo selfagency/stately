@@ -147,6 +147,17 @@ The repository includes several practical examples under `src/lib/examples/`:
 - **Async:** Request cancellation and concurrency management.
 - **FSM:** Manage complex workflows and validation.
 
+## Documentation
+
+Visit [stately.self.agency](https://stately.self.agency/) for the full documentation:
+
+- [**Getting Started**](https://stately.self.agency/guide/) — Core concepts and patterns.
+- [**Defining Stores**](https://stately.self.agency/guide/define-store) — Options, setup stores, and subscriptions.
+- [**Plugins**](https://stately.self.agency/guide/plugins) — Extending functionality.
+- [**SSR & SvelteKit**](https://stately.self.agency/guide/ssr-and-sveltekit) — Best practices for server-side rendering.
+- [**Migration from Pinia**](https://stately.self.agency/guide/migration-from-pinia) — A guide for Vue developers.
+- [**API Reference**](https://stately.self.agency/reference/api) — Full technical details.
+
 ## AI Agent Skill
 
 Stately ships an [AI agent skill](https://github.com/antfu/skills-npm) that helps LLM coding agents (Cursor, Windsurf, GitHub Copilot, etc.) work with the library correctly.
@@ -178,7 +189,7 @@ Stately ships an [AI agent skill](https://github.com/antfu/skills-npm) that help
    skills/npm-*
    ```
 
-4. Run `pnpm install` — the stately skill will be symlinked into your agent's skills directory automatically.
+4. Run `pnpm install` — the Stately skill will be symlinked into your agent's skills directory automatically.
 
 You can customize which agents or packages are included via a `skills-npm.config.ts`:
 
@@ -192,14 +203,3 @@ export default defineConfig({
 ```
 
 See the [skills-npm docs](https://github.com/antfu/skills-npm) for all configuration options.
-
-## Documentation
-
-Visit [stately.self.agency](https://stately.self.agency/) for the full documentation:
-
-- [**Getting Started**](https://stately.self.agency/guide/) — Core concepts and patterns.
-- [**Defining Stores**](https://stately.self.agency/guide/define-store) — Options, setup stores, and subscriptions.
-- [**Plugins**](https://stately.self.agency/guide/plugins) — Extending functionality.
-- [**SSR & SvelteKit**](https://stately.self.agency/guide/ssr-and-sveltekit) — Best practices for server-side rendering.
-- [**Migration from Pinia**](https://stately.self.agency/guide/migration-from-pinia) — A guide for Vue developers.
-- [**API Reference**](https://stately.self.agency/reference/api) — Full technical details.

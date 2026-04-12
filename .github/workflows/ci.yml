@@ -68,6 +68,9 @@ jobs:
       - name: Run lint checks
         run: pnpm run lint
 
+      - name: Audit dependencies for known vulnerabilities
+        run: pnpm audit --prod --audit-level=high
+
       - name: Build package and verify publish output
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -80,6 +83,9 @@ jobs:
           name: build-diagnostics-${{ github.run_id }}
           path: build-output.log
           if-no-files-found: warn
+
+      - name: Verify publish readiness with publint
+        run: pnpm exec publint --strict ./dist
 
       - name: Run unit and browser tests
         run: pnpm run test --coverage --reporter=verbose --reporter=junit --outputFile=test-report.junit.xml
