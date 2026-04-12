@@ -1,4 +1,5 @@
 import type { StatelyInspectorHook } from '../inspector/types.js';
+import { writeMarker } from '../internal/marker-helpers.js';
 import type {
 	StoreActionHookContext,
 	StoreMutationContext,
@@ -6,7 +7,6 @@ import type {
 	StoreSubscribeOptions
 } from '../pinia-like/store-types.js';
 import { ASYNC_ACTION_MARKER } from './async-marker.js';
-import { writeMarker } from '../internal/marker-helpers.js';
 import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';

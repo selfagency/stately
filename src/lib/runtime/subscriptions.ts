@@ -1,4 +1,5 @@
 import { onDestroy } from 'svelte';
+import { readMarker, writeMarker } from '../internal/marker-helpers.js';
 import type {
 	StoreActionHookContext,
 	StoreMutationContext,
@@ -6,7 +7,6 @@ import type {
 	StoreSubscribeOptions
 } from '../pinia-like/store-types.js';
 import { ASYNC_ACTION_MARKER } from './async-marker.js';
-import { readMarker, writeMarker } from '../internal/marker-helpers.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;

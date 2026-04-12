@@ -75,6 +75,20 @@ Most of these types are used indirectly through plugin options or store
 augmentation, but keeping them public means custom integrations can stay typed
 end-to-end.
 
+### `TimeTravelController<State>`
+
+The type exposed on `store.$timeTravel` when the history plugin is active.
+
+| Member         | Type                         | Description                         |
+| -------------- | ---------------------------- | ----------------------------------- |
+| `entries`      | `HistoryEntry<State>[]`      | Full history stack, newest first    |
+| `currentIndex` | `number`                     | Index of the active snapshot        |
+| `isReplaying`  | `boolean`                    | `true` while `goTo()` is replaying  |
+| `goTo(index)`  | `(index: number) => boolean` | Jump to a history snapshot by index |
+
+Use `$timeTravel` when you want read-only access to the history stack for rendering
+or navigation, and reserve `$history` for undo/redo mutation methods.
+
 `SyncMessage` is the wire format for cross-context synchronization. `mutationId`
 must increase monotonically per origin, while `timestamp` participates in
 cross-origin last-write-wins ordering.

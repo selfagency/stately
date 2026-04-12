@@ -48,6 +48,7 @@ Important fields:
 - `ttl` — discard persisted state older than the configured age in milliseconds
 
 `pick` and `omit` are mutually exclusive. Stately enforces that rule both in the types and at runtime.
+Providing both at the same time will throw an error at store registration time.
 
 Example:
 
@@ -136,6 +137,14 @@ persist: {
 When `ttl` is set, Stately wraps the persisted payload in a timestamp envelope.
 If that timestamp is too old when the store rehydrates, the persisted state is
 discarded and the store falls back to its initial state.
+
+`ttl` is evaluated before `migrate`.
+If the persisted state has expired, migration is skipped entirely and the store
+starts from its current initial state.
+
+If you need to preserve TTL behavior across version upgrades, bump `version` and
+provide a `migrate` function for the previous version so that any unexpired
+payloads are still promoted rather than silently dropped.
 
 ### Debounced writes
 

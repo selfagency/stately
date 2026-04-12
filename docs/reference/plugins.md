@@ -78,6 +78,21 @@ Key behavior:
 - avoids persistence and sync feedback loops during time travel
 - exposes `canUndo`, `canRedo`, `entries`, and `currentIndex` through `$history`
 
+### `$timeTravel` controller
+
+`$timeTravel` is a read-only projection of the history stack.
+Use it when you want to render or navigate history without calling mutation methods.
+
+| Property / Method | Description                                                                      |
+| ----------------- | -------------------------------------------------------------------------------- |
+| `entries`         | The full history stack as `HistoryEntry[]`, newest first                         |
+| `currentIndex`    | Index of the currently active entry                                              |
+| `isReplaying`     | `true` while a `goTo()` replay is in progress                                    |
+| `goTo(index)`     | Jump to a specific history index; returns `false` when the index is out of range |
+
+While `isReplaying` is `true`, pending persistence flushes and sync publications are suppressed
+so the jump does not produce spurious side effects.
+
 ```ts
 import { createHistoryPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
@@ -142,8 +157,10 @@ Key behavior:
 - rejects mismatched versions
 - rejects stale same-origin `mutationId` values and older cross-origin updates
   once a newer mutation has been applied locally or remotely
-- uses a timestamp-first ordering policy across origins, with deterministic
-  origin and `mutationId` tie-breakers when timestamps match
+- uses a **last-write-wins** policy where the winner is determined by timestamp,
+  then origin name, then `mutationId` — this is deterministic but does not guarantee
+  causal consistency; if you require conflict-free merging, supply a custom `transports`
+  bridge and handle merging in your own publish/subscribe adapter
 - only patches known state keys
 - cleans up transports during `$dispose()`
 
@@ -201,11 +218,12 @@ Supported policies:
 
 Policy guidance:
 
-- `parallel` — let every invocation run
-- `restartable` — cancel the current request when a new one starts
-- `drop` — ignore new requests while one is active
-- `enqueue` — run requests sequentially
-- `dedupe` — reuse the active in-flight request
+- `parallel` — let every invocation run concurrently with no control
+- `restartable` — abort the current in-flight request when a new invocation arrives
+- `drop` — ignore new invocations while one is already active
+- `enqueue` — run invocations sequentially, queuing new ones behind the running request
+- `dedupe` — if an identical invocation is already running, return that same promise
+  rather than starting a second request; a new invocation starts only after the first resolves
 
 ```ts
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';

@@ -2,14 +2,25 @@
 
 ## Table of Contents
 
-- [Core SSR Rule](#core-ssr-rule)
-- [Request-Scoped Manager Pattern](#request-scoped-manager-pattern)
-- [Reading the Manager Downstream](#reading-the-manager-downstream)
-- [SvelteKit Data Loading](#sveltekit-data-loading)
-- [Browser-Only Adapters](#browser-only-adapters)
-- [getDefaultStateManager Warning](#getdefaultstatemanager-warning)
-- [Practical Checklist](#practical-checklist)
-- [Common Mistakes](#common-mistakes)
+- [SSR and SvelteKit Patterns](#ssr-and-sveltekit-patterns)
+  - [Table of Contents](#table-of-contents)
+  - [Core SSR Rule](#core-ssr-rule)
+  - [Request-Scoped Manager Pattern](#request-scoped-manager-pattern)
+  - [Reading the Manager Downstream](#reading-the-manager-downstream)
+  - [SvelteKit Data Loading](#sveltekit-data-loading)
+    - [Step 1: Return plain data from server](#step-1-return-plain-data-from-server)
+    - [Step 2: Create manager and hydrate in layout](#step-2-create-manager-and-hydrate-in-layout)
+    - [Step 3: Read store from context downstream](#step-3-read-store-from-context-downstream)
+    - [Avoid Double-Fetching](#avoid-double-fetching)
+  - [Browser-Only Adapters](#browser-only-adapters)
+  - [getDefaultStateManager Warning](#getdefaultstatemanager-warning)
+  - [Practical Checklist](#practical-checklist)
+  - [Common Mistakes](#common-mistakes)
+    - [Store leaks across requests](#store-leaks-across-requests)
+    - [Persistence overwrites restored state](#persistence-overwrites-restored-state)
+    - [Destructuring loses reactivity](#destructuring-loses-reactivity)
+    - [Subscription fires too often](#subscription-fires-too-often)
+    - [Async action doesn't cancel](#async-action-doesnt-cancel)
 
 ## Core SSR Rule
 
