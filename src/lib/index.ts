@@ -11,7 +11,7 @@ export { createSessionStorageAdapter } from './persistence/adapters/session-stor
 export { createLzStringCompression } from './persistence/compression/lz-string.js';
 export { createPersistencePlugin } from './persistence/plugin.svelte.js';
 export { storeToRefs } from './pinia-like/store-to-refs.svelte.js';
-export { createStateManager, getDefaultStateManager } from './root/create-state-manager.js';
+export { createStateManager, defineStateManagerPlugin, getDefaultStateManager } from './root/create-state-manager.js';
 export { getStateManager, initializeStateManagerContext, setStateManager } from './root/state-manager-context.js';
 export { createSyncPlugin } from './sync/plugin.svelte.js';
 export { createValidationPlugin } from './validation/plugin.svelte.js';
@@ -24,6 +24,10 @@ export type { FsmController, FsmDefinition, FsmStateDefinition, FsmTransitionCon
 export type { HistoryController, HistoryEntry } from './history/history-controller.svelte.js';
 export type { TimeTravelController } from './history/time-travel.svelte.js';
 export type {
+	JsonArray,
+	JsonObject,
+	JsonPrimitive,
+	JsonValue,
 	PersistCompression,
 	PersistController,
 	PersistEnvelope,
@@ -45,5 +49,5 @@ export type {
 	StoreState
 } from './pinia-like/store-types.js';
 export type { StoreSubscribeOptions } from './pinia-like/store-types.js';
-export type { StateManager, StateManagerPlugin } from './root/types.js';
+export type { StateManager, StateManagerPlugin, TypedStateManagerPlugin } from './root/types.js';
 export type { SyncMessage, SyncTransport } from './sync/types.js';

@@ -26,7 +26,8 @@ function disposeStore(store: unknown): void {
 }
 
 export function createStateManager(): StateManager {
-	const plugins: StateManagerPlugin[] = [];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const plugins: StateManagerPlugin<any, any, any>[] = [];
 	const definitions = new Map<string, StoreDefinition>();
 	const stores = new Map<string, unknown>();
 
@@ -131,4 +132,5 @@ export function resetDefaultStateManager(): void {
 	defaultStateManager = undefined;
 }
 
-export type { StateManager, StateManagerPlugin, StoreDefinition } from './types.js';
+export type { StateManager, StateManagerPlugin, StoreDefinition, TypedStateManagerPlugin } from './types.js';
+export { defineStateManagerPlugin } from './types.js';

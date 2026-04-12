@@ -1,4 +1,4 @@
-export interface SyncMessage<State = unknown> {
+export interface SyncMessage<State = Record<string, unknown>> {
 	version: number;
 	storeId: string;
 	origin: string;

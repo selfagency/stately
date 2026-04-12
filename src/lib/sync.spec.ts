@@ -348,4 +348,40 @@ describe('sync runtime', () => {
 		expect(published).toHaveLength(publishedBeforeReplay);
 		expect(store.count).toBe(0);
 	});
+
+	it('uses createMessage hook to extend outgoing messages without unsafe casts', () => {
+		interface ExtendedMessage extends SyncMessage {
+			sessionId: string;
+		}
+
+		const published: ExtendedMessage[] = [];
+		const transport: SyncTransport<ExtendedMessage> = {
+			publish(message) {
+				published.push(message);
+			},
+			subscribe() {
+				return () => {};
+			},
+			destroy() {}
+		};
+
+		const useStore = defineStore('sync-create-message', {
+			state: () => ({ count: 0 })
+		});
+		const manager = createStateManager().use(
+			createSyncPlugin<ExtendedMessage>({
+				origin: 'local',
+				transports: [transport],
+				createMessage: (base) => ({ ...base, sessionId: 'abc-123' })
+			})
+		);
+		const store = useStore(manager);
+
+		store.count = 1;
+
+		expect(published).toHaveLength(1);
+		expect(published[0].sessionId).toBe('abc-123');
+		expect(published[0].storeId).toBe('sync-create-message');
+		expect(published[0].origin).toBe('local');
+	});
 });

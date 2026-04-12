@@ -54,11 +54,12 @@ export function deserializePersistedState<State>(
 	}
 
 	try {
+		const sanitizedInput = sanitizeValue(parsed.state) as import('./types.js').JsonObject;
 		return {
 			ok: true,
 			envelope: {
 				version: options.version,
-				state: sanitizeValue(options.migrate(parsed.state, parsed.version))
+				state: sanitizeValue(options.migrate(sanitizedInput, parsed.version)) as State
 			}
 		};
 	} catch (e) {

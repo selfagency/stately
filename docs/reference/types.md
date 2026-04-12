@@ -8,6 +8,9 @@ lifecycle.
 
 - `StateManager` — the runtime container that owns plugins, definitions, and store instances
 - `StateManagerPlugin` — a plugin function that can augment a store instance
+- `TypedStateManagerPlugin` — the stricter plugin callback type used when you
+  want compile-time checking for a specific augmentation shape
+- `defineStateManagerPlugin()` — helper that locks a plugin to a declared augmentation contract
 - `StoreDefinition` — the callable definition returned by `defineStore()`
 - `StoreInstance` — the fully materialized store type
 - `StoreState`, `StoreGetters`, `StoreActions` — helper aliases used by inference
@@ -16,10 +19,15 @@ lifecycle.
 
 - `StoreMutationContext` — payload passed to `$subscribe()` callbacks
 - `StoreActionHookContext` — payload passed to `$onAction()` callbacks
+- `StoreSubscribeOptions` — typed selector and equality options for `$subscribe()`
 
 `StoreMutationContext` exposes the store id, the store instance, the mutation type, and the payload when one exists.
 
 `StoreActionHookContext` exposes the action name, arguments, and `after()` / `onError()` hooks.
+
+`StoreSubscribeOptions` is generic over both the store state and the selected
+slice. When you provide `select`, the `equalityFn` parameters are inferred from
+that selector instead of falling back to `unknown`.
 
 ## Store option augmentation
 
@@ -32,6 +40,14 @@ lifecycle.
 
 These types exist so plugins can extend store definitions and store instances without losing IntelliSense.
 
+Plugin option augmentation should prefer the existing generic hooks instead of
+casting everything to `Record<string, unknown>`. For example, validation options
+can now type their `state` parameter from the actual store state.
+
+When a plugin wants stricter compile-time checking for the object it returns,
+prefer `defineStateManagerPlugin()` with an explicit augmentation type rather
+than returning an untyped object literal.
+
 ## Persistence types
 
 - `PersistenceAdapter`
@@ -39,6 +55,10 @@ These types exist so plugins can extend store definitions and store instances wi
 - `PersistController`
 - `PersistEnvelope`
 - `PersistCompression`
+- `JsonPrimitive`
+- `JsonObject`
+- `JsonArray`
+- `JsonValue`
 
 ## History, sync, and async types
 
@@ -62,3 +82,6 @@ cross-origin last-write-wins ordering.
 `AsyncPluginOptions` controls which actions are tracked and how concurrency is
 handled. `include` can also be used as an explicit opt-in for promise-returning
 actions that are wrapped or declared without the `async` keyword.
+
+`JsonObject` and `JsonValue` describe the JSON-safe payload boundary used by the
+packaged persistence and sync declaration defaults.

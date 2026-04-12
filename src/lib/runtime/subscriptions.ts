@@ -39,11 +39,15 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 	const actionSubscribers = new Set<ActionSubscriber<Store>>();
 
 	return {
-		subscribe(callback: MutationSubscriber<Id, State, Store>, options?: StoreSubscribeOptions<State>) {
+		subscribe<Selected = State>(
+			callback: MutationSubscriber<Id, State, Store>,
+			options?: StoreSubscribeOptions<State, Selected>
+		) {
 			const entry: SelectiveSubscriber<Id, State, Store> = {
 				callback,
 				select: options?.select as ((state: State) => unknown) | undefined,
-				equalityFn: options?.equalityFn ?? defaultEquality
+				equalityFn:
+					(options?.equalityFn as ((previous: unknown, next: unknown) => boolean) | undefined) ?? defaultEquality
 			};
 
 			if (entry.select) {

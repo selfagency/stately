@@ -1,8 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID, VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX } from './virtual.js';
+import type { StatelyInspectorVitePluginOptions } from './vite-plugin.js';
 import { statelyVitePlugin } from './vite-plugin.js';
 
+type VirtualInspectorOptions = (typeof import('virtual:stately-inspector-options'))['default'];
+
 describe('statelyVitePlugin', () => {
+	it('exposes typed virtual options and plugin options', () => {
+		expectTypeOf<StatelyInspectorVitePluginOptions>().toMatchTypeOf<{
+			enabled?: boolean;
+			buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
+			panelSide?: 'left' | 'right';
+		}>();
+		expectTypeOf<VirtualInspectorOptions['buttonPosition']>().toEqualTypeOf<
+			'left-top' | 'left-bottom' | 'right-top' | 'right-bottom'
+		>();
+		expectTypeOf<VirtualInspectorOptions['panelSide']>().toEqualTypeOf<'left' | 'right'>();
+		expectTypeOf<VirtualInspectorOptions['enabled']>().toEqualTypeOf<boolean>();
+		expect(true).toBe(true);
+	});
+
 	it('resolves virtual modules and injects the inspector loader into Vite client code', async () => {
 		const plugin = statelyVitePlugin();
 		const resolveId = plugin.resolveId as (id: string) => Promise<string | undefined> | string | undefined;

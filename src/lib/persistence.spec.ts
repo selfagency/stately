@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
 import { createPersistencePlugin } from './persistence/plugin.svelte.js';
+import type { JsonObject } from './persistence/types.js';
 import { createStateManager } from './root/create-state-manager.js';
 
 describe('persistence runtime', () => {
@@ -234,7 +235,7 @@ describe('persistence runtime', () => {
 			persist: {
 				version: 1,
 				deserialize(source) {
-					return JSON.parse(source) as { version: number; state: Record<string, unknown> };
+					return JSON.parse(source) as { version: number; state: JsonObject };
 				},
 				adapter: {
 					async getItem(key) {

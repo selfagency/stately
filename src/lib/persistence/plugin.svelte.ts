@@ -1,7 +1,7 @@
 import { reportStatelyInspectorNotice } from '../inspector/notice.js';
 import { sanitizeValue } from '../internal/sanitize.js';
 import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
-import type { StateManagerPlugin } from '../root/types.js';
+import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
 import type { PersistController, PersistOptions, PersistenceAdapter } from './types.js';
 
@@ -67,195 +67,202 @@ function readPersistOptions(value: unknown): PersistOptions | undefined {
 	return persist as unknown as PersistOptions;
 }
 
-export function createPersistencePlugin(): StateManagerPlugin {
-	return ({ options, store }) => {
-		if (!isPersistableStore(store)) {
-			return;
-		}
+type PersistencePluginAugmentation = Pick<StoreCustomProperties, '$persist'>;
 
-		const persist = readPersistOptions(options);
-		if (!persist) {
-			return;
-		}
-
-		const pickKeys = persist.pick as string[] | undefined;
-		const omitKeys = persist.omit as string[] | undefined;
-
-		function filterState(snapshot: Record<string, unknown>): Record<string, unknown> {
-			if (pickKeys) {
-				return Object.fromEntries(Object.entries(snapshot).filter(([key]) => pickKeys.includes(key)));
-			}
-			if (omitKeys) {
-				return Object.fromEntries(Object.entries(snapshot).filter(([key]) => !omitKeys.includes(key)));
-			}
-			return snapshot;
-		}
-
-		const key = persist.key ?? store.$id;
-		const serialize = persist.serialize ?? serializePersistedState;
-		const customDeserialize = persist.deserialize;
-		const compression = persist.compression;
-		let paused = false;
-		let rehydrating = false;
-		let flushQueue = Promise.resolve();
-		let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-
-		const cancelDebouncedFlush = () => {
-			clearTimeout(debounceTimer);
-			debounceTimer = undefined;
-		};
-
-		// flush() resolves when the write it enqueued completes, but does NOT wait for
-		// previously-enqueued writes that were already in-flight. Callers that need a full
-		// drain should await $persist.flush() in a loop until flushQueue settles, or simply
-		// call $persist.flush() from an async action after ensuring all mutations are done.
-		const flush = async () => {
-			if (paused || rehydrating || isReplayActive(store)) {
+export function createPersistencePlugin(): StateManagerPlugin<
+	StoreDefinition,
+	PersistableStore,
+	PersistencePluginAugmentation
+> {
+	return defineStateManagerPlugin<StoreDefinition, PersistableStore, PersistencePluginAugmentation>(
+		({ options, store }) => {
+			if (!isPersistableStore(store)) {
 				return;
 			}
 
-			const snapshot = filterState($state.snapshot(store.$state) as Record<string, unknown>);
-			const payload = serialize({
-				version: persist.version,
-				state: snapshot
-			});
-
-			let encoded: string;
-			try {
-				encoded = compression ? compression.compress(payload) : payload;
-			} catch {
-				reportStatelyInspectorNotice(`Compression failed for store "${store.$id}". Falling back to uncompressed.`);
-				encoded = payload;
+			const persist = readPersistOptions(options);
+			if (!persist) {
+				return;
 			}
 
-			if (persist.ttl) {
-				encoded = JSON.stringify({ __stately_ttl: Date.now() + persist.ttl, data: encoded });
-			}
+			const pickKeys = persist.pick as string[] | undefined;
+			const omitKeys = persist.omit as string[] | undefined;
 
-			const queuedWrite = flushQueue
-				.catch(() => undefined)
-				.then(async () => {
-					await persist.adapter.setItem(key, encoded);
-				});
-			flushQueue = queuedWrite;
-			return queuedWrite;
-		};
-
-		const rehydrate = async () => {
-			let raw = await persist.adapter.getItem(key);
-			if (!raw) {
-				return false;
-			}
-
-			if (persist.ttl) {
-				try {
-					const wrapper = JSON.parse(raw);
-					if (isRecord(wrapper) && typeof wrapper.__stately_ttl === 'number' && typeof wrapper.data === 'string') {
-						if (Date.now() > wrapper.__stately_ttl) {
-							return false;
-						}
-						raw = wrapper.data;
-					}
-					// If wrapper doesn't match TTL envelope shape, fall through with raw as-is
-				} catch {
-					// JSON.parse failed; not a TTL envelope — fall through with raw as the persisted payload
+			function filterState(snapshot: Record<string, unknown>): Record<string, unknown> {
+				if (pickKeys) {
+					return Object.fromEntries(Object.entries(snapshot).filter(([key]) => pickKeys.includes(key)));
 				}
+				if (omitKeys) {
+					return Object.fromEntries(Object.entries(snapshot).filter(([key]) => !omitKeys.includes(key)));
+				}
+				return snapshot;
 			}
 
-			let source: string | undefined;
-			try {
-				source = compression ? compression.decompress(raw) : raw;
-			} catch {
-				reportStatelyInspectorNotice(`Decompression failed for store "${store.$id}".`);
-				return false;
-			}
+			const key = persist.key ?? store.$id;
+			const serialize = persist.serialize ?? serializePersistedState;
+			const customDeserialize = persist.deserialize;
+			const compression = persist.compression;
+			let paused = false;
+			let rehydrating = false;
+			let flushQueue = Promise.resolve();
+			let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
-			if (!source) {
-				return false;
-			}
+			const cancelDebouncedFlush = () => {
+				clearTimeout(debounceTimer);
+				debounceTimer = undefined;
+			};
 
-			if (customDeserialize) {
-				const parsed = customDeserialize(source);
-				if (!parsed) {
+			const flush = async () => {
+				if (paused || rehydrating || isReplayActive(store)) {
+					return;
+				}
+
+				const snapshot = filterState($state.snapshot(store.$state) as Record<string, unknown>);
+				const payload = serialize({
+					version: persist.version,
+					state: snapshot
+				});
+
+				let encoded: string;
+				try {
+					encoded = compression ? compression.compress(payload) : payload;
+				} catch {
+					reportStatelyInspectorNotice(`Compression failed for store "${store.$id}". Falling back to uncompressed.`);
+					encoded = payload;
+				}
+
+				if (persist.ttl) {
+					encoded = JSON.stringify({ __stately_ttl: Date.now() + persist.ttl, data: encoded });
+				}
+
+				const queuedWrite = flushQueue
+					.catch(() => undefined)
+					.then(async () => {
+						await persist.adapter.setItem(key, encoded);
+					});
+				flushQueue = queuedWrite;
+				return queuedWrite;
+			};
+
+			const rehydrate = async () => {
+				let raw = await persist.adapter.getItem(key);
+				if (!raw) {
 					return false;
 				}
+
+				if (persist.ttl) {
+					try {
+						const wrapper = JSON.parse(raw);
+						if (isRecord(wrapper) && typeof wrapper.__stately_ttl === 'number' && typeof wrapper.data === 'string') {
+							if (Date.now() > wrapper.__stately_ttl) {
+								return false;
+							}
+							raw = wrapper.data;
+						}
+					} catch {
+						// Not a TTL envelope; continue with the raw payload.
+					}
+				}
+
+				let source: string | undefined;
+				try {
+					source = compression ? compression.decompress(raw) : raw;
+				} catch {
+					reportStatelyInspectorNotice(`Decompression failed for store "${store.$id}".`);
+					return false;
+				}
+
+				if (!source) {
+					return false;
+				}
+
+				if (customDeserialize) {
+					const parsed = customDeserialize(source);
+					if (!parsed) {
+						return false;
+					}
+
+					rehydrating = true;
+					try {
+						store.$patch(sanitizeValue(parsed.state) as Partial<typeof store.$state>);
+						return true;
+					} finally {
+						rehydrating = false;
+					}
+				}
+
+				const result = deserializePersistedState(source, persist);
+				if (!result.ok) {
+					reportStatelyInspectorNotice(`Rehydration failed for store "${store.$id}": ${result.error}`);
+					return false;
+				}
+
 				rehydrating = true;
 				try {
-					store.$patch(sanitizeValue(parsed.state) as Partial<typeof store.$state>);
+					store.$patch(result.envelope.state);
 					return true;
 				} finally {
 					rehydrating = false;
 				}
-			}
-
-			const result = deserializePersistedState(source, persist);
-			if (!result.ok) {
-				reportStatelyInspectorNotice(`Rehydration failed for store "${store.$id}": ${result.error}`);
-				return false;
-			}
-
-			rehydrating = true;
-			try {
-				store.$patch(result.envelope.state);
-				return true;
-			} finally {
-				rehydrating = false;
-			}
-		};
-
-		const ready = rehydrate().then(() => undefined);
-		const handleFlushError = (error: unknown) => {
-			if (persist.onError) {
-				persist.onError(error);
-			} else {
-				reportStatelyInspectorNotice(`Flush failed for store "${store.$id}": ${String(error)}`);
-			}
-		};
-		const unsubscribe = store.$subscribe(() => {
-			const doFlush = () => {
-				debounceTimer = undefined;
-				void flush().catch(handleFlushError);
 			};
-			if (persist.debounce) {
-				cancelDebouncedFlush();
-				debounceTimer = setTimeout(doFlush, persist.debounce);
-			} else {
-				doFlush();
-			}
-		});
-		const dispose = store.$dispose.bind(store);
-		Object.defineProperty(store, '$dispose', {
-			value() {
-				cancelDebouncedFlush();
-				unsubscribe();
-				dispose();
-			},
-			enumerable: false,
-			configurable: true,
-			writable: true
-		});
 
-		return {
-			$persist: {
-				ready,
-				flush,
-				rehydrate,
-				async clear() {
-					cancelDebouncedFlush();
-					const wasPaused = paused;
-					paused = true;
-					await flushQueue.catch(() => undefined);
-					await persist.adapter.removeItem(key);
-					flushQueue = Promise.resolve();
-					paused = wasPaused;
-				},
-				pause() {
-					paused = true;
-				},
-				resume() {
-					paused = false;
+			const ready = rehydrate().then(() => undefined);
+			const handleFlushError = (error: unknown) => {
+				if (persist.onError) {
+					persist.onError(error);
+				} else {
+					reportStatelyInspectorNotice(`Flush failed for store "${store.$id}": ${String(error)}`);
 				}
-			} satisfies PersistController
-		} satisfies Partial<StoreCustomProperties>;
-	};
+			};
+
+			const unsubscribe = store.$subscribe(() => {
+				const doFlush = () => {
+					debounceTimer = undefined;
+					void flush().catch(handleFlushError);
+				};
+
+				if (persist.debounce) {
+					cancelDebouncedFlush();
+					debounceTimer = setTimeout(doFlush, persist.debounce);
+				} else {
+					doFlush();
+				}
+			});
+
+			const dispose = store.$dispose.bind(store);
+			Object.defineProperty(store, '$dispose', {
+				value() {
+					cancelDebouncedFlush();
+					unsubscribe();
+					dispose();
+				},
+				enumerable: false,
+				configurable: true,
+				writable: true
+			});
+
+			return {
+				$persist: {
+					ready,
+					flush,
+					rehydrate,
+					async clear() {
+						cancelDebouncedFlush();
+						const wasPaused = paused;
+						paused = true;
+						await flushQueue.catch(() => undefined);
+						await persist.adapter.removeItem(key);
+						flushQueue = Promise.resolve();
+						paused = wasPaused;
+					},
+					pause() {
+						paused = true;
+					},
+					resume() {
+						paused = false;
+					}
+				} satisfies PersistController
+			} satisfies PersistencePluginAugmentation;
+		}
+	);
 }

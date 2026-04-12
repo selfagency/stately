@@ -6,6 +6,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
+const INSPECTOR_VIRTUAL_OPTIONS_SOURCE = resolve(ROOT, 'src/lib/inspector/virtual-options.d.ts');
+const INSPECTOR_VIRTUAL_OPTIONS_DEST = resolve(DIST, 'inspector/virtual-options.d.ts');
+const INSPECTOR_VITE_PLUGIN_TYPES_DEST = resolve(DIST, 'inspector/vite-plugin.d.ts');
+const INSPECTOR_VIRTUAL_REFERENCE = '/// <reference path="./virtual-options.d.ts" />';
 const TEST_OUTPUT_PATTERN = /\.(?:test|spec)\.(?:d\.)?[cm]?[jt]s$/;
 const RELEASE_ASSETS = ['README.md', 'CHANGELOG.md', 'LICENSE.md', 'stately.svg'];
 
@@ -35,6 +39,18 @@ async function copyReleaseAssets() {
 	for (const asset of RELEASE_ASSETS) {
 		await copyFile(resolve(ROOT, asset), resolve(DIST, asset));
 	}
+
+	await mkdir(dirname(INSPECTOR_VIRTUAL_OPTIONS_DEST), { recursive: true });
+	await copyFile(INSPECTOR_VIRTUAL_OPTIONS_SOURCE, INSPECTOR_VIRTUAL_OPTIONS_DEST);
+}
+
+async function wireInspectorTypeReferences() {
+	const source = await readFile(INSPECTOR_VITE_PLUGIN_TYPES_DEST, 'utf8');
+	if (source.startsWith(INSPECTOR_VIRTUAL_REFERENCE)) {
+		return;
+	}
+
+	await writeFile(INSPECTOR_VITE_PLUGIN_TYPES_DEST, `${INSPECTOR_VIRTUAL_REFERENCE}\n${source}`, 'utf8');
 }
 
 function rewriteDistPaths(value) {
@@ -103,6 +119,7 @@ async function main() {
 	await mkdir(DIST, { recursive: true });
 	await pruneReleaseExtras(DIST);
 	await copyReleaseAssets();
+	await wireInspectorTypeReferences();
 	await writeDistPackage();
 }
 
