@@ -76,4 +76,17 @@ describe('createStateManager', () => {
 		expect(Reflect.get(store, 'reactiveValue')).toBe(1);
 		expect(Reflect.get(store, 'reactiveValue')).toBe(2);
 	});
+
+	it('disposes stores before deleting them from the manager', () => {
+		const manager = createStateManager();
+		const definition: ExampleDefinition = { $id: 'disposable-store' };
+		const dispose = vi.fn();
+
+		manager.createStore(definition, () => ({ $dispose: dispose }));
+
+		expect(manager.deleteStore('disposable-store')).toBe(true);
+		expect(dispose).toHaveBeenCalledTimes(1);
+		expect(manager.hasStore('disposable-store')).toBe(false);
+		expect(manager.hasDefinition('disposable-store')).toBe(false);
+	});
 });

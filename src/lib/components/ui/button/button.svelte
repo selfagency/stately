@@ -1,6 +1,7 @@
-<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <script lang="ts" module>
 import { cn, type WithElementRef } from '$lib/utils.js';
+import { resolve } from '$app/paths';
+import type { PathnameWithSearchOrHash } from '$app/types';
 import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
 import { tv, type VariantProps } from 'tailwind-variants';
 
@@ -59,20 +60,39 @@ let {
 	children,
 	...restProps
 }: ButtonProps = $props();
+
+const isAbsoluteHref = (value: string) => /^[+a-z]*:/i.test(value);
+
+const isExternalHref = $derived(typeof href === 'string' && isAbsoluteHref(href));
 </script>
 
 {#if href}
-	<a
-		bind:this={ref}
-		data-slot="button"
-		class={cn(buttonVariants({ variant, size }), className)}
-		href={disabled ? undefined : href}
-		aria-disabled={disabled}
-		role={disabled ? 'link' : undefined}
-		tabindex={disabled ? -1 : undefined}
-		{...restProps}>
-		{@render children?.()}
-	</a>
+	{#if isExternalHref}
+		<a
+			bind:this={ref}
+			data-slot="button"
+			class={cn(buttonVariants({ variant, size }), className)}
+			href={disabled ? undefined : href}
+			rel="external noreferrer"
+			aria-disabled={disabled}
+			role={disabled ? 'link' : undefined}
+			tabindex={disabled ? -1 : undefined}
+			{...restProps}>
+			{@render children?.()}
+		</a>
+	{:else}
+		<a
+			bind:this={ref}
+			data-slot="button"
+			class={cn(buttonVariants({ variant, size }), className)}
+			href={disabled ? undefined : resolve(href as PathnameWithSearchOrHash)}
+			aria-disabled={disabled}
+			role={disabled ? 'link' : undefined}
+			tabindex={disabled ? -1 : undefined}
+			{...restProps}>
+			{@render children?.()}
+		</a>
+	{/if}
 {:else}
 	<button
 		bind:this={ref}

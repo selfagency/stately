@@ -35,6 +35,7 @@ Key behavior:
 - requires a `persist` option with a `version` and a `PersistenceAdapter`
 - exposes `$persist.ready`, `$persist.flush()`, `$persist.rehydrate()`, `$persist.clear()`, `$persist.pause()`, and `$persist.resume()`
 - queues writes so older snapshots do not overwrite newer ones
+- cancels any pending debounced flush before `$persist.clear()` removes stored state
 - supports optional compression and custom serialize/deserialize hooks
 - suppresses writes while replaying history or during explicit pause/rehydrate flows
 

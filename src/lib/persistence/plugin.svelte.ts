@@ -83,6 +83,11 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		let flushQueue = Promise.resolve();
 		let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
+		const cancelDebouncedFlush = () => {
+			clearTimeout(debounceTimer);
+			debounceTimer = undefined;
+		};
+
 		// flush() resolves when the write it enqueued completes, but does NOT wait for
 		// previously-enqueued writes that were already in-flight. Callers that need a full
 		// drain should await $persist.flush() in a loop until flushQueue settles, or simply
@@ -171,9 +176,12 @@ export function createPersistencePlugin(): StateManagerPlugin {
 			}
 		};
 		const unsubscribe = store.$subscribe(() => {
-			const doFlush = () => void flush().catch(handleFlushError);
+			const doFlush = () => {
+				debounceTimer = undefined;
+				void flush().catch(handleFlushError);
+			};
 			if (persist.debounce) {
-				clearTimeout(debounceTimer);
+				cancelDebouncedFlush();
 				debounceTimer = setTimeout(doFlush, persist.debounce);
 			} else {
 				doFlush();
@@ -182,7 +190,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 		const dispose = store.$dispose.bind(store);
 		Object.defineProperty(store, '$dispose', {
 			value() {
-				clearTimeout(debounceTimer);
+				cancelDebouncedFlush();
 				unsubscribe();
 				dispose();
 			},
@@ -197,6 +205,7 @@ export function createPersistencePlugin(): StateManagerPlugin {
 				flush,
 				rehydrate,
 				async clear() {
+					cancelDebouncedFlush();
 					const wasPaused = paused;
 					paused = true;
 					await flushQueue.catch(() => undefined);
