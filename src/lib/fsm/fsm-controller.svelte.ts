@@ -64,9 +64,15 @@ export function createFsmController(definition: FsmDefinition): InternalFsmContr
 
 			current = nextState;
 
-			const enterHook = statesMap.get(nextState)?._enter;
-			if (typeof enterHook === 'function') {
-				enterHook(context);
+			try {
+				const enterHook = statesMap.get(nextState)?._enter;
+				if (typeof enterHook === 'function') {
+					enterHook(context);
+				}
+			} catch (error) {
+				// Roll back to the previous state if the _enter hook throws to keep the FSM consistent.
+				current = from;
+				throw error;
 			}
 
 			return current;

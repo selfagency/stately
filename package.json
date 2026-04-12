@@ -69,7 +69,8 @@
 	"files": [
 		"dist",
 		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+		"!dist/**/*.spec.*",
+		"skills"
 	],
 	"scripts": {
 		"build": "pnpm run build:inspector-css && vite build && pnpm run package:dist",
@@ -157,6 +158,9 @@
 		"svelte": "^5.0.0"
 	},
 	"packageManager": "pnpm@10.33.0",
+	"engines": {
+		"node": ">=20"
+	},
 	"publishConfig": {
 		"access": "public",
 		"provenance": true

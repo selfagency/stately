@@ -63,7 +63,7 @@ function isStateEqual(left: unknown, right: unknown, visited = new WeakSet<objec
 		}
 
 		if (visited.has(left)) {
-			return true;
+			return false;
 		}
 		visited.add(left);
 		visited.add(right);
@@ -109,7 +109,7 @@ function isStateEqual(left: unknown, right: unknown, visited = new WeakSet<objec
 		}
 
 		if (visited.has(left)) {
-			return true;
+			return false;
 		}
 		visited.add(left);
 		visited.add(right);
