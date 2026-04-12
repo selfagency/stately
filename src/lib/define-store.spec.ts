@@ -153,4 +153,124 @@ describe('defineStore', () => {
 		expect(store.items).toBe(1);
 		expect(store.summary).toBe('1 items');
 	});
+
+	it('$subscribe with detached: true does not auto-unsubscribe on component destroy', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('define-subscribe-detached', {
+			state: () => ({ count: 0 })
+		});
+		const store = useStore(manager);
+		const mutations: number[] = [];
+
+		const unsubscribe = store.$subscribe(
+			() => {
+				mutations.push(store.count);
+			},
+			{ detached: true }
+		);
+
+		store.count = 1;
+		store.count = 2;
+
+		expect(mutations).toEqual([1, 2]);
+		unsubscribe();
+
+		store.count = 3;
+		expect(mutations).toEqual([1, 2]);
+	});
+
+	it('$dispose stops further mutation notifications', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('define-dispose', {
+			state: () => ({ count: 0 })
+		});
+		const store = useStore(manager);
+		const mutations: number[] = [];
+
+		store.$subscribe(() => {
+			mutations.push(store.count);
+		});
+
+		store.count = 1;
+		store.$dispose();
+		store.count = 2;
+
+		expect(mutations).toEqual([1]);
+	});
+
+	it('$reset restores initial state and triggers a mutation', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('define-reset', {
+			state: () => ({ count: 0, label: 'init' })
+		});
+		const store = useStore(manager);
+		const mutationTypes: string[] = [];
+
+		store.$subscribe((mutation) => {
+			mutationTypes.push(mutation.type);
+		});
+
+		store.count = 5;
+		store.label = 'changed';
+		store.$reset();
+
+		expect(store.count).toBe(0);
+		expect(store.label).toBe('init');
+		expect(mutationTypes).toContain('patch-object');
+	});
+
+	it('$onAction fires before and after actions with correct context', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('define-on-action', {
+			state: () => ({ count: 0 }),
+			actions: {
+				increment() {
+					this.count += 1;
+					return this.count;
+				}
+			}
+		});
+		const store = useStore(manager);
+		const log: string[] = [];
+
+		store.$onAction(({ name, after, onError }) => {
+			log.push(`before:${name}`);
+			after((result) => {
+				log.push(`after:${name}:${String(result)}`);
+			});
+			onError((error) => {
+				log.push(`error:${name}:${String(error)}`);
+			});
+		});
+
+		store.increment();
+
+		expect(log).toEqual(['before:increment', 'after:increment:1']);
+	});
+
+	it('rejects a whitespace-only store ID', () => {
+		expect(() => defineStore('   ', { state: () => ({}) })).toThrow(/id/i);
+	});
+
+	it('exposes $id matching the registered store ID', () => {
+		const manager = createStateManager();
+		const useStore = defineStore('my-id-store', { state: () => ({}) });
+		const store = useStore(manager);
+
+		expect(store.$id).toBe('my-id-store');
+	});
+
+	it('isolates stores created from the same definition across different managers', () => {
+		const managerA = createStateManager();
+		const managerB = createStateManager();
+		const useStore = defineStore('multi-manager-isolation', { state: () => ({ count: 0 }) });
+
+		const storeA = useStore(managerA);
+		const storeB = useStore(managerB);
+
+		storeA.count = 10;
+
+		expect(storeA.count).toBe(10);
+		expect(storeB.count).toBe(0);
+	});
 });

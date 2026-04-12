@@ -2,6 +2,7 @@ import type { StateManagerPlugin } from '../root/types.js';
 import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import type { ConcurrencyMode } from './concurrency.js';
 import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
+import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 
 export interface AsyncActionRegistry {
 	[actionName: string]: AsyncActionState;
@@ -40,6 +41,11 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 
 			const value = store[key];
 			if (typeof value !== 'function') {
+				continue;
+			}
+
+			// Only wrap actions that were originally declared async (marker propagated through wrappers).
+			if (!(value as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
 				continue;
 			}
 

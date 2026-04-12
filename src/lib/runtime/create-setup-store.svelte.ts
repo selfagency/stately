@@ -1,5 +1,4 @@
 import { createStoreShell } from './store-shell.svelte.js';
-import { SvelteMap } from 'svelte/reactivity';
 
 type AnyRecord = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,7 +13,8 @@ function isRecord(value: unknown): value is AnyRecord {
 }
 
 function collectDescriptors(value: object): Array<[string, PropertyDescriptor]> {
-	const descriptors = new SvelteMap<string, PropertyDescriptor>();
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map; not used in reactive context
+	const descriptors = new Map<string, PropertyDescriptor>();
 	let current: object | null = value;
 
 	while (current && current !== Object.prototype) {

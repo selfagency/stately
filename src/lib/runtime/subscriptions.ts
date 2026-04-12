@@ -5,6 +5,7 @@ import type {
 	StoreState,
 	StoreSubscribeOptions
 } from '../pinia-like/store-types.js';
+import { ASYNC_ACTION_MARKER } from './async-marker.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
@@ -43,9 +44,15 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 		},
 		onAction(callback: ActionSubscriber<Store>) {
 			actionSubscribers.add(callback);
-			return () => {
+			const unsubscribe = () => {
 				actionSubscribers.delete(callback);
 			};
+			try {
+				onDestroy(unsubscribe);
+			} catch {
+				// Not in a component lifecycle context; caller is responsible for cleanup.
+			}
+			return unsubscribe;
 		},
 		notifyMutation(type: StoreMutationContext<Id, Store>['type'], payload?: unknown) {
 			const mutation = {
@@ -82,23 +89,33 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 				try {
 					const result = action.apply(this, args) as ReturnType<Action>;
 					if (typeof (result as { then?: unknown })?.then === 'function') {
-						return (result as Promise<unknown>)
-							.then((resolved) => {
+						return (result as Promise<unknown>).then(
+							(resolved) => {
 								for (const callback of afterCallbacks) {
-									callback(resolved);
+									try {
+										callback(resolved);
+									} catch {
+										/* subscriber errors do not affect the action outcome */
+									}
 								}
 								return resolved;
-							})
-							.catch((error) => {
+							},
+							(error) => {
 								for (const callback of errorCallbacks) {
 									callback(error);
 								}
 								throw error;
-							}) as ReturnType<Action>;
+							}
+						) as ReturnType<Action>;
 					}
 
+					// Run after callbacks outside the try/catch so their errors don't trigger onError handlers.
 					for (const callback of afterCallbacks) {
-						callback(result);
+						try {
+							callback(result);
+						} catch {
+							/* subscriber errors do not affect the action outcome */
+						}
 					}
 
 					return result;
@@ -109,6 +126,10 @@ export function createSubscriptions<Id extends string, State extends StoreState,
 					throw error;
 				}
 			};
+
+			if ((action as unknown as Record<symbol, unknown>)[ASYNC_ACTION_MARKER]) {
+				(wrapped as unknown as Record<symbol, boolean>)[ASYNC_ACTION_MARKER] = true;
+			}
 
 			return wrapped as Action;
 		},

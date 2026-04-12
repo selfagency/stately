@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
+import { createHistoryPlugin } from './history/plugin.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
 import { createSyncPlugin } from './sync/plugin.svelte.js';
 import type { SyncMessage, SyncTransport } from './sync/types.js';
@@ -173,5 +174,178 @@ describe('sync runtime', () => {
 
 		expect(store.profile).toEqual({ name: 'updated' });
 		expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
+	});
+
+	it('ignores messages whose origin matches the local origin (self-filter)', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish(message) {
+				for (const listener of listeners) {
+					listener(message);
+				}
+			},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => listeners.delete(listener);
+			},
+			destroy() {}
+		};
+
+		const useStore = defineStore('sync-self-filter', {
+			state: () => ({ count: 0 })
+		});
+		const manager = createStateManager().use(createSyncPlugin({ origin: 'self', transports: [transport] }));
+		const store = useStore(manager);
+
+		for (const listener of listeners) {
+			listener({
+				storeId: 'sync-self-filter',
+				origin: 'self',
+				version: 1,
+				mutationId: 1,
+				timestamp: Date.now(),
+				state: { count: 99 }
+			});
+		}
+
+		expect(store.count).toBe(0);
+	});
+
+	it('calls transport destroy on store dispose', () => {
+		let destroyed = false;
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe() {
+				return () => {};
+			},
+			destroy() {
+				destroyed = true;
+			}
+		};
+
+		const useStore = defineStore('sync-dispose', {
+			state: () => ({ count: 0 })
+		});
+		const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+		const store = useStore(manager);
+
+		store.$dispose();
+
+		expect(destroyed).toBe(true);
+	});
+
+	it('tracks per-origin mutation IDs independently', () => {
+		const aListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const bListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+
+		const makeTransport = (
+			senders: Set<(m: SyncMessage<Record<string, unknown>>) => void>
+		): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
+			publish(message) {
+				for (const listener of senders) {
+					listener(message);
+				}
+			},
+			subscribe(listener) {
+				senders.add(listener);
+				return () => senders.delete(listener);
+			},
+			destroy() {}
+		});
+
+		const useStore = defineStore('sync-per-origin', { state: () => ({ count: 0 }) });
+		const manager = createStateManager().use(
+			createSyncPlugin({ origin: 'local', transports: [makeTransport(aListeners), makeTransport(bListeners)] })
+		);
+		const store = useStore(manager);
+
+		for (const listener of aListeners) {
+			listener({
+				storeId: 'sync-per-origin',
+				origin: 'originA',
+				version: 1,
+				mutationId: 5,
+				timestamp: Date.now(),
+				state: { count: 5 }
+			});
+		}
+		expect(store.count).toBe(5);
+
+		// Lower mutationId from a different origin must still apply (tracked separately)
+		for (const listener of bListeners) {
+			listener({
+				storeId: 'sync-per-origin',
+				origin: 'originB',
+				version: 1,
+				mutationId: 1,
+				timestamp: Date.now(),
+				state: { count: 6 }
+			});
+		}
+		expect(store.count).toBe(6);
+	});
+
+	it('discards inbound messages whose version does not match the plugin version', () => {
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish() {},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => listeners.delete(listener);
+			},
+			destroy() {}
+		};
+
+		const useStore = defineStore('sync-version-discard', { state: () => ({ count: 0 }) });
+		const manager = createStateManager().use(
+			createSyncPlugin({ origin: 'local', version: 2, transports: [transport] })
+		);
+		const store = useStore(manager);
+
+		// v1 message — should be discarded
+		for (const listener of listeners) {
+			listener({
+				storeId: 'sync-version-discard',
+				origin: 'remote',
+				version: 1,
+				mutationId: 1,
+				timestamp: Date.now(),
+				state: { count: 99 }
+			});
+		}
+		expect(store.count).toBe(0);
+	});
+
+	it('does not publish during time-travel replay to avoid sync feedback loops', () => {
+		const published: unknown[] = [];
+		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+			publish(message) {
+				published.push(message);
+			},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => listeners.delete(listener);
+			},
+			destroy() {}
+		};
+
+		const manager = createStateManager()
+			.use(createHistoryPlugin())
+			.use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+		const useStore = defineStore('sync-replay-suppress', {
+			state: () => ({ count: 0 }),
+			history: { limit: 10 }
+		});
+		const store = useStore(manager);
+
+		store.count = 1;
+		store.count = 2;
+		const publishedBeforeReplay = published.length;
+
+		store.$timeTravel.goTo(0);
+
+		expect(published).toHaveLength(publishedBeforeReplay);
+		expect(store.count).toBe(0);
 	});
 });

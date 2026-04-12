@@ -29,6 +29,10 @@ export interface PersistOptions<State = Record<string, unknown>> extends Persist
 	compression?: PersistCompression;
 	serialize?: (envelope: PersistEnvelope<State>) => string;
 	deserialize?: (raw: string) => PersistEnvelope<Record<string, unknown>> | undefined;
+	/** Called when an auto-flush write to the adapter fails. If omitted, a notice is emitted to the Stately inspector. */
+	onError?: (error: unknown) => void;
+	/** Debounce auto-flush writes by this many milliseconds (trailing edge). Useful for high-frequency mutations. */
+	debounce?: number;
 }
 
 export interface PersistController {

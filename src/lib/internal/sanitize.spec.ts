@@ -69,4 +69,14 @@ describe('sanitizeValue', () => {
 
 		expect(Object.prototype).not.toHaveProperty('evil');
 	});
+
+	it('passes Date, Map, and Set instances through unchanged', () => {
+		const date = new Date('2024-01-01');
+		const map = new Map([['key', 'value']]);
+		const set = new Set([1, 2, 3]);
+
+		expect(sanitizeValue(date)).toBe(date);
+		expect(sanitizeValue(map)).toBe(map);
+		expect(sanitizeValue(set)).toBe(set);
+	});
 });

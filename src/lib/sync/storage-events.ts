@@ -12,6 +12,7 @@ interface WindowLike {
 
 interface StorageLike {
 	setItem(key: string, value: string): void;
+	removeItem(key: string): void;
 }
 
 export function createStorageEventTransport<Message extends { origin?: string } = SyncMessage>(
@@ -66,6 +67,7 @@ export function createStorageEventTransport<Message extends { origin?: string } 
 		destroy() {
 			listeners.clear();
 			win?.removeEventListener('storage', handleStorage);
+			storage?.removeItem(key);
 		}
 	};
 }

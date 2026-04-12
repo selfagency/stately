@@ -8,6 +8,7 @@ interface HistoryStore<State = Record<string, unknown>> {
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
 	$subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
+	$dispose(): void;
 }
 
 interface HistoryOptions {
@@ -60,13 +61,27 @@ export function createHistoryPlugin(): StateManagerPlugin {
 			}
 		});
 
-		store.$subscribe(() => {
+		const unsubscribeHistory = store.$subscribe(() => {
+			// Guard relies on $subscribe delivering callbacks synchronously. Svelte 5 runes
+			// flush subscriber notifications synchronously within the same microtask, so
+			// isReplaying is still true when this callback fires during a $patch replay.
 			if (controller.isReplaying) {
 				return;
 			}
 			controller.record(snapshotOf(store));
 		});
 		const timeTravel = createTimeTravelController({ history: controller });
+
+		const dispose = store.$dispose.bind(store);
+		Object.defineProperty(store, '$dispose', {
+			value() {
+				unsubscribeHistory();
+				dispose();
+			},
+			enumerable: false,
+			configurable: true,
+			writable: true
+		});
 
 		return {
 			$history: controller,

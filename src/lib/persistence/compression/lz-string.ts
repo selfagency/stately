@@ -11,7 +11,9 @@ export function createLzStringCompression(): PersistCompression {
 		},
 		decompress(value) {
 			if (!value.startsWith(PREFIX)) {
-				return undefined;
+				// Treat unrecognised data as legacy uncompressed text only if it looks like a
+				// JSON object — persisted state always serialises to a `{`-prefixed string.
+				return value.startsWith('{') ? value : undefined;
 			}
 
 			return decompressFromUTF16(value.slice(PREFIX.length)) ?? undefined;

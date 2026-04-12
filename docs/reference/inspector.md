@@ -134,6 +134,95 @@ If the inspector is already mounted, subsequent calls do not create another inst
 Unmounts the drawer and removes the host element.
 Useful for HMR cleanup and manual teardown.
 
+## `formatInspectorValue(value)`
+
+Serializes any value to a human-readable JSON string for display in custom inspector UIs.
+
+```ts
+import { formatInspectorValue } from '@selfagency/stately/inspector';
+
+console.log(formatInspectorValue({ count: 1, fn: () => {} }));
+// '{\n  "count": 1,\n  "fn": "[Function fn]"\n}'
+```
+
+Handles circular references, `bigint`, `Function`, and `Symbol` gracefully. Returns `'null'` when the value cannot be serialized.
+
+## `reportStatelyInspectorNotice(message, level?)`
+
+Emits a notice to the currently installed inspector hook. Useful for signaling warnings or
+diagnostic messages from plugins or store actions without coupling them to the inspector directly.
+
+```ts
+import { reportStatelyInspectorNotice } from '@selfagency/stately/inspector';
+
+reportStatelyInspectorNotice('State migration ran', 'warning');
+```
+
+`level` defaults to `'warning'`. Valid values are `'warning'`, `'alert'`, and `'dialog'`.
+
+Does nothing when no inspector hook is installed.
+
+## `resetStatelyInspectorHook()`
+
+Removes the globally installed inspector hook without disposing the hook object. Primarily
+intended for testing to ensure a clean slate between test cases.
+
+```ts
+import { resetStatelyInspectorHook } from '@selfagency/stately/inspector';
+
+afterEach(() => {
+	resetStatelyInspectorHook();
+});
+```
+
+## `StatelyInspectorHook` interface
+
+The hook returned by `createStatelyInspectorHook()` implements this interface:
+
+```ts
+interface StatelyInspectorHook {
+	registerStore(adapter: StatelyInspectorStoreAdapter): () => void;
+	register(store: InspectableStore, timeline: TimelineReader): () => void;
+	listStores(): StatelyInspectorStoreAdapter[];
+	listNotices(): StatelyInspectorNotice[];
+	notifyNotice(notice: StatelyInspectorNotice): void;
+	clearNotices(): void;
+	subscribe(callback: () => void): () => void;
+}
+```
+
+| Method                      | Description                                                                   |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| `registerStore(adapter)`    | Registers a raw store adapter and returns an unregister function.             |
+| `register(store, timeline)` | Creates and registers an adapter from an `InspectableStore`.                  |
+| `listStores()`              | Returns the list of currently registered store adapters.                      |
+| `listNotices()`             | Returns all notices that have been submitted via `notifyNotice()`.            |
+| `notifyNotice(notice)`      | Adds a notice and notifies subscribers.                                       |
+| `clearNotices()`            | Removes all notices and notifies subscribers.                                 |
+| `subscribe(callback)`       | Subscribes to store-list and notice changes. Returns an unsubscribe function. |
+
+## `StatelyInspectorNotice`
+
+```ts
+interface StatelyInspectorNotice {
+	message: string;
+	level: StatelyInspectorNoticeLevel;
+	timestamp: number;
+}
+```
+
+## `StatelyInspectorNoticeLevel`
+
+```ts
+type StatelyInspectorNoticeLevel = 'warning' | 'alert' | 'dialog';
+```
+
+| Level       | Intended use                                                    |
+| ----------- | --------------------------------------------------------------- |
+| `'warning'` | Non-critical diagnostic messages (default).                     |
+| `'alert'`   | Serious issue that requires attention.                          |
+| `'dialog'`  | Blocking or interactive message that needs user acknowledgment. |
+
 ## Public types
 
 `@selfagency/stately/inspector` exports these public types:
@@ -144,3 +233,5 @@ Useful for HMR cleanup and manual teardown.
 - `StatelyInspectorHistorySnapshot`
 - `StatelyInspectorButtonPosition`
 - `StatelyInspectorPanelSide`
+- `StatelyInspectorNotice`
+- `StatelyInspectorNoticeLevel`

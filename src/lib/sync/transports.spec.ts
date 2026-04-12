@@ -72,6 +72,9 @@ describe('sync transports', () => {
 			storage: {
 				setItem(key: string, value: string) {
 					storage.set(key, value);
+				},
+				removeItem(key: string) {
+					storage.delete(key);
 				}
 			}
 		});
