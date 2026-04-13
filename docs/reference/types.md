@@ -42,7 +42,12 @@ These types exist so plugins can extend store definitions and store instances wi
 
 Plugin option augmentation should prefer the existing generic hooks instead of
 casting everything to `Record<string, unknown>`. For example, validation options
-can now type their `state` parameter from the actual store state.
+can type their `state` parameter from the actual store state.
+
+`StoreCustomProperties<State, Store>` is generic over both the concrete
+store state and the full store instance. Plugin augmentations such as
+`$history`, `$timeTravel`, and `$persist` can therefore preserve the actual
+store state instead of collapsing to a broad record type.
 
 When a plugin wants stricter compile-time checking for the object it returns,
 prefer `defineStateManagerPlugin()` with an explicit augmentation type rather
@@ -94,6 +99,11 @@ mutations.
 `SyncMessage` is the wire format for cross-context synchronization. `mutationId`
 must increase monotonically per origin, while `timestamp` participates in
 cross-origin last-write-wins ordering.
+
+`SyncMessage<State>` uses `object` for its state payload because one sync plugin
+instance can publish many different store shapes through the same manager. At
+runtime, inbound messages are still validated as object payloads and filtered to
+the current store’s known keys before they are patched.
 
 `AsyncPluginOptions` controls which actions are tracked and how concurrency is
 handled. `include` can also be used as an explicit opt-in for promise-returning

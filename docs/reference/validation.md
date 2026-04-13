@@ -23,6 +23,9 @@ validate?: (state: State) => boolean | string;
 onValidationError?: (error: string) => void;
 ```
 
+`state` is inferred from the actual store state, including interface-based
+option stores, so validation callbacks keep full field-level IntelliSense.
+
 ## Validation outcomes
 
 Validation runs after the patch is applied.

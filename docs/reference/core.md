@@ -29,6 +29,11 @@ export const useCounterStore = defineStore('counter', {
 });
 ```
 
+Option-store `state()` must return a plain object at runtime. Stately rejects
+common non-plain shapes such as arrays, `Date`, `Map`, `Set`, and promises at
+compile time for option stores, but the runtime shell still performs the final
+prototype check when the store is created.
+
 If your state includes `Map`, `Set`, `Date`, or URL-like primitives, prefer
 Svelte reactive built-ins (`SvelteMap`, `SvelteSet`, `SvelteDate`, `SvelteURL`)
 to keep updates predictable.
@@ -143,6 +148,8 @@ const { count, doubleCount } = storeToRefs(counter);
 ```
 
 It skips methods and `$`-prefixed shell helpers, so it is safe to use on full store instances.
+State and getter refs preserve the concrete property types from the source
+store instead of degrading to `unknown`.
 
 ## Store helper surface
 
