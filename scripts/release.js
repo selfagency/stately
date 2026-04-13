@@ -11,7 +11,7 @@
  *   4.  Update package.json to the requested version and prepend release notes to CHANGELOG.md.
  *   5.  Commit and push to main.
  *   6.  Poll GitHub Actions until the CI workflow passes on that commit.
- *   7.  Create an annotated tag and push it.
+ *   7.  Dispatch the Release workflow via the GitHub API (it creates the tag and publishes the Release).
  *   8.  Poll GitHub Actions until the Release workflow completes.
  *   9.  Build dist/ and publish to npm (--no-provenance when running locally).
  *
@@ -73,8 +73,12 @@ async function rollback(tag) {
 				try {
 					await octokit.git.deleteRef({ owner: OWNER, repo: REPO, ref: `tags/${tag}` });
 					console.error(`↩️  Remote tag ${tag} deleted.`);
-				} catch {
-					console.error(`⚠️  Could not delete remote tag ${tag} — repository rules may prevent it.`);
+				} catch (apiErr) {
+					const detail =
+						apiErr instanceof Error
+							? `${apiErr.message}${apiErr.status ? ` (HTTP ${apiErr.status})` : ''}`
+							: String(apiErr);
+					console.error(`⚠️  Could not delete remote tag ${tag} via API: ${detail}`);
 					console.error(`   Delete it manually at: https://github.com/${OWNER}/${REPO}/releases/tag/${tag}`);
 				}
 			} else {
@@ -398,8 +402,9 @@ async function main() {
 	// Rather than pushing the tag locally (which would be rejected), we dispatch
 	// the release.yml workflow.  The workflow's GITHUB_TOKEN is in the bypass list
 	// and will create the annotated tag, build the package, and publish the release.
-	// The workflow's own verification (tag must equal the latest main commit and CI
-	// must have passed) guards against a concurrent push to main in the interim.
+	// The workflow re-fetches the latest main SHA right before comparing against the
+	// tag, so a concurrent push to main between dispatch and verification will be
+	// caught and the release will be blocked.
 	console.log(`🏷️  Dispatching release workflow for ${tag}…`);
 	await octokit.actions.createWorkflowDispatch({
 		owner: OWNER,

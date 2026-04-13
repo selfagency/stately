@@ -1,6 +1,5 @@
 # Releasing Stately
 
-This repository uses Changesets to manage npm versions and changelog entries.
 The published npm artifact comes from `dist/`, not from the workspace root package manifest.
 
 ## Normal maintainer flow
@@ -16,8 +15,8 @@ The script handles the entire flow end-to-end:
 
 1. Verifies npm credentials and GitHub auth (`GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth login`).
 2. Confirms the working tree is clean and HEAD is on `main`.
-3. Runs `changeset version` to consume any pending changesets and update `CHANGELOG.md`.
-4. Asserts the requested version in `package.json`.
+3. Generates release notes for the new version via the GitHub API (commits since the previous tag).
+4. Updates `package.json` to the requested version and prepends the release notes to `CHANGELOG.md`.
 5. Commits the version bump and changelog, then pushes to `main`.
 6. Polls GitHub Actions until the **CI** workflow passes on that commit.
 7. Dispatches the **Release** workflow via the GitHub API, which creates the annotated tag and publishes the GitHub Release. (Tag creation happens inside the workflow so that the `GITHUB_TOKEN` actor — which is in the repository ruleset bypass list — performs the ref creation.)
