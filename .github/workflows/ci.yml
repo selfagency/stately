@@ -60,7 +60,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: timeout 90s pnpm exec playwright install --with-deps chromium
 
       - name: Run type and Svelte checks
         run: pnpm run check
