@@ -406,7 +406,7 @@ async function main() {
 		repo: REPO,
 		workflow_id: 'release.yml',
 		ref: 'main',
-		inputs: { version },
+		inputs: { version }
 	});
 	// Optimistically flag that the workflow will create the remote tag so that
 	// rollback knows to attempt deletion if anything fails before npm publish.
