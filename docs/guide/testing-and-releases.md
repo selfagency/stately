@@ -13,6 +13,19 @@ pnpm run test
 pnpm run build
 ```
 
+## Type-level tests
+
+The test suite includes a dedicated `types.test-d.ts` file that uses Vitest's
+`expectTypeOf` API to verify compile-time type inference. These tests run
+automatically as part of `pnpm run test` through the `typechecking` Vitest
+project and cover:
+
+- Option and setup store type flow (`$state`, `$patch`, `$subscribe`, `$onAction`)
+- Setup store `$state`/`$patch` excluding action functions
+- `storeToRefs` filtering and ref wrapping
+- Plugin augmentation properties (`$persist`, `$history`, `$timeTravel`, `$async`, `$fsm`)
+- Compile-time rejection of non-plain option store state shapes
+
 ## Local contributor hooks
 
 - `pre-commit` runs `pnpm run validate:staged`

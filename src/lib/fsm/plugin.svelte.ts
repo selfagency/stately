@@ -1,7 +1,7 @@
 import type { StoreCustomProperties, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
-import type { StateManagerPlugin } from '../root/types.js';
+import type { StateManagerPlugin, StoreDefinition } from '../root/types.js';
 import { createFsmController } from './fsm-controller.svelte.js';
-import type { FsmController, FsmDefinition } from './types.js';
+import type { FsmController, FsmDefinition, FsmStateDefinition } from './types.js';
 
 interface FsmStore<State extends object = StoreState> {
 	readonly $id: string;
@@ -40,13 +40,18 @@ function readFsmOptions(value: unknown): FsmDefinition | undefined {
 		return undefined;
 	}
 
-	return fsm as unknown as FsmDefinition;
+	return {
+		initial: fsm.initial,
+		states: fsm.states as Record<string, FsmStateDefinition>
+	};
 }
 
 const FSM_STATE_KEY = '__stately_fsm';
 type FsmPatchedState<State extends object> = State & { [FSM_STATE_KEY]?: string };
 
-export function createFsmPlugin(): StateManagerPlugin {
+type FsmPluginAugmentation = Pick<StoreCustomProperties, '$fsm'>;
+
+export function createFsmPlugin(): StateManagerPlugin<StoreDefinition, FsmStore, FsmPluginAugmentation> {
 	return ({ options, store }) => {
 		if (!isFsmStore(store)) {
 			return;
@@ -92,6 +97,6 @@ export function createFsmPlugin(): StateManagerPlugin {
 				matches: controller.matches.bind(controller),
 				can: controller.can.bind(controller)
 			}
-		} as Partial<StoreCustomProperties>;
+		} satisfies FsmPluginAugmentation;
 	};
 }

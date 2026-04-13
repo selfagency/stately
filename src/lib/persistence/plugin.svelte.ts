@@ -65,7 +65,25 @@ function readPersistOptions<State extends object>(value: unknown): PersistOption
 		throw new Error('Invalid persist configuration: pick and omit cannot be used together.');
 	}
 
-	return persist as unknown as PersistOptions<State>;
+	const result: PersistOptions<State> = {
+		adapter: persist.adapter,
+		version: persist.version
+	};
+
+	if (persist.key !== undefined) result.key = persist.key as string;
+	if (persist.pick !== undefined) result.pick = persist.pick as (keyof State)[];
+	if (persist.omit !== undefined) result.omit = persist.omit as (keyof State)[];
+	if (persist.compression !== undefined)
+		result.compression = persist.compression as PersistOptions<State>['compression'];
+	if (persist.serialize !== undefined) result.serialize = persist.serialize as PersistOptions<State>['serialize'];
+	if (persist.deserialize !== undefined)
+		result.deserialize = persist.deserialize as PersistOptions<State>['deserialize'];
+	if (persist.migrate !== undefined) result.migrate = persist.migrate as PersistOptions<State>['migrate'];
+	if (persist.onError !== undefined) result.onError = persist.onError as PersistOptions<State>['onError'];
+	if (persist.debounce !== undefined) result.debounce = persist.debounce as number;
+	if (persist.ttl !== undefined) result.ttl = persist.ttl as number;
+
+	return result;
 }
 
 type PersistencePluginAugmentation = Pick<StoreCustomProperties, '$persist'>;

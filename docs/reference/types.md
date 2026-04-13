@@ -14,6 +14,9 @@ no guesswork, no unpleasant surprises.
 - `StoreDefinition` — the callable definition returned by `defineStore()`
 - `StoreInstance` — the fully materialized store type
 - `StoreState`, `StoreGetters`, `StoreActions` — helper aliases used by inference
+- `SetupStoreState` — mapped type that filters action functions from a setup
+  store's return type, used internally to type `$state` and `$patch()` for
+  setup stores so they only expose data properties
 
 ## Store hook types
 
@@ -52,6 +55,10 @@ store state instead of collapsing to a broad record type.
 When a plugin wants stricter compile-time checking for the object it returns,
 prefer `defineStateManagerPlugin()` with an explicit augmentation type rather
 than returning an untyped object literal.
+
+All built-in plugin factories return explicitly typed `StateManagerPlugin`
+values with proper augmentation generics, so `.use()` chains preserve
+IntelliSense for the properties each plugin adds to stores.
 
 ## Persistence types
 

@@ -22,6 +22,9 @@ export default defineConfig({
 	],
 	test: {
 		expect: { requireAssertions: true },
+		typecheck: {
+			include: ['src/**/*.test-d.ts']
+		},
 		coverage: {
 			provider: 'v8',
 			include: ['src/lib/**'],
@@ -65,6 +68,20 @@ export default defineConfig({
 					environment: 'node',
 					include: ['src/**/*.{test,spec}.{js,ts}'],
 					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
+				}
+			},
+
+			{
+				extends: './vite.config.ts',
+				test: {
+					name: 'typechecking',
+					expect: { requireAssertions: false },
+					typecheck: {
+						enabled: true,
+						include: ['src/**/*.test-d.ts'],
+						ignoreSourceErrors: true
+					},
+					include: ['src/**/*.test-d.ts']
 				}
 			}
 		]

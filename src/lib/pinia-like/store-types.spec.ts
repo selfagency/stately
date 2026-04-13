@@ -102,20 +102,6 @@ describe('store-types', () => {
 		expectTypeOf(store.merge).toBeFunction();
 	});
 
-	it('rejects obvious non-plain option store state shapes at compile time', () => {
-		defineStore('invalid-array-state', {
-			// @ts-expect-error option store state must be a plain-object-like shape, not an array
-			state: () => ['count'] as string[]
-		});
-
-		defineStore('invalid-date-state', {
-			// @ts-expect-error option store state must be a plain-object-like shape, not a Date instance
-			state: () => new Date()
-		});
-
-		expect(true).toBe(true);
-	});
-
 	it('types subscribe selectors and equality functions consistently', () => {
 		const manager = createStateManager();
 		const useCounterStore = defineStore('selector-types', {

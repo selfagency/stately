@@ -75,6 +75,12 @@ const useCounterStore = defineStore('counter', {
 });
 ```
 
+For both store styles, `$state` and `$patch()` are typed to expose only data
+properties. In option stores this follows naturally from the separate `state`,
+`getters`, and `actions` sections. In setup stores, Stately automatically
+filters action functions out of `$state` and `$patch()` so they only contain
+the non-function members of the setup return value.
+
 Use `defineStore()` when you want one store identity that can be shared across components and plugins.
 In SSR, instantiate the store through a request-scoped manager rather than relying on a singleton.
 

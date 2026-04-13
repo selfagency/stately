@@ -1,6 +1,6 @@
 import { readMarker } from '../internal/marker-helpers.js';
 import type { StoreCustomProperties, StoreState } from '../pinia-like/store-types.js';
-import type { StateManagerPlugin } from '../root/types.js';
+import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 import type { ConcurrencyMode } from './concurrency.js';
 import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
@@ -21,16 +21,16 @@ declare module '../pinia-like/store-types.js' {
 	}
 }
 
-function isAsyncTrackableStore(value: unknown): value is StoreCustomProperties & Record<string, unknown> {
-	return typeof value === 'object' && value !== null;
-}
+type AsyncPluginAugmentation = Pick<StoreCustomProperties, '$async'>;
 
-export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManagerPlugin {
-	return ({ store }) => {
-		if (!isAsyncTrackableStore(store)) {
-			return;
-		}
-
+export function createAsyncPlugin(
+	options: AsyncPluginOptions = {}
+): StateManagerPlugin<StoreDefinition, StoreCustomProperties & Record<string, unknown>, AsyncPluginAugmentation> {
+	return defineStateManagerPlugin<
+		StoreDefinition,
+		StoreCustomProperties & Record<string, unknown>,
+		AsyncPluginAugmentation
+	>(({ store }) => {
 		const registry: AsyncActionRegistry = {};
 		for (const key of Object.keys(store)) {
 			if (String(key).startsWith('$')) {
@@ -74,5 +74,5 @@ export function createAsyncPlugin(options: AsyncPluginOptions = {}): StateManage
 		return {
 			$async: registry
 		};
-	};
+	});
 }

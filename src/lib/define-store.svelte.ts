@@ -48,8 +48,8 @@ type OptionStoreInstance<
 > = StoreInstance<Id, StoreState<OptionStoreStateShape<State>>, OptionStoreComputed<Getters>, StoreActions<Actions>>;
 
 export interface DefineSetupStoreOptions<Store extends AnyObject> extends DefineStoreOptionsBase<
-	StoreState<Store>,
-	StoreInstance<string, StoreState<Store>>
+	StoreState<SetupStoreState<Store>>,
+	StoreInstance<string, StoreState<SetupStoreState<Store>>>
 > {
 	setup: () => Store;
 }
@@ -69,6 +69,13 @@ export interface DefineStoreOptions<
 }
 
 type SetupStoreFactory<Store extends AnyObject> = () => Store;
+
+// Extract only non-function properties from a setup store's return type.
+// This mirrors the runtime classification in createSetupStore where
+// methods become actions and remaining properties are state/getters.
+type SetupStoreState<Store extends AnyObject> = {
+	[K in keyof Store as Store[K] extends AnyFunction ? never : K]: Store[K];
+};
 
 function isObject(value: unknown): value is AnyObject {
 	return typeof value === 'object' && value !== null;
@@ -127,7 +134,7 @@ export function defineStore<Id extends string, Store extends AnyObject>(
 	setup: SetupStoreFactory<Store>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<Store>,
+	StoreState<SetupStoreState<Store>>,
 	StoreGetters<Record<never, never>>,
 	StoreActions<{
 		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;
@@ -138,7 +145,7 @@ export function defineStore<Id extends string, Store extends AnyObject>(
 	setup: DefineSetupStoreOptions<Store>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<Store>,
+	StoreState<SetupStoreState<Store>>,
 	StoreGetters<Record<never, never>>,
 	StoreActions<{
 		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;

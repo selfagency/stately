@@ -82,8 +82,8 @@ export const useCounterStore = defineStore('counter', {
 Every store instance provides a consistent set of built-in helpers:
 
 - `$id`: The unique identifier of the store.
-- `$state`: Direct access to the state object.
-- `$patch()`: Apply partial updates or grouped mutations.
+- `$state`: Direct access to the state object (excludes action methods for setup stores).
+- `$patch()`: Apply partial updates or grouped mutations (typed to match `$state`).
 - `$reset()`: Revert the store to its initial state.
 - `$subscribe()`: Watch for state changes.
 - `$onAction()`: Intercept or observe action execution.
@@ -164,6 +164,27 @@ store.$onAction(({ args, before }) => {
 
 - Returning `false` from a `before()` guard cancels the action.
 - Cancelled actions return `undefined` and do not trigger `after()` or `onError()` hooks.
+
+## Type behavior differences
+
+For **option stores**, Stately infers `$state` and `$patch()` directly from the
+object returned by `state()`. Getters and actions live alongside state on the
+store instance but are excluded from `$state` and `$patch()` by design.
+
+For **setup stores**, the setup function returns a single object that may mix
+data properties and methods. Stately automatically filters action functions out
+of `$state` and `$patch()` so they only expose data properties. This means you
+can safely read and patch state without actions leaking into the type:
+
+```ts
+const prefs = usePreferencesStore(manager);
+
+// $state only contains data properties — no toggleTheme or setCompact
+prefs.$state; // { theme: 'light' | 'dark'; compact: boolean }
+
+// $patch matches $state
+prefs.$patch({ theme: 'dark' });
+```
 
 ## Choosing a Store Style
 

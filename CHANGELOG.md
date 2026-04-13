@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Setup store `$state` and `$patch` now exclude action functions.** Previously,
+  `$state` and `$patch()` on setup stores included action methods in their types.
+  They now correctly expose only data properties, matching option store behavior.
+- **Plugin factories return strongly typed `StateManagerPlugin`.** All built-in
+  plugin factories (`createPersistencePlugin`, `createHistoryPlugin`,
+  `createSyncPlugin`, `createAsyncPlugin`, `createFsmPlugin`) now return
+  explicitly typed plugin values with proper augmentation generics, giving
+  consumers better IntelliSense when chaining `.use()` calls.
+- **Eliminated unsafe double-casts in persistence and FSM plugins.** Internal
+  `as unknown as X` patterns replaced with constructed typed objects that
+  use single-field assertions.
+
+### Added
+
+- **Compile-time type test suite.** A dedicated `types.test-d.ts` file with 30
+  type-level tests using Vitest's `expectTypeOf` API, covering option stores,
+  setup stores, plugin augmentation, `storeToRefs`, selective subscriptions,
+  and compile-time rejection of invalid state shapes.
+
 ## [0.1.3] - 2026-04-13
 
 ## What's Changed
