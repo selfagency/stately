@@ -65,6 +65,45 @@ describe('store-types', () => {
 		expect(true).toBe(true);
 	});
 
+	it('types option-store action this as the full store instance', () => {
+		interface AppState {
+			count: number;
+			label: string;
+		}
+
+		const manager = createStateManager();
+		const useAppStateStore = defineStore('app-state-typing', {
+			state: (): AppState => ({ count: 0, label: 'ready' }),
+			actions: {
+				merge(state: Partial<AppState>) {
+					expectTypeOf(this.$id).toEqualTypeOf<'app-state-typing'>();
+					expectTypeOf(this.$state).toEqualTypeOf<AppState>();
+					expectTypeOf(this.$state.count).toEqualTypeOf<number>();
+					expectTypeOf(this.$patch).toEqualTypeOf<
+						(partial: Partial<AppState> | ((state: AppState) => void)) => void
+					>();
+					expectTypeOf(this.$reset).toEqualTypeOf<() => void>();
+					expectTypeOf(this.$dispose).toEqualTypeOf<() => void>();
+					expectTypeOf(this.set).toEqualTypeOf<(value: AppState) => void>();
+					expectTypeOf(this.subscribe).toBeFunction();
+					expectTypeOf(this.$subscribe).toBeFunction();
+					expectTypeOf(this.$onAction).toBeFunction();
+					const stop = this.$subscribe(() => undefined, { detached: true });
+					stop();
+					this.$patch(state);
+					return this.$id;
+				}
+			}
+		});
+
+		const store = useAppStateStore(manager);
+		const id = store.merge({ count: 1 });
+
+		expect(id).toBe('app-state-typing');
+		expect(store.count).toBe(1);
+		expectTypeOf(store.merge).toBeFunction();
+	});
+
 	it('rejects obvious non-plain option store state shapes at compile time', () => {
 		defineStore('invalid-array-state', {
 			// @ts-expect-error option store state must be a plain-object-like shape, not an array
