@@ -5,7 +5,9 @@ status: completed
 type: task
 priority: high
 created_at: 2026-04-13T15:11:13Z
-updated_at: 2026-04-13T15:36:28Z
+updated_at: 2026-04-13T15:51:38Z
+branch: fix/coym-history-time-travel-state-typing
+pr: 23
 ---
 
 ## Todo
@@ -22,9 +24,17 @@ updated_at: 2026-04-13T15:36:28Z
 
 ## Summary of Changes
 
-- Made `StoreCustomProperties` and related plugin augmentation plumbing generic over concrete store state so plugins can preserve typed state instead of erasing it to `Record<string, unknown>`.
-- Updated history/time-travel controllers and plugin augmentation to preserve concrete snapshot types through `$history` and `$timeTravel`, with new type-focused regression coverage.
-- Updated validation, persistence, and sync public hooks/messages to preserve concrete state types in callbacks, envelopes, and typed sync messages.
-- Reduced unnecessary internal state erasure in FSM patch/subscription helpers and `storeToRefs()`.
-- Addressed carry-over review feedback by tightening option-store state checks and restoring `defineStore(...persist...)` exclusivity coverage.
-- Verified the branch with `pnpm run check`, `pnpm run lint`, `pnpm run test`, and `pnpm run build`.
+- Made `StoreCustomProperties` and related plugin augmentation plumbing generic over
+  concrete store state so plugins can preserve typed state instead of erasing it to
+  `Record<string, unknown>`.
+- Updated history/time-travel controllers and plugin augmentation to preserve
+  concrete snapshot types through `$history` and `$timeTravel`, with new type-focused
+  regression coverage.
+- Updated validation, persistence, and sync public hooks/messages to preserve
+  concrete state types in callbacks, envelopes, and typed sync messages.
+- Reduced unnecessary internal state erasure in FSM patch/subscription helpers and
+  `storeToRefs()`.
+- Addressed carry-over review feedback by tightening option-store state checks and
+  restoring `defineStore(...persist...)` exclusivity coverage.
+- Verified the branch with `pnpm run check`, `pnpm run lint`, `pnpm run test`, and
+  `pnpm run build`.
