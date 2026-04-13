@@ -20,7 +20,7 @@ The script handles the entire flow end-to-end:
 4. Asserts the requested version in `package.json`.
 5. Commits the version bump and changelog, then pushes to `main`.
 6. Polls GitHub Actions until the **CI** workflow passes on that commit.
-7. Creates an annotated tag (`v<version>`) and pushes it.
+7. Dispatches the **Release** workflow via the GitHub API, which creates the annotated tag and publishes the GitHub Release. (Tag creation happens inside the workflow so that the `GITHUB_TOKEN` actor — which is in the repository ruleset bypass list — performs the ref creation.)
 8. Polls GitHub Actions until the **Release** workflow completes and the GitHub Release is published.
 9. Builds `dist/` and runs `npm publish ./dist`.
 
@@ -30,6 +30,7 @@ If anything fails after the commit has been pushed, the script rolls back the re
 
 - Authenticated with npm: `npm login` or `NPM_TOKEN` set in your environment.
 - Authenticated with GitHub: `GH_TOKEN` / `GITHUB_TOKEN` env var, or `gh auth login`.
+  - The token must have the **`workflow`** scope (needed to dispatch the release workflow via the API).
 - Node.js ≥ 20 (uses native `fetch` for GitHub API calls).
 - Must be on the `main` branch with a clean working tree.
 
@@ -56,11 +57,10 @@ The release build also removes generated spec files and other test-only artifact
 
 ## GitHub Release workflow
 
-The `.github/workflows/release.yml` workflow fires on every `v*` tag push. It:
+The `.github/workflows/release.yml` workflow fires in two ways:
 
-1. Verifies the tag points to the latest `main` commit and that CI passed on it.
-2. Rebuilds the package from source.
-3. Packs a tarball and attaches it to the GitHub Release.
+- **`workflow_dispatch`** (normal flow): the release script dispatches it after CI passes. The workflow creates the annotated tag using `GITHUB_TOKEN` (which is in the repository bypass list for the tag-creation ruleset), then builds the package and publishes the GitHub Release.
+- **`push: tags` (manual/fallback)**: a maintainer who has direct bypass on the tag ruleset may push a `v*` tag directly; the workflow then verifies it points to the latest `main` commit, CI passed on it, and proceeds to the build and release steps.
 
 **The GitHub workflow does not publish to npm.** npm publishing is done locally by the release script.
 
