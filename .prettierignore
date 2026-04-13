@@ -8,5 +8,4 @@ bun.lockb
 # Miscellaneous
 /static/
 /.agents/
-src/lib/inspector/style.css
 CHANGELOG.md
