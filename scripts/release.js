@@ -121,7 +121,7 @@ function run(command, args, { allowFailure = false, capture = false } = {}) {
 	});
 
 	if (result.status !== 0 && !allowFailure) {
-		process.exit(result.status ?? 1);
+		throw new Error(`Command failed: ${command} ${args.join(' ')} (exit ${result.status ?? 1})`);
 	}
 
 	return { status: result.status ?? 0, stdout: (result.stdout ?? '').trim() };

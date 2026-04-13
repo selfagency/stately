@@ -100,7 +100,6 @@
 		"test": "pnpm run build:inspector-css && vitest run",
 		"test:coverage": "pnpm run build:inspector-css && vitest run --coverage",
 		"test:unit": "pnpm run build:inspector-css && vitest",
-		"validate:pre-push": "pnpm run check && pnpm run test",
 		"validate:staged": "lint-staged",
 		"watch:inspector-css": "node scripts/build-inspector-css.js --watch"
 	},
