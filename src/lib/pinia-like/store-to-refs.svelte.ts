@@ -45,7 +45,7 @@ function resolveDescriptor(value: object, key: string): PropertyDescriptor | und
 
 export function storeToRefs<Store extends AnyRecord>(store: Store): StoreRefs<Store> {
 	const refs = {} as StoreRefs<Store>;
-	const source = store as Record<string, unknown>;
+	const source = store;
 
 	for (const rawKey of collectKeys(store)) {
 		const key = rawKey as keyof Store;

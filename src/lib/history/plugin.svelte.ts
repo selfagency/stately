@@ -1,9 +1,9 @@
-import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { createHistoryController, type HistoryController } from './history-controller.svelte.js';
 import { createTimeTravelController, type TimeTravelController } from './time-travel.svelte.js';
 
-interface HistoryStore<State = Record<string, unknown>> {
+interface HistoryStore<State extends object = StoreState> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
@@ -16,9 +16,10 @@ interface HistoryOptions {
 }
 
 declare module '../pinia-like/store-types.js' {
-	interface StoreCustomProperties {
-		$history: HistoryController<Record<string, unknown>>;
-		$timeTravel: TimeTravelController<Record<string, unknown>>;
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
+		$history: HistoryController<State>;
+		$timeTravel: TimeTravelController<State>;
 	}
 }
 
@@ -26,7 +27,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
-function isHistoryStore(value: unknown): value is HistoryStore<Record<string, unknown>> {
+function isHistoryStore(value: unknown): value is HistoryStore {
 	return isRecord(value) && '$state' in value && '$patch' in value && '$subscribe' in value;
 }
 
@@ -38,8 +39,8 @@ function readHistoryOptions(value: unknown): HistoryOptions | undefined {
 	return value.history as HistoryOptions;
 }
 
-function snapshotOf(store: HistoryStore<Record<string, unknown>>) {
-	return structuredClone($state.snapshot(store.$state)) as Record<string, unknown>;
+function snapshotOf<State extends object>(store: HistoryStore<State>): State {
+	return structuredClone($state.snapshot(store.$state)) as State;
 }
 
 export function createHistoryPlugin(): StateManagerPlugin {

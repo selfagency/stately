@@ -11,13 +11,13 @@ export type StoreGetters<TGetters extends object = object> = TGetters;
 
 export type StoreActions<TActions extends RecordWithFunctions = RecordWithFunctions> = TActions;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface StoreCustomProperties {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
+export interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
 	// plugins can augment store instances by extending this interface
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface StoreCustomStateProperties {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
+export interface StoreCustomStateProperties<State extends StoreState = StoreState> {
 	// plugins can augment store state by extending this interface
 }
 
@@ -55,7 +55,7 @@ export type StoreInstance<
 > = State &
 	Readonly<Getters> &
 	Actions &
-	StoreCustomProperties &
+	StoreCustomProperties<State, StoreInstance<Id, State, Getters, Actions>> &
 	StoreShellMethods<Id, State, StoreInstance<Id, State, Getters, Actions>>;
 
 export interface StoreDefinition<

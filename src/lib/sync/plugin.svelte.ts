@@ -1,12 +1,12 @@
 import { sanitizeValue } from '../internal/sanitize.js';
-import type { StoreMutationContext } from '../pinia-like/store-types.js';
+import type { StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
 import type { SyncMessage, SyncTransport } from './types.js';
 
-interface SyncStore<State = Record<string, unknown>> {
+interface SyncStore<State extends object = StoreState> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
@@ -24,10 +24,11 @@ export interface SyncPluginOptions<Message extends SyncMessage = SyncMessage> {
 	createTimestamp?: () => number;
 	/**
 	 * Produce the outgoing `Message` from a fully-populated `SyncMessage` base.
-	 * Required when `Message` extends `SyncMessage` with additional fields;
-	 * omit when `Message` is exactly `SyncMessage`.
+	 * The callback is manager-wide, so its input is intentionally state-agnostic.
+	 * Required when `Message` extends `SyncMessage` with additional fields; omit when
+	 * `Message` is exactly `SyncMessage`.
 	 */
-	createMessage?: (base: SyncMessage) => Message;
+	createMessage?: (base: SyncMessage<object>) => Message;
 }
 
 interface SyncMutationClock {
@@ -103,6 +104,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 		if (!isSyncStore(store)) {
 			return;
 		}
+		const syncedStore = store;
 
 		if (typeof window === 'undefined' && !options.transports) {
 			return;
@@ -125,9 +127,9 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Map; used in event handler closures, not reactive context
 		const receivedMutationIds = new Map<string, number>();
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Set; used for key lookup only, not reactive
-		const knownStateKeys = new Set(Object.keys(store.$state));
+		const knownStateKeys = new Set(Object.keys(syncedStore.$state as Record<string, unknown>));
 
-		function filterToKnownKeys(remote: Record<string, unknown>): Record<string, unknown> | undefined {
+		function filterToKnownKeys(remote: object): Partial<typeof syncedStore.$state> | undefined {
 			const filtered: Record<string, unknown> = {};
 			let hasKnownKey = false;
 			for (const key of Object.keys(remote)) {
@@ -137,7 +139,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 					hasKnownKey = true;
 				}
 			}
-			return hasKnownKey ? filtered : undefined;
+			return hasKnownKey ? (filtered as Partial<typeof syncedStore.$state>) : undefined;
 		}
 
 		const unsubscribeRemote = transports.map((transport) =>
@@ -148,7 +150,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 						return;
 					}
 
-					if (parsed.storeId !== store.$id || parsed.origin === origin) {
+					if (parsed.storeId !== syncedStore.$id || parsed.origin === origin) {
 						return;
 					}
 
@@ -179,7 +181,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 
 					applyingRemote = true;
 					try {
-						store.$patch(validatedState);
+						syncedStore.$patch(validatedState);
 						latestAppliedClock = incomingClock;
 						rememberOriginMutation(receivedMutationIds, parsed.origin, parsed.mutationId);
 					} finally {
@@ -191,22 +193,22 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			})
 		);
 
-		const unsubscribeStore = store.$subscribe(() => {
-			if (applyingRemote || isReplayActive(store)) {
+		const unsubscribeStore = syncedStore.$subscribe(() => {
+			if (applyingRemote || isReplayActive(syncedStore)) {
 				return;
 			}
 
 			const mutationId = createId ? createId() : ++nextOutgoingId;
 			const timestamp = createTimestamp();
-			const base: SyncMessage = {
-				storeId: store.$id,
+			const base = {
+				storeId: syncedStore.$id,
 				origin,
 				version,
 				mutationId,
 				timestamp,
-				state: $state.snapshot(store.$state) as Record<string, unknown>
-			};
-			const message = (options.createMessage?.(base) ?? base) as Message;
+				state: $state.snapshot(syncedStore.$state) as typeof syncedStore.$state
+			} satisfies SyncMessage<object>;
+			const message: Message = options.createMessage ? options.createMessage(base) : (base as Message);
 			latestAppliedClock = {
 				origin,
 				mutationId,
@@ -222,8 +224,8 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			}
 		});
 
-		const dispose = store.$dispose.bind(store);
-		Object.defineProperty(store, '$dispose', {
+		const dispose = syncedStore.$dispose.bind(syncedStore);
+		Object.defineProperty(syncedStore, '$dispose', {
 			value() {
 				unsubscribeStore();
 				for (const unsubscribe of unsubscribeRemote) {

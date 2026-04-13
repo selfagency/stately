@@ -65,6 +65,20 @@ describe('store-types', () => {
 		expect(true).toBe(true);
 	});
 
+	it('rejects obvious non-plain option store state shapes at compile time', () => {
+		defineStore('invalid-array-state', {
+			// @ts-expect-error option store state must be a plain-object-like shape, not an array
+			state: () => ['count'] as string[]
+		});
+
+		defineStore('invalid-date-state', {
+			// @ts-expect-error option store state must be a plain-object-like shape, not a Date instance
+			state: () => new Date()
+		});
+
+		expect(true).toBe(true);
+	});
+
 	it('types subscribe selectors and equality functions consistently', () => {
 		const manager = createStateManager();
 		const useCounterStore = defineStore('selector-types', {
@@ -117,6 +131,18 @@ describe('store-types', () => {
 			pick: ['count'],
 			omit: ['label']
 		};
+		const invalidPersistDefinition = {
+			state: () => ({ count: 0, label: 'ready' }),
+			persist: {
+				adapter,
+				version: 1,
+				pick: ['count'] as const,
+				omit: ['label'] as const
+			}
+		};
+
+		// @ts-expect-error pick and omit are mutually exclusive through defineStore persist typing too
+		defineStore('invalid-persist-options', invalidPersistDefinition);
 
 		expect(invalidPersistOptions).toBeDefined();
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
 import { createHistoryPlugin } from './plugin.svelte.js';
@@ -27,5 +27,27 @@ describe('createHistoryPlugin', () => {
 		expect(counter.count).toBe(2);
 		counter.$history.redo();
 		expect(counter.count).toBe(4);
+	});
+
+	it('preserves interface-based state types through $history and $timeTravel', () => {
+		interface HistoryState {
+			count: number;
+			label: string;
+		}
+
+		const manager = createStateManager().use(createHistoryPlugin());
+		const useStore = defineStore('typed-history-store', {
+			state: (): HistoryState => ({ count: 0, label: 'ready' }),
+			history: { limit: 5 }
+		});
+		const store = useStore(manager);
+
+		store.count = 1;
+
+		expectTypeOf(store.$history.entries[0]!.snapshot.count).toEqualTypeOf<number>();
+		expectTypeOf(store.$history.entries[0]!.snapshot.label).toEqualTypeOf<string>();
+		expectTypeOf(store.$timeTravel.entries[0]!.snapshot.count).toEqualTypeOf<number>();
+		expectTypeOf(store.$timeTravel.entries[0]!.snapshot.label).toEqualTypeOf<string>();
+		expect(store.$history.entries.at(-1)?.snapshot).toEqual({ count: 1, label: 'ready' });
 	});
 });

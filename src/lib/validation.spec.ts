@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
 import { createValidationPlugin } from './validation/plugin.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
@@ -8,7 +8,7 @@ describe('validation plugin', () => {
 		const manager = createStateManager().use(createValidationPlugin());
 		const useStore = defineStore('val-reject', {
 			state: () => ({ count: 0 }),
-			validate: (state) => (state as { count: number }).count >= 0
+			validate: (state) => state.count >= 0
 		});
 		const store = useStore(manager);
 
@@ -20,7 +20,7 @@ describe('validation plugin', () => {
 		const manager = createStateManager().use(createValidationPlugin());
 		const useStore = defineStore('val-string', {
 			state: () => ({ name: '' }),
-			validate: (state) => ((state as { name: string }).name.length > 0 ? true : 'Name is required')
+			validate: (state) => (state.name.length > 0 ? true : 'Name is required')
 		});
 		const store = useStore(manager);
 
@@ -31,7 +31,7 @@ describe('validation plugin', () => {
 		const manager = createStateManager().use(createValidationPlugin());
 		const useStore = defineStore('val-allow', {
 			state: () => ({ count: 0 }),
-			validate: (state) => (state as { count: number }).count >= 0
+			validate: (state) => state.count >= 0
 		});
 		const store = useStore(manager);
 
@@ -44,7 +44,7 @@ describe('validation plugin', () => {
 		const manager = createStateManager().use(createValidationPlugin());
 		const useStore = defineStore('val-callback', {
 			state: () => ({ count: 0 }),
-			validate: (state) => ((state as { count: number }).count >= 0 ? true : 'Must be non-negative'),
+			validate: (state) => (state.count >= 0 ? true : 'Must be non-negative'),
 			onValidationError: errorSpy
 		});
 		const store = useStore(manager);
@@ -62,5 +62,26 @@ describe('validation plugin', () => {
 
 		store.$patch({ count: 100 });
 		expect(store.count).toBe(100);
+	});
+
+	it('preserves interface-based state types inside validate callbacks', () => {
+		interface ValidationState {
+			count: number;
+			label: string;
+		}
+
+		const manager = createStateManager().use(createValidationPlugin());
+		const useStore = defineStore('val-typed-interface', {
+			state: (): ValidationState => ({ count: 0, label: 'ready' }),
+			validate(state) {
+				expectTypeOf(state.count).toEqualTypeOf<number>();
+				expectTypeOf(state.label).toEqualTypeOf<string>();
+				return state.count >= 0;
+			}
+		});
+		const store = useStore(manager);
+
+		store.$patch({ count: 2 });
+		expect(store.label).toBe('ready');
 	});
 });

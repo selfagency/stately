@@ -40,6 +40,8 @@ Key behavior:
 - cancels any pending debounced flush before `$persist.clear()` removes stored state
 - supports optional compression and custom serialize/deserialize hooks
 - suppresses writes while replaying history or during explicit pause/rehydrate flows
+- preserves the concrete store state type through custom persistence hooks and
+  `PersistEnvelope<State>`
 
 ```ts
 import {
@@ -77,6 +79,8 @@ Key behavior:
 - replays snapshots without re-triggering history recording
 - avoids persistence and sync feedback loops during time travel
 - exposes `canUndo`, `canRedo`, `entries`, and `currentIndex` through `$history`
+- preserves the concrete store state type through history entries and
+  `$timeTravel.entries`
 
 ### `$timeTravel` controller
 
@@ -144,6 +148,7 @@ Key behavior:
   calls `onValidationError` first if present
 - restores the previous snapshot when `validate()` returns an error string; calls `onValidationError` before throwing
 - restores the previous snapshot and rethrows if `validate()` itself throws
+- preserves the concrete store state type inside `validate(state)` callbacks
 
 Read [Validation](/reference/validation) for the full contract.
 
@@ -184,6 +189,7 @@ Important options:
 - `transports` to supply your own publish/subscribe bridge
 - `createId` for per-origin monotonic mutation ids
 - `createTimestamp` for deterministic tests and cross-origin conflict ordering
+- `createMessage` to attach extra metadata to outgoing sync payloads
 
 ```ts
 import { createStateManager, createSyncPlugin, defineStore } from '@selfagency/stately';
@@ -193,6 +199,15 @@ const manager = createStateManager().use(createSyncPlugin({ origin: 'local-tab' 
 
 If you need a custom wire format, supply `createMessage`.
 If you need a custom publish/subscribe bridge, supply `transports`.
+
+`createMessage(base)` is intentionally typed against a manager-wide,
+state-agnostic `SyncMessage<object>` input. A single sync plugin instance can
+service many stores with different state shapes, so store-specific narrowing is
+the caller’s responsibility when enriching the outgoing message.
+
+Inbound sync payloads are validated as object state, then filtered to the
+current store’s known keys before patching. That keeps the public transport type
+flexible while matching the runtime safety checks.
 
 ## `createAsyncPlugin(options?)`
 

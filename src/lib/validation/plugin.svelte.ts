@@ -1,6 +1,7 @@
+import type { StoreState } from '../pinia-like/store-types.js';
 import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 
-interface ValidatableStore<State = Record<string, unknown>> {
+interface ValidatableStore<State extends object = StoreState> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
@@ -15,9 +16,11 @@ function isValidatableStore(value: unknown): value is ValidatableStore {
 	return isRecord(value) && '$state' in value && '$patch' in value;
 }
 
-function readValidateOptions(value: unknown):
+function readValidateOptions<State extends object>(
+	value: unknown
+):
 	| {
-			validate: (state: Record<string, unknown>) => boolean | string;
+			validate: (state: State) => boolean | string;
 			onValidationError?: (error: string) => void;
 	  }
 	| undefined {
@@ -25,7 +28,7 @@ function readValidateOptions(value: unknown):
 		return undefined;
 	}
 	return {
-		validate: value.validate as (state: Record<string, unknown>) => boolean | string,
+		validate: value.validate as (state: State) => boolean | string,
 		onValidationError:
 			typeof value.onValidationError === 'function' ? (value.onValidationError as (error: string) => void) : undefined
 	};
@@ -45,7 +48,7 @@ export function createValidationPlugin(): StateManagerPlugin<StoreDefinition, Va
 			return;
 		}
 
-		const config = readValidateOptions(options);
+		const config = readValidateOptions<typeof store.$state>(options);
 		if (!config) {
 			return;
 		}
@@ -57,8 +60,8 @@ export function createValidationPlugin(): StateManagerPlugin<StoreDefinition, Va
 			enumerable: false,
 			configurable: true,
 			writable: true,
-			value(patch: Partial<Record<string, unknown>> | ((state: Record<string, unknown>) => void)) {
-				const snapshot = structuredClone($state.snapshot(validatable.$state)) as Record<string, unknown>;
+			value(patch: Partial<typeof validatable.$state> | ((state: typeof validatable.$state) => void)) {
+				const snapshot = structuredClone($state.snapshot(validatable.$state)) as typeof validatable.$state;
 				const restoreSnapshot = () => {
 					validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
 				};
@@ -67,7 +70,7 @@ export function createValidationPlugin(): StateManagerPlugin<StoreDefinition, Va
 
 				let result: boolean | string | undefined;
 				try {
-					result = config.validate(validatable.$state as Record<string, unknown>);
+					result = config.validate(validatable.$state);
 				} catch (error) {
 					restoreSnapshot();
 					throw error;

@@ -38,6 +38,9 @@ export const useProfileStore = defineStore('profile', {
 });
 ```
 
+`state` is inferred from the actual store definition, so interface-based option
+stores keep their full property types inside `validate()` too.
+
 Validation runs after `$patch()` applies the mutation.
 
 ## What happens on success and failure

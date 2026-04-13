@@ -15,6 +15,24 @@ type AnyObject = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
+type NonPlainObjectState =
+	| readonly unknown[]
+	| AnyFunction
+	| Date
+	| RegExp
+	| Map<unknown, unknown>
+	| Set<unknown>
+	| WeakMap<object, unknown>
+	| WeakSet<object>
+	| Promise<unknown>;
+
+// Compile-time approximation of option-store runtime requirements.
+// This excludes the most common non-plain shapes up front, while createStoreShell()
+// still performs the definitive runtime plain-object prototype check.
+// Note: TypeScript's structural typing cannot fully exclude class instances with
+// custom prototypes — those will pass this check but throw at runtime.
+type OptionStoreStateShape<State extends AnyObject> = State extends NonPlainObjectState ? never : State;
+
 type GetterTree<State extends AnyObject> = StoreGetters<Record<string, (state: State) => unknown>>;
 type ActionTree = StoreActions<Record<string, AnyFunction>>;
 
@@ -27,20 +45,22 @@ export interface DefineSetupStoreOptions<Store extends AnyObject> extends Define
 
 export interface DefineStoreOptions<
 	State extends AnyObject,
-	Getters extends GetterTree<State>,
+	Getters extends GetterTree<OptionStoreStateShape<State>>,
 	Actions extends ActionTree
 > extends DefineStoreOptionsBase<
-	StoreState<State>,
+	StoreState<OptionStoreStateShape<State>>,
 	StoreInstance<
 		string,
-		StoreState<State>,
+		StoreState<OptionStoreStateShape<State>>,
 		{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 		StoreActions<Actions>
 	>
 > {
-	state: () => State;
-	getters?: Getters & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
-	actions?: Actions & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	state: () => OptionStoreStateShape<State>;
+	getters?: Getters &
+		ThisType<OptionStoreStateShape<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	actions?: Actions &
+		ThisType<OptionStoreStateShape<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
 }
 
 type SetupStoreFactory<Store extends AnyObject> = () => Store;
@@ -86,14 +106,14 @@ function assertValidStoreDefinition(
 export function defineStore<
 	Id extends string,
 	State extends AnyObject,
-	Getters extends GetterTree<State> = GetterTree<State>,
+	Getters extends GetterTree<OptionStoreStateShape<State>> = GetterTree<OptionStoreStateShape<State>>,
 	Actions extends ActionTree = ActionTree
 >(
 	id: Id,
 	options: DefineStoreOptions<State, Getters, Actions>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<State>,
+	StoreState<OptionStoreStateShape<State>>,
 	{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 	StoreActions<Actions>
 >;

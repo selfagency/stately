@@ -50,6 +50,10 @@ Important fields:
 `pick` and `omit` are mutually exclusive. Stately enforces that rule both in the types and at runtime.
 Providing both at the same time will throw an error at store registration time.
 
+`serialize(envelope)` and `deserialize(raw)` are typed against the concrete store
+state. Interface-shaped stores therefore keep their full field types inside
+custom persistence hooks instead of degrading to `Record<string, unknown>`.
+
 Example:
 
 ```ts
@@ -179,7 +183,8 @@ not overwrite current durable state with historical snapshots.
 
 The persistence module also exports `PersistEnvelope` and
 `PersistCompression` so consumers can type custom serializers, migrations, or
-storage bridges without guessing at the shape.
+storage bridges without guessing at the shape. `PersistEnvelope<State>`
+preserves the concrete store state through custom persistence pipelines.
 
 ## Related pages
 

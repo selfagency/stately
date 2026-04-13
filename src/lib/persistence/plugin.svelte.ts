@@ -1,11 +1,11 @@
 import { reportStatelyInspectorNotice } from '../inspector/notice.js';
 import { sanitizeValue } from '../internal/sanitize.js';
-import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
 import type { PersistController, PersistOptions, PersistenceAdapter } from './types.js';
 
-interface PersistableStore<State = Record<string, unknown>> {
+interface PersistableStore<State extends object = StoreState> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
@@ -14,7 +14,8 @@ interface PersistableStore<State = Record<string, unknown>> {
 }
 
 declare module '../pinia-like/store-types.js' {
-	interface StoreCustomProperties {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
 		$persist: PersistController;
 	}
 }
@@ -42,7 +43,7 @@ function isReplayActive(store: PersistableStore): boolean {
 	);
 }
 
-function readPersistOptions(value: unknown): PersistOptions | undefined {
+function readPersistOptions<State extends object>(value: unknown): PersistOptions<State> | undefined {
 	if (!isRecord(value) || !('persist' in value)) {
 		return undefined;
 	}
@@ -64,7 +65,7 @@ function readPersistOptions(value: unknown): PersistOptions | undefined {
 		throw new Error('Invalid persist configuration: pick and omit cannot be used together.');
 	}
 
-	return persist as unknown as PersistOptions;
+	return persist as unknown as PersistOptions<State>;
 }
 
 type PersistencePluginAugmentation = Pick<StoreCustomProperties, '$persist'>;
@@ -80,7 +81,7 @@ export function createPersistencePlugin(): StateManagerPlugin<
 				return;
 			}
 
-			const persist = readPersistOptions(options);
+			const persist = readPersistOptions<typeof store.$state>(options);
 			if (!persist) {
 				return;
 			}
@@ -88,12 +89,17 @@ export function createPersistencePlugin(): StateManagerPlugin<
 			const pickKeys = persist.pick as string[] | undefined;
 			const omitKeys = persist.omit as string[] | undefined;
 
-			function filterState(snapshot: Record<string, unknown>): Record<string, unknown> {
+			function filterState(snapshot: typeof store.$state): typeof store.$state {
+				const source = snapshot as Record<string, unknown>;
 				if (pickKeys) {
-					return Object.fromEntries(Object.entries(snapshot).filter(([key]) => pickKeys.includes(key)));
+					return Object.fromEntries(
+						Object.entries(source).filter(([key]) => pickKeys.includes(key))
+					) as typeof store.$state;
 				}
 				if (omitKeys) {
-					return Object.fromEntries(Object.entries(snapshot).filter(([key]) => !omitKeys.includes(key)));
+					return Object.fromEntries(
+						Object.entries(source).filter(([key]) => !omitKeys.includes(key))
+					) as typeof store.$state;
 				}
 				return snapshot;
 			}
@@ -117,7 +123,7 @@ export function createPersistencePlugin(): StateManagerPlugin<
 					return;
 				}
 
-				const snapshot = filterState($state.snapshot(store.$state) as Record<string, unknown>);
+				const snapshot = filterState($state.snapshot(store.$state) as typeof store.$state);
 				const payload = serialize({
 					version: persist.version,
 					state: snapshot

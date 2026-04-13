@@ -26,6 +26,14 @@ export const useCartStore = defineStore('cart', {
 });
 ```
 
+Option-store `state()` must return a plain object at runtime. Stately rejects
+the most common non-plain shapes up front for option stores (arrays, `Date`,
+`Map`, `Set`, promises, and similar values), but the runtime still performs the
+definitive prototype check when the store is created.
+
+If you want to return a class instance or another custom prototype, use a setup
+store instead.
+
 ## Setup Stores
 
 Setup stores allow you to compose reactive state using Svelte 5 runes directly. This is useful when you want to utilize
@@ -110,6 +118,8 @@ Use `storeToRefs()` when you need to destructure properties from a store while m
 ```ts
 const { count, doubleCount } = storeToRefs(counter);
 ```
+
+The returned refs preserve the concrete property types from the source store.
 
 ## Selective Subscriptions
 
