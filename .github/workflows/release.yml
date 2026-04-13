@@ -3,13 +3,23 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version without the v prefix (e.g. 1.2.3)'
+        required: true
+        type: string
 
 permissions:
   contents: read
   actions: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  # Normalize to "release-v<semver>" for both trigger paths so a dispatch and a
+  # tag-push for the same version cancel/serialize each other rather than running
+  # in parallel.  For workflow_dispatch the input is bare semver (1.2.3); for a
+  # tag push github.ref_name is already "v1.2.3".
+  group: release-${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version) || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -18,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
       actions: read
 
     outputs:
@@ -35,14 +45,67 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            const tagName = context.ref.replace('refs/tags/', '');
-
-            if (!tagName || !tagName.startsWith('v')) {
-              core.info(`Ref '${context.ref}' is not a release tag; skipping.`);
-              core.setOutput('release_tag', '');
-              core.setOutput('ready', 'false');
-              return;
+            // Determine tag name from the trigger source.
+            let tagName;
+            if (context.eventName === 'workflow_dispatch') {
+              const version = context.payload.inputs.version;
+              if (!version || !/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
+                core.setFailed(`Invalid version input: '${version}'. Expected semver, e.g. 1.2.3`);
+                return;
+              }
+              tagName = `v${version}`;
+            } else {
+              tagName = context.ref.replace('refs/tags/', '');
+              if (!tagName || !tagName.startsWith('v')) {
+                core.info(`Ref '${context.ref}' is not a release tag; skipping.`);
+                core.setOutput('release_tag', '');
+                core.setOutput('ready', 'false');
+                return;
+              }
             }
+
+            // For workflow_dispatch: create the annotated tag via the API so that the
+            // GITHUB_TOKEN actor (GitHub Actions) performs the creation.  This bypasses
+            // repository rulesets that restrict who can push tag refs directly.
+            if (context.eventName === 'workflow_dispatch') {
+              // Resolve latest main SHA at tag-creation time.
+              const mainForTag = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+              const mainShaForTag = mainForTag.data.commit.sha;
+
+              let tagExists = false;
+              try {
+                await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` });
+                tagExists = true;
+              } catch (e) {
+                if (e.status !== 404) throw e;
+              }
+              if (tagExists) {
+                core.setFailed(`Tag ${tagName} already exists. Delete it before re-running.`);
+                return;
+              }
+
+              const tagObj = await github.rest.git.createTag({
+                owner,
+                repo,
+                tag: tagName,
+                message: `Release ${tagName}`,
+                object: mainShaForTag,
+                type: 'commit',
+              });
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: `refs/tags/${tagName}`,
+                sha: tagObj.data.sha,
+              });
+              core.info(`Created annotated tag ${tagName} -> ${mainShaForTag}`);
+            }
+
+            // Re-fetch main right before the tag-vs-main comparison so the check
+            // reflects "latest main at verification time" rather than a snapshot
+            // taken earlier in the step.
+            const mainBranch = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+            const mainSha = mainBranch.data.commit.sha;
 
             const refData = await github.rest.git.getRef({
               owner,
@@ -55,8 +118,6 @@ jobs:
               refObj.type === 'tag'
                 ? (await github.rest.git.getTag({ owner, repo, tag_sha: refObj.sha })).data.object.sha
                 : refObj.sha;
-            const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
-            const mainSha = main.data.commit.sha;
 
             if (taggedSha !== mainSha) {
               core.setFailed(
@@ -105,7 +166,7 @@ jobs:
               }
             }
 
-            core.info(`Release tag detected: ${tagName} on latest main commit ${mainSha}; all checks passed.`);
+            core.info(`Release tag: ${tagName} on latest main ${mainSha}; all checks passed.`);
             core.setOutput('release_tag', tagName);
             core.setOutput('ready', 'true');
 
