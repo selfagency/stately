@@ -18,11 +18,11 @@ type StoreFromOptions<
 	};
 
 export function createOptionStore<
+	Id extends string,
 	State extends AnyObject,
 	Getters extends GetterTree<State>,
-	Actions extends ActionTree,
-	Id extends string
->(id: Id, options: DefineStoreOptions<State, Getters, Actions>): StoreFromOptions<State, Getters, Actions, Id> {
+	Actions extends ActionTree
+>(id: Id, options: DefineStoreOptions<Id, State, Getters, Actions>): StoreFromOptions<State, Getters, Actions, Id> {
 	const state = $state(options.state());
 	const store = {} as State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions;
 	const shell = createStoreShell({ id, store, state });
