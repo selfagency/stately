@@ -398,17 +398,19 @@ async function main() {
 	// Rather than pushing the tag locally (which would be rejected), we dispatch
 	// the release.yml workflow.  The workflow's GITHUB_TOKEN is in the bypass list
 	// and will create the annotated tag, build the package, and publish the release.
+	// The workflow's own verification (tag must equal the latest main commit and CI
+	// must have passed) guards against a concurrent push to main in the interim.
 	console.log(`🏷️  Dispatching release workflow for ${tag}…`);
 	await octokit.actions.createWorkflowDispatch({
 		owner: OWNER,
 		repo: REPO,
 		workflow_id: 'release.yml',
-		// Pin to the exact commit that passed CI so the workflow cannot race against
-		// a concurrent push to main.
-		ref: headSha,
+		ref: 'main',
 		inputs: { version },
 	});
-	tagPushed = true; // the workflow will create the remote tag; enable tag rollback on failure
+	// Optimistically flag that the workflow will create the remote tag so that
+	// rollback knows to attempt deletion if anything fails before npm publish.
+	tagPushed = true;
 
 	// --- Wait for Release workflow -------------------------------------------
 
