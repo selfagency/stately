@@ -207,7 +207,11 @@ export function createPersistenceDemo(): PersistenceDemo {
 			const key = 'persist-ttl';
 			const raw = await ttlAdapter.getItem(key);
 			if (raw) {
-				// Tamper the stored timestamp to be in the past
+				// Tamper the stored timestamp to be in the past.
+				// NOTE: This directly mutates the `__stately_ttl` field inside the serialised
+				// persistence envelope. That field is an internal implementation detail of the
+				// TTL persistence layer (see src/lib/persistence/ttl.ts). If that internal key
+				// name ever changes this demo must be updated to match.
 				try {
 					const parsed = JSON.parse(raw) as Record<string, unknown>;
 					if (parsed && typeof parsed === 'object') {
