@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-13
+
+## What's Changed
+* fix: accept interface-typed option store state by @selfagency in https://github.com/selfagency/stately/pull/22
+* fix: preserve concrete plugin state typing by @selfagency in https://github.com/selfagency/stately/pull/23
+
+
+**Full Changelog**: https://github.com/selfagency/stately/compare/v0.1.2...v0.1.3
+
+_Source: changes from v0.1.2 to v0.1.3._
+
+
 ## [0.1.2] - 2026-04-13
 
 ## What's Changed
