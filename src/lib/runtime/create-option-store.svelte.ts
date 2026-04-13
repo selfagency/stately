@@ -1,15 +1,15 @@
 import type { DefineStoreOptions } from '../define-store.svelte.js';
 import { createStoreShell } from './store-shell.svelte.js';
 
-type AnyRecord = Record<string, unknown>;
+type AnyObject = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
-type GetterTree<State extends AnyRecord> = Record<string, (state: State) => unknown>;
+type GetterTree<State extends AnyObject> = Record<string, (state: State) => unknown>;
 type ActionTree = Record<string, AnyFunction>;
 
 type StoreFromOptions<
-	State extends AnyRecord,
+	State extends AnyObject,
 	Getters extends GetterTree<State>,
 	Actions extends ActionTree,
 	Id extends string
@@ -18,7 +18,7 @@ type StoreFromOptions<
 	};
 
 export function createOptionStore<
-	State extends AnyRecord,
+	State extends AnyObject,
 	Getters extends GetterTree<State>,
 	Actions extends ActionTree,
 	Id extends string
