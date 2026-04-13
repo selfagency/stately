@@ -1,0 +1,23 @@
+.lintstagedrc.json
+  c0eea81f6163c044 2-4,7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "fc6939e2273dd943c50e8995f448feaf1134c53e",
+  "prompts": {
+    "c0eea81f6163c044": {
+      "agent_id": {
+        "tool": "github-copilot-tab",
+        "id": "ai_tab-1776038992551",
+        "model": "default"
+      },
+      "human_author": "Daniel Sieradski",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    }
+  }
+}
