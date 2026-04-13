@@ -29,6 +29,8 @@ type NonPlainObjectState =
 // Compile-time approximation of option-store runtime requirements.
 // This excludes the most common non-plain shapes up front, while createStoreShell()
 // still performs the definitive runtime plain-object prototype check.
+// Note: TypeScript's structural typing cannot fully exclude class instances with
+// custom prototypes — those will pass this check but throw at runtime.
 type OptionStoreStateShape<State extends AnyObject> = State extends NonPlainObjectState ? never : State;
 
 type GetterTree<State extends AnyObject> = StoreGetters<Record<string, (state: State) => unknown>>;

@@ -207,8 +207,8 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 				mutationId,
 				timestamp,
 				state: $state.snapshot(syncedStore.$state) as typeof syncedStore.$state
-			} satisfies SyncMessage<typeof syncedStore.$state>;
-			const message = (options.createMessage?.(base) ?? base) as Message;
+			} satisfies SyncMessage<object>;
+			const message: Message = options.createMessage ? options.createMessage(base) : (base as Message);
 			latestAppliedClock = {
 				origin,
 				mutationId,
