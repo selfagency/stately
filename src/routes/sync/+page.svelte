@@ -16,7 +16,7 @@ if (browser) {
 	installStatelyInspectorHook(getStatelyInspectorHook() ?? createStatelyInspectorHook());
 }
 
-const demo = createSyncDemo();
+let demo = $state<ReturnType<typeof createSyncDemo> | null>(null);
 
 const memCode = `const bus = createInMemorySyncBus();
 const manager = createStateManager()
@@ -36,7 +36,11 @@ const manager = createStateManager()
 
 onMount(() => {
 	mountStatelyInspector();
-	return () => demo.destroy();
+	demo = createSyncDemo();
+	return () => {
+		demo?.destroy();
+		demo = null;
+	};
 });
 </script>
 
@@ -50,73 +54,75 @@ onMount(() => {
 		<p class="text-muted-foreground">Synchronize state across browser contexts with pluggable transports.</p>
 	</div>
 
-	<ShowcaseSection
-		label="01"
-		tag="In-memory sync bus"
-		title="Simulate cross-tab state sync within a single page"
-		description="Two store instances share a sync bus. Incrementing either side propagates to the other — identical to BroadcastChannel but without browser tab overhead."
-		code={memCode}>
-		<div class="grid gap-4 sm:grid-cols-2">
-			<div class="rounded-xl border border-border/80 bg-card/85 p-5">
-				<p class="mb-1 text-sm font-medium text-muted-foreground">Tab A (in-memory)</p>
-				<p data-testid="sync-mem-a-count" class="mb-4 text-4xl font-semibold">{demo.memPrimary.count}</p>
-				<Button
-					type="button"
-					onclick={() =>
-						demo.memPrimary.$patch((s) => {
-							s.count += 1;
-						})}>Increment Tab A</Button>
+	{#if demo}
+		<ShowcaseSection
+			label="01"
+			tag="In-memory sync bus"
+			title="Simulate cross-tab state sync within a single page"
+			description="Two store instances share a sync bus. Incrementing either side propagates to the other — identical to BroadcastChannel but without browser tab overhead."
+			code={memCode}>
+			<div class="grid gap-4 sm:grid-cols-2">
+				<div class="rounded-xl border border-border/80 bg-card/85 p-5">
+					<p class="mb-1 text-sm font-medium text-muted-foreground">Tab A (in-memory)</p>
+					<p data-testid="sync-mem-a-count" class="mb-4 text-4xl font-semibold">{demo?.memPrimary.count}</p>
+					<Button
+						type="button"
+						onclick={() =>
+							demo?.memPrimary.$patch((s) => {
+								s.count += 1;
+							})}>Increment Tab A</Button>
+				</div>
+				<div class="rounded-xl border border-border/80 bg-card/85 p-5">
+					<p class="mb-1 text-sm font-medium text-muted-foreground">Tab B (in-memory)</p>
+					<p data-testid="sync-mem-b-count" class="mb-4 text-4xl font-semibold">{demo?.memPeer.count}</p>
+					<Button
+						type="button"
+						variant="outline"
+						onclick={() =>
+							demo?.memPeer.$patch((s) => {
+								s.count += 1;
+							})}>Increment Tab B</Button>
+				</div>
 			</div>
-			<div class="rounded-xl border border-border/80 bg-card/85 p-5">
-				<p class="mb-1 text-sm font-medium text-muted-foreground">Tab B (in-memory)</p>
-				<p data-testid="sync-mem-b-count" class="mb-4 text-4xl font-semibold">{demo.memPeer.count}</p>
-				<Button
-					type="button"
-					variant="outline"
-					onclick={() =>
-						demo.memPeer.$patch((s) => {
-							s.count += 1;
-						})}>Increment Tab B</Button>
-			</div>
-		</div>
-	</ShowcaseSection>
+		</ShowcaseSection>
 
-	<ShowcaseSection
-		label="02"
-		tag="BroadcastChannel sync"
-		title="Real browser cross-tab messaging via BroadcastChannel"
-		description="Uses the native BroadcastChannel API. Two instances on the same channel stay in sync — open a second tab to witness the live replication."
-		code={bcCode}>
-		<div class="grid gap-4 sm:grid-cols-2">
-			<div class="rounded-xl border border-border/80 bg-card/85 p-5">
-				<p class="mb-1 text-sm font-medium text-muted-foreground">Primary (BroadcastChannel)</p>
-				<p data-testid="sync-bc-primary-count" class="mb-4 text-4xl font-semibold">{demo.bcPrimary.count}</p>
-				<Button
-					type="button"
-					onclick={() =>
-						demo.bcPrimary.$patch((s) => {
-							s.count += 1;
-						})}>Increment Primary</Button>
+		<ShowcaseSection
+			label="02"
+			tag="BroadcastChannel sync"
+			title="Real browser cross-tab messaging via BroadcastChannel"
+			description="Uses the native BroadcastChannel API. Two instances on the same channel stay in sync — open a second tab to witness the live replication."
+			code={bcCode}>
+			<div class="grid gap-4 sm:grid-cols-2">
+				<div class="rounded-xl border border-border/80 bg-card/85 p-5">
+					<p class="mb-1 text-sm font-medium text-muted-foreground">Primary (BroadcastChannel)</p>
+					<p data-testid="sync-bc-primary-count" class="mb-4 text-4xl font-semibold">{demo?.bcPrimary.count}</p>
+					<Button
+						type="button"
+						onclick={() =>
+							demo?.bcPrimary.$patch((s) => {
+								s.count += 1;
+							})}>Increment Primary</Button>
+				</div>
+				<div class="rounded-xl border border-border/80 bg-card/85 p-5">
+					<p class="mb-1 text-sm font-medium text-muted-foreground">Peer (BroadcastChannel)</p>
+					<p data-testid="sync-bc-peer-count" class="mb-4 text-4xl font-semibold">{demo?.bcPeer.count}</p>
+					<Button
+						type="button"
+						variant="outline"
+						onclick={() =>
+							demo?.bcPeer.$patch((s) => {
+								s.count += 1;
+							})}>Increment Peer</Button>
+				</div>
 			</div>
-			<div class="rounded-xl border border-border/80 bg-card/85 p-5">
-				<p class="mb-1 text-sm font-medium text-muted-foreground">Peer (BroadcastChannel)</p>
-				<p data-testid="sync-bc-peer-count" class="mb-4 text-4xl font-semibold">{demo.bcPeer.count}</p>
-				<Button
-					type="button"
-					variant="outline"
-					onclick={() =>
-						demo.bcPeer.$patch((s) => {
-							s.count += 1;
-						})}>Increment Peer</Button>
-			</div>
-		</div>
-		<Card.Root size="sm">
-			<Card.Content>
-				<p class="text-sm text-muted-foreground">
-					Note: BroadcastChannel messages are not delivered to the sender. Incrementing one side syncs to the other but
-					the sender doesn't receive its own message.
-				</p>
-			</Card.Content>
-		</Card.Root>
-	</ShowcaseSection>
+			<Card.Root size="sm">
+				<Card.Content>
+					<p class="text-sm text-muted-foreground">
+						Note: BroadcastChannel messages are not delivered to the sender. Incrementing one side syncs to the other
+						but the sender doesn't receive its own message.
+					</p>
+				</Card.Content>
+			</Card.Root>
+		</ShowcaseSection>
+	{/if}
 </div>

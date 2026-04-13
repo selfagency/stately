@@ -22,7 +22,7 @@ const setupStore = demo.setupStore;
 const refs = demo.refs;
 
 let patchLog = $state('(no patch yet)');
-let disposeLog = $state('store is alive');
+let disposeLog = $state('not subscribed');
 let disposeUnsubscribe: (() => void) | null = $state(null);
 
 function applyObjectPatch() {
@@ -107,7 +107,6 @@ const onActionCode = `store.$onAction(({ name, args, before, after, onError }) =
 
 onMount(() => {
 	mountStatelyInspector({ initiallyOpen: false });
-	disposeUnsubscribe = optionStore.$subscribe(() => {});
 	return () => {
 		demo.destroy();
 	};
@@ -239,10 +238,10 @@ onMount(() => {
 
 	<ShowcaseSection
 		label="07"
-		tag="$subscribe / $dispose"
-		title="Clean up store subscriptions when done"
-		description="$subscribe attaches a listener to state mutations. Call the returned unsubscribe function to stop listening. $dispose clears all active subscriptions at once."
-		code="store.$dispose(); // releases all subscriptions">
+		tag="$subscribe"
+		title="React to state mutations"
+		description="$subscribe registers a listener that fires after every mutation. The returned unsubscribe function removes just that listener."
+		code={subscribeCode}>
 		<Card.Root size="sm">
 			<Card.Content>
 				<pre data-testid="core-dispose-log" class="text-sm">{disposeLog}</pre>
@@ -250,6 +249,17 @@ onMount(() => {
 					<Button variant="outline" onclick={disposeAndRevive} data-testid="core-dispose-toggle">
 						{disposeUnsubscribe ? 'Unsubscribe' : 'Subscribe'}
 					</Button>
+					{#if disposeUnsubscribe}
+						<Button
+							variant="outline"
+							onclick={() => {
+								optionStore.increment();
+								disposeLog = `mutation received — count is now ${optionStore.count}`;
+							}}
+							data-testid="core-trigger-mutation">
+							Increment (trigger mutation)
+						</Button>
+					{/if}
 				</div>
 			</Card.Content>
 		</Card.Root>

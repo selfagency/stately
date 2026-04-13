@@ -85,6 +85,43 @@ describe('core page', () => {
 		await expect.element(page.getByTestId('core-subscribe-log')).toHaveTextContent('count →');
 	});
 
+	it('section 07: subscribe button enables the trigger button', async () => {
+		render(CorePage);
+
+		const log = page.getByTestId('core-dispose-log');
+		const toggle = page.getByTestId('core-dispose-toggle');
+
+		await expect.element(log).toHaveTextContent('not subscribed');
+		// trigger button hidden before subscribing
+		await expect.element(page.getByTestId('core-trigger-mutation')).not.toBeInTheDocument();
+
+		await toggle.click();
+		await expect.element(log).toHaveTextContent('subscribed — listening for mutations');
+		await expect.element(page.getByTestId('core-trigger-mutation')).toBeVisible();
+	});
+
+	it('section 07: triggering a mutation while subscribed updates the log', async () => {
+		render(CorePage);
+
+		await page.getByTestId('core-dispose-toggle').click();
+		await expect.element(page.getByTestId('core-trigger-mutation')).toBeVisible();
+
+		await page.getByTestId('core-trigger-mutation').click();
+		await expect.element(page.getByTestId('core-dispose-log')).toHaveTextContent('mutation received');
+	});
+
+	it('section 07: unsubscribing hides the trigger button and updates the log', async () => {
+		render(CorePage);
+
+		const toggle = page.getByTestId('core-dispose-toggle');
+		await toggle.click(); // subscribe
+		await expect.element(page.getByTestId('core-trigger-mutation')).toBeVisible();
+
+		await toggle.click(); // unsubscribe
+		await expect.element(page.getByTestId('core-dispose-log')).toHaveTextContent('subscription removed');
+		await expect.element(page.getByTestId('core-trigger-mutation')).not.toBeInTheDocument();
+	});
+
 	it('before-action guard blocks increment when active', async () => {
 		render(CorePage);
 
