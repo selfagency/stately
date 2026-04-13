@@ -5,11 +5,9 @@ export interface HistoryStoreOptions {
 	limit?: number;
 }
 
-export type PersistStoreOptions<State extends Record<string, unknown> = Record<string, unknown>> =
-	PersistOptions<State>;
+export type PersistStoreOptions<State extends object = Record<string, unknown>> = PersistOptions<State>;
 
-type PersistableState<State extends StoreState> =
-	State extends Record<string, unknown> ? State : Record<string, unknown>;
+type PersistableState<State extends StoreState> = State;
 
 declare module './store-types.js' {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars

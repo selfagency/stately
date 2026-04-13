@@ -1,14 +1,14 @@
 import { createStoreShell } from './store-shell.svelte.js';
 
-type AnyRecord = Record<string, unknown>;
+type AnyObject = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
-type StoreFromSetup<Store extends AnyRecord, Id extends string> = Store & { readonly $id: Id };
+type StoreFromSetup<Store extends AnyObject, Id extends string> = Store & { readonly $id: Id };
 
-type SetupStoreFactory<Store extends AnyRecord> = () => Store;
+type SetupStoreFactory<Store extends AnyObject> = () => Store;
 
-function isRecord(value: unknown): value is AnyRecord {
+function isObject(value: unknown): value is AnyObject {
 	return typeof value === 'object' && value !== null;
 }
 
@@ -30,13 +30,13 @@ function collectDescriptors(value: object): Array<[string, PropertyDescriptor]> 
 	return Array.from(descriptors.entries());
 }
 
-export function createSetupStore<Store extends AnyRecord, Id extends string>(
+export function createSetupStore<Store extends AnyObject, Id extends string>(
 	id: Id,
 	setup: SetupStoreFactory<Store>
 ): StoreFromSetup<Store, Id> {
 	const result = setup();
 
-	if (!isRecord(result)) {
+	if (!isObject(result)) {
 		throw new Error(`Invalid setup store definition for "${id}". Setup stores must return an object.`);
 	}
 

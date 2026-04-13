@@ -11,14 +11,14 @@ import type { StateManager, StoreDefinition } from './root/types.js';
 import { createOptionStore } from './runtime/create-option-store.svelte.js';
 import { createSetupStore } from './runtime/create-setup-store.svelte.js';
 
-type AnyRecord = Record<string, unknown>;
+type AnyObject = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
-type GetterTree<State extends AnyRecord> = StoreGetters<Record<string, (state: State) => unknown>>;
+type GetterTree<State extends AnyObject> = StoreGetters<Record<string, (state: State) => unknown>>;
 type ActionTree = StoreActions<Record<string, AnyFunction>>;
 
-export interface DefineSetupStoreOptions<Store extends AnyRecord> extends DefineStoreOptionsBase<
+export interface DefineSetupStoreOptions<Store extends AnyObject> extends DefineStoreOptionsBase<
 	StoreState<Store>,
 	StoreInstance<string, StoreState<Store>>
 > {
@@ -26,7 +26,7 @@ export interface DefineSetupStoreOptions<Store extends AnyRecord> extends Define
 }
 
 export interface DefineStoreOptions<
-	State extends AnyRecord,
+	State extends AnyObject,
 	Getters extends GetterTree<State>,
 	Actions extends ActionTree
 > extends DefineStoreOptionsBase<
@@ -43,9 +43,9 @@ export interface DefineStoreOptions<
 	actions?: Actions & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
 }
 
-type SetupStoreFactory<Store extends AnyRecord> = () => Store;
+type SetupStoreFactory<Store extends AnyObject> = () => Store;
 
-function isRecord(value: unknown): value is AnyRecord {
+function isObject(value: unknown): value is AnyObject {
 	return typeof value === 'object' && value !== null;
 }
 
@@ -55,12 +55,12 @@ function isFunction(value: unknown): value is AnyFunction {
 
 function isOptionStoreDefinition(
 	value: unknown
-): value is DefineStoreOptions<AnyRecord, GetterTree<AnyRecord>, ActionTree> {
-	return isRecord(value) && isFunction(Reflect.get(value, 'state'));
+): value is DefineStoreOptions<AnyObject, GetterTree<AnyObject>, ActionTree> {
+	return isObject(value) && isFunction(Reflect.get(value, 'state'));
 }
 
-function isSetupStoreOptions(value: unknown): value is DefineSetupStoreOptions<AnyRecord> {
-	return isRecord(value) && isFunction(Reflect.get(value, 'setup'));
+function isSetupStoreOptions(value: unknown): value is DefineSetupStoreOptions<AnyObject> {
+	return isObject(value) && isFunction(Reflect.get(value, 'setup'));
 }
 
 function assertValidStoreId(id: string): void {
@@ -73,9 +73,9 @@ function assertValidStoreDefinition(
 	id: string,
 	definition: unknown
 ): asserts definition is
-	| DefineStoreOptions<AnyRecord, GetterTree<AnyRecord>, ActionTree>
-	| SetupStoreFactory<AnyRecord>
-	| DefineSetupStoreOptions<AnyRecord> {
+	| DefineStoreOptions<AnyObject, GetterTree<AnyObject>, ActionTree>
+	| SetupStoreFactory<AnyObject>
+	| DefineSetupStoreOptions<AnyObject> {
 	if (!isOptionStoreDefinition(definition) && !isFunction(definition) && !isSetupStoreOptions(definition)) {
 		throw new Error(
 			`Invalid store definition for "${id}". Expected an options object, a setup function, or a setup options object.`
@@ -85,7 +85,7 @@ function assertValidStoreDefinition(
 
 export function defineStore<
 	Id extends string,
-	State extends AnyRecord,
+	State extends AnyObject,
 	Getters extends GetterTree<State> = GetterTree<State>,
 	Actions extends ActionTree = ActionTree
 >(
@@ -97,7 +97,7 @@ export function defineStore<
 	{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 	StoreActions<Actions>
 >;
-export function defineStore<Id extends string, Store extends AnyRecord>(
+export function defineStore<Id extends string, Store extends AnyObject>(
 	id: Id,
 	setup: SetupStoreFactory<Store>
 ): PublicStoreDefinition<
@@ -108,7 +108,7 @@ export function defineStore<Id extends string, Store extends AnyRecord>(
 		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;
 	}>
 >;
-export function defineStore<Id extends string, Store extends AnyRecord>(
+export function defineStore<Id extends string, Store extends AnyObject>(
 	id: Id,
 	setup: DefineSetupStoreOptions<Store>
 ): PublicStoreDefinition<

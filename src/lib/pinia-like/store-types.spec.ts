@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { createMemoryStorageAdapter } from '../persistence/adapters/memory-storage.js';
 import { defineStore } from '../define-store.svelte.js';
+import type { PersistStoreOptions } from './plugin-options.js';
 import { createStateManager } from '../root/create-state-manager.js';
 import type { StoreActionHookContext, StoreDefinition, StoreInstance } from './store-types.js';
 
@@ -31,6 +32,37 @@ describe('store-types', () => {
 		expectTypeOf(counter).toMatchTypeOf<
 			StoreInstance<'counter-types', { count: number }, { doubleCount: number }, { increment: () => void }>
 		>();
+	});
+
+	it('accepts interface-typed option store state without Record casts', () => {
+		interface InterfaceState {
+			count: number;
+			label: string;
+		}
+
+		const manager = createStateManager();
+		const useInterfaceStore = defineStore('interface-state-types', {
+			state: (): InterfaceState => ({ count: 0, label: 'ready' }),
+			persist: {
+				adapter: createMemoryStorageAdapter(),
+				version: 1
+			},
+			actions: {
+				increment() {
+					this.count += 1;
+				}
+			}
+		});
+
+		const store = useInterfaceStore(manager);
+
+		expectTypeOf(store.count).toEqualTypeOf<number>();
+		expectTypeOf(store.label).toEqualTypeOf<string>();
+		expectTypeOf(store.increment).toEqualTypeOf<() => void>();
+		expectTypeOf(useInterfaceStore).toMatchTypeOf<
+			StoreDefinition<'interface-state-types', InterfaceState, Record<never, never>, { increment: () => void }>
+		>();
+		expect(true).toBe(true);
 	});
 
 	it('types subscribe selectors and equality functions consistently', () => {
@@ -77,16 +109,16 @@ describe('store-types', () => {
 			}
 		});
 
-		defineStore('invalid-persist-options', {
-			state: () => ({ count: 0, label: 'ready' }),
-			persist: {
-				adapter: createMemoryStorageAdapter(),
-				version: 1,
-				pick: ['count'],
-				// @ts-expect-error pick and omit are mutually exclusive
-				omit: ['label']
-			}
-		});
+		const adapter = createMemoryStorageAdapter();
+		// @ts-expect-error pick and omit are mutually exclusive
+		const invalidPersistOptions: PersistStoreOptions<{ count: number; label: string }> = {
+			adapter,
+			version: 1,
+			pick: ['count'],
+			omit: ['label']
+		};
+
+		expect(invalidPersistOptions).toBeDefined();
 
 		expect(true).toBe(true);
 	});
