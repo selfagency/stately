@@ -42,7 +42,7 @@ const pickCode = `const useFormStore = defineStore('my-form', {
 const omitCode = `// Exclude one field from persistence
 persist: { adapter, version: 1, omit: ['secret'] }`;
 
-const lzCode = `import { createLzStringCompression } from '@stately/core';
+const lzCode = `import { createLzStringCompression } from '@selfagency/stately';
 
 persist: {
   adapter: createLocalStorageAdapter(),

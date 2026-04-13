@@ -28,7 +28,7 @@ await store.load(true); // throws
 store.$async.load.isLoading; // false
 // catch errors inside the action and expose via state`;
 
-const debounceCode = `import { debounceAction } from '@stately/core';
+const debounceCode = `import { debounceAction } from '@selfagency/stately';
 
 const debouncedSave = debounceAction((value: string) => {
   store.save(value);
@@ -36,7 +36,7 @@ const debouncedSave = debounceAction((value: string) => {
 
 input.addEventListener('input', (e) => debouncedSave(e.target.value));`;
 
-const throttleCode = `import { throttleAction } from '@stately/core';
+const throttleCode = `import { throttleAction } from '@selfagency/stately';
 
 const throttledScroll = throttleAction((pos: number) => {
   store.updateScrollPos(pos);
