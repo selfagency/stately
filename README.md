@@ -41,10 +41,16 @@ It bridges the gap between simple writable stores and complex state frameworks, 
 - **Typed Plugins:** History, validation, persistence, and sync hooks preserve concrete store state types.
 - **DevTools:** A dedicated inspector drawer and Vite integration for real-time debugging.
 
+## Stability Warning ⚠️
+
+Stately is in its early stages and may contain bugs. Feel free to push it to its limits and
+open GitHub issues, but be careful using it in production until it's been thoroughly
+battle-tested.
+
 ## Installation
 
 ```sh
-pnpm add @selfagency/stately svelte
+pnpm add @selfagency/stately
 ```
 
 ## Quick Start
