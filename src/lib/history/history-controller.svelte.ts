@@ -1,9 +1,9 @@
-export interface HistoryEntry<State = Record<string, unknown>> {
+export interface HistoryEntry<State extends object = object> {
 	snapshot: State;
 	timestamp: number;
 }
 
-export interface HistoryController<State = Record<string, unknown>> {
+export interface HistoryController<State extends object = object> {
 	readonly entries: HistoryEntry<State>[];
 	readonly currentIndex: number;
 	readonly canUndo: boolean;
@@ -17,7 +17,7 @@ export interface HistoryController<State = Record<string, unknown>> {
 	endBatch(): void;
 }
 
-export function createHistoryController<State extends Record<string, unknown>>(config: {
+export function createHistoryController<State extends object>(config: {
 	initialSnapshot: State;
 	limit?: number;
 	applySnapshot(snapshot: State): void;

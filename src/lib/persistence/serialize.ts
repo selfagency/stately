@@ -5,7 +5,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null;
 }
 
-export interface DeserializeSuccess<State> {
+export interface DeserializeSuccess<State extends object> {
 	ok: true;
 	envelope: PersistEnvelope<State>;
 }
@@ -15,13 +15,13 @@ export interface DeserializeFailure {
 	error: string;
 }
 
-export type DeserializeResult<State> = DeserializeSuccess<State> | DeserializeFailure;
+export type DeserializeResult<State extends object> = DeserializeSuccess<State> | DeserializeFailure;
 
-export function serializePersistedState<State>(envelope: PersistEnvelope<State>): string {
+export function serializePersistedState<State extends object>(envelope: PersistEnvelope<State>): string {
 	return JSON.stringify(envelope);
 }
 
-export function deserializePersistedState<State>(
+export function deserializePersistedState<State extends object>(
 	raw: string,
 	options: PersistDeserializeOptions<State>
 ): DeserializeResult<State> {

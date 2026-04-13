@@ -1,5 +1,5 @@
 import { readMarker } from '../internal/marker-helpers.js';
-import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreState } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 import type { ConcurrencyMode } from './concurrency.js';
@@ -15,7 +15,8 @@ export interface AsyncPluginOptions extends TrackAsyncActionOptions {
 }
 
 declare module '../pinia-like/store-types.js' {
-	interface StoreCustomProperties {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
 		$async: AsyncActionRegistry;
 	}
 }

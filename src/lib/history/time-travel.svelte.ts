@@ -1,13 +1,13 @@
 import type { HistoryController, HistoryEntry } from './history-controller.svelte.js';
 
-export interface TimeTravelController<State = Record<string, unknown>> {
+export interface TimeTravelController<State extends object = object> {
 	readonly entries: HistoryEntry<State>[];
 	readonly currentIndex: number;
 	readonly isReplaying: boolean;
 	goTo(index: number): boolean;
 }
 
-export function createTimeTravelController<State extends Record<string, unknown>>(config: {
+export function createTimeTravelController<State extends object>(config: {
 	history: HistoryController<State>;
 }): TimeTravelController<State> {
 	return {

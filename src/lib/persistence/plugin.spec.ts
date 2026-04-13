@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
 import { createPersistencePlugin } from './plugin.svelte.js';
+import type { PersistEnvelope } from './types.js';
 
 describe('createPersistencePlugin', () => {
 	afterEach(() => {
@@ -148,5 +149,57 @@ describe('createPersistencePlugin', () => {
 		} as never);
 
 		expect(() => useCounterStore(manager)).toThrow(/persist configuration: version/i);
+	});
+
+	it('preserves interface-based state types through custom serialize and deserialize hooks', async () => {
+		interface PersistedState {
+			count: number;
+			label: string;
+		}
+
+		const storage = new Map<string, string>();
+		const adapter = {
+			async getItem(key: string) {
+				return storage.get(key) ?? null;
+			},
+			async setItem(key: string, value: string) {
+				storage.set(key, value);
+			},
+			async removeItem(key: string) {
+				storage.delete(key);
+			}
+		};
+		let serializedEnvelope: PersistEnvelope<PersistedState> | undefined;
+		storage.set('typed-persist-hooks', JSON.stringify({ version: 1, state: { count: 4, label: 'loaded' } }));
+
+		const manager = createStateManager().use(createPersistencePlugin());
+		const useStore = defineStore('typed-persist-hooks', {
+			state: (): PersistedState => ({ count: 0, label: 'init' }),
+			persist: {
+				adapter,
+				version: 1,
+				serialize(envelope) {
+					expectTypeOf(envelope.state.count).toEqualTypeOf<number>();
+					expectTypeOf(envelope.state.label).toEqualTypeOf<string>();
+					serializedEnvelope = envelope;
+					return JSON.stringify(envelope);
+				},
+				deserialize(raw) {
+					const envelope = JSON.parse(raw) as PersistEnvelope<PersistedState>;
+					expectTypeOf(envelope.state.count).toEqualTypeOf<number>();
+					expectTypeOf(envelope.state.label).toEqualTypeOf<string>();
+					return envelope;
+				}
+			}
+		});
+		const store = useStore(manager);
+
+		await store.$persist.ready;
+		expect(store.count).toBe(4);
+		expect(store.label).toBe('loaded');
+
+		store.$patch({ count: 6, label: 'saved' });
+		await store.$persist.flush();
+		expect(serializedEnvelope?.state).toEqual({ count: 6, label: 'saved' });
 	});
 });

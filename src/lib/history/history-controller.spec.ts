@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { createHistoryController } from './history-controller.svelte.js';
 
 describe('createHistoryController', () => {
@@ -45,5 +45,25 @@ describe('createHistoryController', () => {
 
 		controller.record({ count: 2 });
 		expect(controller.entries.map((entry) => entry.snapshot.count)).toEqual([0, 1, 2]);
+	});
+
+	it('preserves interface-based snapshot types', () => {
+		interface CounterSnapshot {
+			count: number;
+			label: string;
+		}
+
+		const controller = createHistoryController<CounterSnapshot>({
+			initialSnapshot: { count: 0, label: 'ready' },
+			applySnapshot(snapshot) {
+				expectTypeOf(snapshot.count).toEqualTypeOf<number>();
+				expectTypeOf(snapshot.label).toEqualTypeOf<string>();
+			}
+		});
+
+		controller.record({ count: 1, label: 'set' });
+		expectTypeOf(controller.entries[0]!.snapshot.count).toEqualTypeOf<number>();
+		expectTypeOf(controller.entries[0]!.snapshot.label).toEqualTypeOf<string>();
+		expect(controller.entries.at(-1)?.snapshot).toEqual({ count: 1, label: 'set' });
 	});
 });

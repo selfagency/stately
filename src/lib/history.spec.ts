@@ -174,7 +174,7 @@ describe('history runtime', () => {
 		store.x = 20;
 
 		expect(store.$timeTravel.entries).toHaveLength(3);
-		expect(store.$timeTravel.entries.map((e) => (e.snapshot as { x: number }).x)).toEqual([0, 10, 20]);
+		expect(store.$timeTravel.entries.map((e) => e.snapshot.x)).toEqual([0, 10, 20]);
 	});
 
 	it('$history.record() manually pushes a snapshot', () => {

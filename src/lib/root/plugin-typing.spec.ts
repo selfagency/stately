@@ -1,11 +1,12 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { defineStore } from '../define-store.svelte.js';
-import type { StoreCustomProperties } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreState } from '../pinia-like/store-types.js';
 import { createStateManager } from './create-state-manager.js';
 import { defineStateManagerPlugin, type StoreDefinition } from './types.js';
 
 declare module '../pinia-like/store-types.js' {
-	interface StoreCustomProperties {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
 		$pluginMeta: {
 			source: 'typed-plugin';
 		};

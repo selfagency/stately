@@ -1,9 +1,9 @@
-import type { StoreCustomProperties, StoreMutationContext } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import type { StateManagerPlugin } from '../root/types.js';
 import { createFsmController } from './fsm-controller.svelte.js';
 import type { FsmController, FsmDefinition } from './types.js';
 
-interface FsmStore<State = Record<string, unknown>> {
+interface FsmStore<State extends object = StoreState> {
 	readonly $id: string;
 	$state: State;
 	$patch(patch: Partial<State> | ((state: State) => void)): void;
@@ -16,7 +16,8 @@ declare module '../pinia-like/store-types.js' {
 		fsm?: FsmDefinition;
 	}
 
-	interface StoreCustomProperties {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
 		$fsm: FsmController;
 	}
 }
@@ -43,6 +44,7 @@ function readFsmOptions(value: unknown): FsmDefinition | undefined {
 }
 
 const FSM_STATE_KEY = '__stately_fsm';
+type FsmPatchedState<State extends object> = State & { [FSM_STATE_KEY]?: string };
 
 export function createFsmPlugin(): StateManagerPlugin {
 	return ({ options, store }) => {
@@ -58,7 +60,7 @@ export function createFsmPlugin(): StateManagerPlugin {
 		const controller = createFsmController(definition);
 
 		// Initialize FSM state in store state through $patch so history/persistence/sync observe it
-		store.$patch((state: Record<string, unknown>) => {
+		store.$patch((state: FsmPatchedState<typeof store.$state>) => {
 			state[FSM_STATE_KEY] = controller.current;
 		});
 
@@ -67,14 +69,14 @@ export function createFsmPlugin(): StateManagerPlugin {
 			const prev = controller.current;
 			const next = originalSend(event, ...args);
 			if (next !== prev) {
-				store.$patch((state: Record<string, unknown>) => {
+				store.$patch((state: FsmPatchedState<typeof store.$state>) => {
 					state[FSM_STATE_KEY] = next;
 				});
 			}
 			return next;
 		};
 
-		store.$subscribe((mutation: StoreMutationContext, state: Record<string, unknown>) => {
+		store.$subscribe((mutation: StoreMutationContext, state: FsmPatchedState<typeof store.$state>) => {
 			const persisted = state[FSM_STATE_KEY];
 			if (typeof persisted === 'string' && persisted !== controller.current && persisted in definition.states) {
 				controller.setCurrent(persisted);

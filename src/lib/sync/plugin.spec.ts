@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
 import { createSyncPlugin } from './plugin.svelte.js';
@@ -286,5 +286,52 @@ describe('createSyncPlugin', () => {
 		}
 
 		expect(store.count).toBe(2);
+	});
+
+	it('preserves interface-based state types through typed sync messages', () => {
+		interface SyncState {
+			count: number;
+			label: string;
+		}
+
+		type TaggedSyncMessage = SyncMessage<SyncState> & { source: 'typed-test' };
+		const listeners = new Set<(message: TaggedSyncMessage) => void>();
+		const published: TaggedSyncMessage[] = [];
+		const transport: SyncTransport<TaggedSyncMessage> = {
+			publish(message) {
+				expectTypeOf(message.state.count).toEqualTypeOf<number>();
+				expectTypeOf(message.state.label).toEqualTypeOf<string>();
+				published.push(message);
+			},
+			subscribe(listener) {
+				listeners.add(listener);
+				return () => {
+					listeners.delete(listener);
+				};
+			},
+			destroy() {
+				listeners.clear();
+			}
+		};
+		const manager = createStateManager().use(
+			createSyncPlugin<TaggedSyncMessage>({
+				origin: 'typed-origin',
+				transports: [transport],
+				createMessage(base) {
+					expectTypeOf(base.state.count).toEqualTypeOf<number>();
+					expectTypeOf(base.state.label).toEqualTypeOf<string>();
+					return { ...base, source: 'typed-test' };
+				}
+			})
+		);
+		const useStore = defineStore('typed-sync', {
+			state: (): SyncState => ({ count: 0, label: 'ready' })
+		});
+		const store = useStore(manager);
+
+		store.$patch({ count: 5, label: 'sent' });
+
+		expect(published[0]?.source).toBe('typed-test');
+		expect(published[0]?.state).toEqual({ count: 5, label: 'sent' });
 	});
 });

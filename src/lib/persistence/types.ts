@@ -13,17 +13,17 @@ export interface PersistenceAdapter {
 	keys?(): MaybePromise<string[]>;
 }
 
-export interface PersistEnvelope<State = Record<string, unknown>> {
+export interface PersistEnvelope<State extends object = object> {
 	version: number;
 	state: State;
 }
 
-export interface PersistDeserializeOptions<State> {
+export interface PersistDeserializeOptions<State extends object> {
 	version: number;
 	migrate?: (state: JsonObject, fromVersion: number) => State;
 }
 
-type PersistSelectionOptions<State> =
+type PersistSelectionOptions<State extends object> =
 	| {
 			/** Persist only these keys from the state. Cannot be used together with `omit`. */
 			pick?: (keyof State)[];
@@ -40,13 +40,13 @@ export interface PersistCompression {
 	decompress(value: string): string | undefined;
 }
 
-export type PersistOptions<State = Record<string, unknown>> = PersistDeserializeOptions<State> &
+export type PersistOptions<State extends object = object> = PersistDeserializeOptions<State> &
 	PersistSelectionOptions<State> & {
 		adapter: PersistenceAdapter;
 		key?: string;
 		compression?: PersistCompression;
 		serialize?: (envelope: PersistEnvelope<State>) => string;
-		deserialize?: (raw: string) => PersistEnvelope<JsonObject> | undefined;
+		deserialize?: (raw: string) => PersistEnvelope<State> | undefined;
 		/** Called when an auto-flush write to the adapter fails. If omitted, a notice is emitted to the Stately inspector. */
 		onError?: (error: unknown) => void;
 		/** Debounce auto-flush writes by this many milliseconds (trailing edge). Useful for high-frequency mutations. */
