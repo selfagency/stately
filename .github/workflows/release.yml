@@ -84,21 +84,14 @@ jobs:
                 return;
               }
 
-              const tagObj = await github.rest.git.createTag({
-                owner,
-                repo,
-                tag: tagName,
-                message: `Release ${tagName}`,
-                object: mainShaForTag,
-                type: 'commit',
-              });
+              core.info(`Creating tag ${tagName} at ${mainShaForTag}...`);
               await github.rest.git.createRef({
                 owner,
                 repo,
                 ref: `refs/tags/${tagName}`,
-                sha: tagObj.data.sha,
+                sha: mainShaForTag,
               });
-              core.info(`Created annotated tag ${tagName} -> ${mainShaForTag}`);
+              core.info(`Tag ${tagName} created.`);
             }
 
             // Re-fetch main right before the tag-vs-main comparison so the check
