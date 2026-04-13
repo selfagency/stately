@@ -79,6 +79,9 @@ export default defineConfig({
 					typecheck: {
 						enabled: true,
 						include: ['src/**/*.test-d.ts'],
+						// tsc cannot resolve types re-exported from .svelte files in the
+						// showcase UI components (shadcn-svelte). Those are covered by
+						// svelte-check (pnpm run check). Library source has no tsc errors.
 						ignoreSourceErrors: true
 					},
 					include: ['src/**/*.test-d.ts']

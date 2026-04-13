@@ -70,18 +70,58 @@ function readPersistOptions<State extends object>(value: unknown): PersistOption
 		version: persist.version
 	};
 
-	if (persist.key !== undefined) result.key = persist.key as string;
-	if (persist.pick !== undefined) result.pick = persist.pick as (keyof State)[];
-	if (persist.omit !== undefined) result.omit = persist.omit as (keyof State)[];
-	if (persist.compression !== undefined)
-		result.compression = persist.compression as PersistOptions<State>['compression'];
-	if (persist.serialize !== undefined) result.serialize = persist.serialize as PersistOptions<State>['serialize'];
-	if (persist.deserialize !== undefined)
+	if (persist.key !== undefined) {
+		if (typeof persist.key !== 'string') throw new Error('Invalid persist configuration: key must be a string.');
+		result.key = persist.key;
+	}
+	if (persist.pick !== undefined) {
+		if (!Array.isArray(persist.pick)) throw new Error('Invalid persist configuration: pick must be an array.');
+		result.pick = persist.pick as (keyof State)[];
+	}
+	if (persist.omit !== undefined) {
+		if (!Array.isArray(persist.omit)) throw new Error('Invalid persist configuration: omit must be an array.');
+		result.omit = persist.omit as (keyof State)[];
+	}
+	if (persist.compression !== undefined) {
+		if (
+			!isRecord(persist.compression) ||
+			typeof persist.compression.compress !== 'function' ||
+			typeof persist.compression.decompress !== 'function'
+		) {
+			throw new Error('Invalid persist configuration: compression must implement compress and decompress functions.');
+		}
+		result.compression = persist.compression as unknown as PersistOptions<State>['compression'];
+	}
+	if (persist.serialize !== undefined) {
+		if (typeof persist.serialize !== 'function')
+			throw new Error('Invalid persist configuration: serialize must be a function.');
+		result.serialize = persist.serialize as PersistOptions<State>['serialize'];
+	}
+	if (persist.deserialize !== undefined) {
+		if (typeof persist.deserialize !== 'function')
+			throw new Error('Invalid persist configuration: deserialize must be a function.');
 		result.deserialize = persist.deserialize as PersistOptions<State>['deserialize'];
-	if (persist.migrate !== undefined) result.migrate = persist.migrate as PersistOptions<State>['migrate'];
-	if (persist.onError !== undefined) result.onError = persist.onError as PersistOptions<State>['onError'];
-	if (persist.debounce !== undefined) result.debounce = persist.debounce as number;
-	if (persist.ttl !== undefined) result.ttl = persist.ttl as number;
+	}
+	if (persist.migrate !== undefined) {
+		if (typeof persist.migrate !== 'function')
+			throw new Error('Invalid persist configuration: migrate must be a function.');
+		result.migrate = persist.migrate as PersistOptions<State>['migrate'];
+	}
+	if (persist.onError !== undefined) {
+		if (typeof persist.onError !== 'function')
+			throw new Error('Invalid persist configuration: onError must be a function.');
+		result.onError = persist.onError as PersistOptions<State>['onError'];
+	}
+	if (persist.debounce !== undefined) {
+		if (typeof persist.debounce !== 'number' || !Number.isFinite(persist.debounce))
+			throw new Error('Invalid persist configuration: debounce must be a finite number.');
+		result.debounce = persist.debounce;
+	}
+	if (persist.ttl !== undefined) {
+		if (typeof persist.ttl !== 'number' || !Number.isFinite(persist.ttl))
+			throw new Error('Invalid persist configuration: ttl must be a finite number.');
+		result.ttl = persist.ttl;
+	}
 
 	return result;
 }

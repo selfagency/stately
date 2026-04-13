@@ -151,6 +151,166 @@ describe('createPersistencePlugin', () => {
 		expect(() => useCounterStore(manager)).toThrow(/persist configuration: version/i);
 	});
 
+	it('throws for non-string key', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-key', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, key: 42 }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/key must be a string/i);
+	});
+
+	it('throws for non-array pick', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-pick', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, pick: 'count' }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/pick must be an array/i);
+	});
+
+	it('throws for non-array omit', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-omit', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, omit: 'count' }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/omit must be an array/i);
+	});
+
+	it('throws for invalid compression shape', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-compression', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, compression: { compress: 'bad' } }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/compression must implement compress and decompress/i);
+	});
+
+	it('throws for non-function serialize', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-serialize', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, serialize: 'not-a-fn' }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/serialize must be a function/i);
+	});
+
+	it('throws for non-function deserialize', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-deserialize', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, deserialize: 42 }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/deserialize must be a function/i);
+	});
+
+	it('throws for non-function migrate', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-migrate', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, migrate: true }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/migrate must be a function/i);
+	});
+
+	it('throws for non-function onError', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-onerror', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, onError: 'nope' }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/onError must be a function/i);
+	});
+
+	it('throws for non-finite debounce', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-debounce', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, debounce: NaN }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/debounce must be a finite number/i);
+	});
+
+	it('throws for non-finite ttl', () => {
+		const manager = createStateManager().use(createPersistencePlugin());
+		const adapter = {
+			async getItem() {
+				return null;
+			},
+			async setItem() {},
+			async removeItem() {}
+		};
+		const useStore = defineStore('invalid-ttl', {
+			state: () => ({ count: 0 }),
+			persist: { adapter, version: 1, ttl: Infinity }
+		} as never);
+		expect(() => useStore(manager)).toThrow(/ttl must be a finite number/i);
+	});
+
 	it('preserves interface-based state types through custom serialize and deserialize hooks', async () => {
 		interface PersistedState {
 			count: number;

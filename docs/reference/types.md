@@ -14,9 +14,6 @@ no guesswork, no unpleasant surprises.
 - `StoreDefinition` — the callable definition returned by `defineStore()`
 - `StoreInstance` — the fully materialized store type
 - `StoreState`, `StoreGetters`, `StoreActions` — helper aliases used by inference
-- `SetupStoreState` — mapped type that filters action functions from a setup
-  store's return type, used internally to type `$state` and `$patch()` for
-  setup stores so they only expose data properties
 
 ## Store hook types
 
