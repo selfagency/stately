@@ -46,9 +46,10 @@ function disposeAndRevive() {
 	if (disposeUnsubscribe) {
 		disposeUnsubscribe();
 		disposeUnsubscribe = null;
-		disposeLog = 'store disposed — subscriptions stopped';
+		disposeLog = 'subscription removed — store still alive';
 	} else {
-		disposeLog = 'store is alive';
+		disposeUnsubscribe = optionStore.$subscribe(() => {});
+		disposeLog = 'subscribed — listening for mutations';
 	}
 }
 
@@ -238,16 +239,16 @@ onMount(() => {
 
 	<ShowcaseSection
 		label="07"
-		tag="$dispose"
+		tag="$subscribe / $dispose"
 		title="Clean up store subscriptions when done"
-		description="$dispose marks the store as disposed and clears all active subscriptions. Useful for short-lived contexts."
+		description="$subscribe attaches a listener to state mutations. Call the returned unsubscribe function to stop listening. $dispose clears all active subscriptions at once."
 		code="store.$dispose(); // releases all subscriptions">
 		<Card.Root size="sm">
 			<Card.Content>
 				<pre data-testid="core-dispose-log" class="text-sm">{disposeLog}</pre>
 				<div class="mt-2 flex flex-wrap gap-2">
 					<Button variant="outline" onclick={disposeAndRevive} data-testid="core-dispose-toggle">
-						{disposeUnsubscribe ? 'Dispose subscription' : 'Revive subscription'}
+						{disposeUnsubscribe ? 'Unsubscribe' : 'Subscribe'}
 					</Button>
 				</div>
 			</Card.Content>

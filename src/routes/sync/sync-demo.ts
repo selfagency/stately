@@ -45,6 +45,7 @@ function createBroadcastTransport(channelName: string): SyncTransport<SyncMessag
 			channel.postMessage(message);
 		},
 		subscribe(listener) {
+			if (typeof globalThis.BroadcastChannel === 'undefined') return () => {};
 			channel = new BroadcastChannel(channelName);
 			messageHandler = (event: MessageEvent) => listener(event.data as SyncMessage<object>);
 			channel.addEventListener('message', messageHandler);
