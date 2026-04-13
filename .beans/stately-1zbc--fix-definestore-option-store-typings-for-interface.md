@@ -7,6 +7,7 @@ priority: high
 created_at: 2026-04-13T14:48:45Z
 updated_at: 2026-04-13T14:48:45Z
 branch: fix/1zbc-define-store-interface-state
+pr: 22
 ---
 
 ## Todo
