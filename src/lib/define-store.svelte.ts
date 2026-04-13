@@ -26,7 +26,10 @@ type NonPlainObjectState =
 	| WeakSet<object>
 	| Promise<unknown>;
 
-type PlainObjectState<State extends AnyObject> = State extends NonPlainObjectState ? never : State;
+// Compile-time approximation of option-store runtime requirements.
+// This excludes the most common non-plain shapes up front, while createStoreShell()
+// still performs the definitive runtime plain-object prototype check.
+type OptionStoreStateShape<State extends AnyObject> = State extends NonPlainObjectState ? never : State;
 
 type GetterTree<State extends AnyObject> = StoreGetters<Record<string, (state: State) => unknown>>;
 type ActionTree = StoreActions<Record<string, AnyFunction>>;
@@ -40,22 +43,22 @@ export interface DefineSetupStoreOptions<Store extends AnyObject> extends Define
 
 export interface DefineStoreOptions<
 	State extends AnyObject,
-	Getters extends GetterTree<PlainObjectState<State>>,
+	Getters extends GetterTree<OptionStoreStateShape<State>>,
 	Actions extends ActionTree
 > extends DefineStoreOptionsBase<
-	StoreState<PlainObjectState<State>>,
+	StoreState<OptionStoreStateShape<State>>,
 	StoreInstance<
 		string,
-		StoreState<PlainObjectState<State>>,
+		StoreState<OptionStoreStateShape<State>>,
 		{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 		StoreActions<Actions>
 	>
 > {
-	state: () => PlainObjectState<State>;
+	state: () => OptionStoreStateShape<State>;
 	getters?: Getters &
-		ThisType<PlainObjectState<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+		ThisType<OptionStoreStateShape<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
 	actions?: Actions &
-		ThisType<PlainObjectState<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+		ThisType<OptionStoreStateShape<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
 }
 
 type SetupStoreFactory<Store extends AnyObject> = () => Store;
@@ -101,14 +104,14 @@ function assertValidStoreDefinition(
 export function defineStore<
 	Id extends string,
 	State extends AnyObject,
-	Getters extends GetterTree<PlainObjectState<State>> = GetterTree<PlainObjectState<State>>,
+	Getters extends GetterTree<OptionStoreStateShape<State>> = GetterTree<OptionStoreStateShape<State>>,
 	Actions extends ActionTree = ActionTree
 >(
 	id: Id,
 	options: DefineStoreOptions<State, Getters, Actions>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<PlainObjectState<State>>,
+	StoreState<OptionStoreStateShape<State>>,
 	{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 	StoreActions<Actions>
 >;

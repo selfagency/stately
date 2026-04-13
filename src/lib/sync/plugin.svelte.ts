@@ -4,7 +4,7 @@ import type { StateManagerPlugin } from '../root/types.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
-import type { SyncMessage, SyncMessageState, SyncTransport } from './types.js';
+import type { SyncMessage, SyncTransport } from './types.js';
 
 interface SyncStore<State extends object = StoreState> {
 	readonly $id: string;
@@ -24,10 +24,11 @@ export interface SyncPluginOptions<Message extends SyncMessage = SyncMessage> {
 	createTimestamp?: () => number;
 	/**
 	 * Produce the outgoing `Message` from a fully-populated `SyncMessage` base.
-	 * Required when `Message` extends `SyncMessage` with additional fields;
-	 * omit when `Message` is exactly `SyncMessage`.
+	 * The callback is manager-wide, so its input is intentionally state-agnostic.
+	 * Required when `Message` extends `SyncMessage` with additional fields; omit when
+	 * `Message` is exactly `SyncMessage`.
 	 */
-	createMessage?: (base: SyncMessage<SyncMessageState<Message>>) => Message;
+	createMessage?: (base: SyncMessage<object>) => Message;
 }
 
 interface SyncMutationClock {
@@ -128,7 +129,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Set; used for key lookup only, not reactive
 		const knownStateKeys = new Set(Object.keys(syncedStore.$state as Record<string, unknown>));
 
-		function filterToKnownKeys(remote: Record<string, unknown>): Partial<typeof syncedStore.$state> | undefined {
+		function filterToKnownKeys(remote: object): Partial<typeof syncedStore.$state> | undefined {
 			const filtered: Record<string, unknown> = {};
 			let hasKnownKey = false;
 			for (const key of Object.keys(remote)) {
@@ -207,7 +208,7 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 				timestamp,
 				state: $state.snapshot(syncedStore.$state) as typeof syncedStore.$state
 			} satisfies SyncMessage<typeof syncedStore.$state>;
-			const message = (options.createMessage?.(base as SyncMessage<SyncMessageState<Message>>) ?? base) as Message;
+			const message = (options.createMessage?.(base) ?? base) as Message;
 			latestAppliedClock = {
 				origin,
 				mutationId,

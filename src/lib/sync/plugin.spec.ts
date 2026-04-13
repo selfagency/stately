@@ -318,9 +318,8 @@ describe('createSyncPlugin', () => {
 				origin: 'typed-origin',
 				transports: [transport],
 				createMessage(base) {
-					expectTypeOf(base.state.count).toEqualTypeOf<number>();
-					expectTypeOf(base.state.label).toEqualTypeOf<string>();
-					return { ...base, source: 'typed-test' };
+					expectTypeOf(base.state).toEqualTypeOf<object>();
+					return { ...(base as SyncMessage<SyncState>), source: 'typed-test' };
 				}
 			})
 		);
