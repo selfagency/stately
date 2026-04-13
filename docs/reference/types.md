@@ -53,6 +53,10 @@ When a plugin wants stricter compile-time checking for the object it returns,
 prefer `defineStateManagerPlugin()` with an explicit augmentation type rather
 than returning an untyped object literal.
 
+All built-in plugin factories return explicitly typed `StateManagerPlugin`
+values with proper augmentation generics, so `.use()` chains preserve
+IntelliSense for the properties each plugin adds to stores.
+
 ## Persistence types
 
 - `PersistenceAdapter`

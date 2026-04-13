@@ -10,7 +10,7 @@ const INSPECTOR_VIRTUAL_OPTIONS_SOURCE = resolve(ROOT, 'src/lib/inspector/virtua
 const INSPECTOR_VIRTUAL_OPTIONS_DEST = resolve(DIST, 'inspector/virtual-options.d.ts');
 const INSPECTOR_VITE_PLUGIN_TYPES_DEST = resolve(DIST, 'inspector/vite-plugin.d.ts');
 const INSPECTOR_VIRTUAL_REFERENCE = '/// <reference path="./virtual-options.d.ts" />';
-const TEST_OUTPUT_PATTERN = /\.(?:test|spec)\.(?:d\.)?[cm]?[jt]s$/;
+const TEST_OUTPUT_PATTERN = /\.(?:test|spec)(?:-d)?\.(?:d\.)?[cm]?[jt]s$/;
 const RELEASE_ASSETS = ['README.md', 'CHANGELOG.md', 'LICENSE.md', 'stately.svg'];
 
 async function pruneReleaseExtras(directory) {

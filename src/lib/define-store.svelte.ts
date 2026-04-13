@@ -36,34 +36,46 @@ type OptionStoreStateShape<State extends AnyObject> = State extends NonPlainObje
 type GetterTree<State extends AnyObject> = StoreGetters<Record<string, (state: State) => unknown>>;
 type ActionTree = StoreActions<Record<string, AnyFunction>>;
 
+type OptionStoreComputed<Getters extends object> = {
+	readonly [K in keyof Getters]: Getters[K] extends AnyFunction ? ReturnType<Getters[K]> : never;
+};
+
+type OptionStoreInstance<
+	Id extends string,
+	State extends AnyObject,
+	Getters extends GetterTree<OptionStoreStateShape<State>>,
+	Actions extends ActionTree
+> = StoreInstance<Id, StoreState<OptionStoreStateShape<State>>, OptionStoreComputed<Getters>, StoreActions<Actions>>;
+
 export interface DefineSetupStoreOptions<Store extends AnyObject> extends DefineStoreOptionsBase<
-	StoreState<Store>,
-	StoreInstance<string, StoreState<Store>>
+	StoreState<SetupStoreState<Store>>,
+	StoreInstance<string, StoreState<SetupStoreState<Store>>>
 > {
 	setup: () => Store;
 }
 
 export interface DefineStoreOptions<
+	Id extends string,
 	State extends AnyObject,
 	Getters extends GetterTree<OptionStoreStateShape<State>>,
 	Actions extends ActionTree
 > extends DefineStoreOptionsBase<
 	StoreState<OptionStoreStateShape<State>>,
-	StoreInstance<
-		string,
-		StoreState<OptionStoreStateShape<State>>,
-		{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
-		StoreActions<Actions>
-	>
+	OptionStoreInstance<Id, State, Getters, Actions>
 > {
 	state: () => OptionStoreStateShape<State>;
-	getters?: Getters &
-		ThisType<OptionStoreStateShape<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
-	actions?: Actions &
-		ThisType<OptionStoreStateShape<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	getters?: Getters & ThisType<OptionStoreInstance<Id, State, Getters, Actions>>;
+	actions?: Actions & ThisType<OptionStoreInstance<Id, State, Getters, Actions>>;
 }
 
 type SetupStoreFactory<Store extends AnyObject> = () => Store;
+
+// Extract only non-function properties from a setup store's return type.
+// This mirrors the runtime classification in createSetupStore where
+// methods become actions and remaining properties are state/getters.
+type SetupStoreState<Store extends AnyObject> = {
+	[K in keyof Store as Store[K] extends AnyFunction ? never : K]: Store[K];
+};
 
 function isObject(value: unknown): value is AnyObject {
 	return typeof value === 'object' && value !== null;
@@ -75,7 +87,7 @@ function isFunction(value: unknown): value is AnyFunction {
 
 function isOptionStoreDefinition(
 	value: unknown
-): value is DefineStoreOptions<AnyObject, GetterTree<AnyObject>, ActionTree> {
+): value is DefineStoreOptions<string, AnyObject, GetterTree<AnyObject>, ActionTree> {
 	return isObject(value) && isFunction(Reflect.get(value, 'state'));
 }
 
@@ -93,7 +105,7 @@ function assertValidStoreDefinition(
 	id: string,
 	definition: unknown
 ): asserts definition is
-	| DefineStoreOptions<AnyObject, GetterTree<AnyObject>, ActionTree>
+	| DefineStoreOptions<string, AnyObject, GetterTree<AnyObject>, ActionTree>
 	| SetupStoreFactory<AnyObject>
 	| DefineSetupStoreOptions<AnyObject> {
 	if (!isOptionStoreDefinition(definition) && !isFunction(definition) && !isSetupStoreOptions(definition)) {
@@ -110,11 +122,11 @@ export function defineStore<
 	Actions extends ActionTree = ActionTree
 >(
 	id: Id,
-	options: DefineStoreOptions<State, Getters, Actions>
+	options: DefineStoreOptions<Id, State, Getters, Actions>
 ): PublicStoreDefinition<
 	Id,
 	StoreState<OptionStoreStateShape<State>>,
-	{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
+	OptionStoreComputed<Getters>,
 	StoreActions<Actions>
 >;
 export function defineStore<Id extends string, Store extends AnyObject>(
@@ -122,7 +134,7 @@ export function defineStore<Id extends string, Store extends AnyObject>(
 	setup: SetupStoreFactory<Store>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<Store>,
+	StoreState<SetupStoreState<Store>>,
 	StoreGetters<Record<never, never>>,
 	StoreActions<{
 		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;
@@ -133,7 +145,7 @@ export function defineStore<Id extends string, Store extends AnyObject>(
 	setup: DefineSetupStoreOptions<Store>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<Store>,
+	StoreState<SetupStoreState<Store>>,
 	StoreGetters<Record<never, never>>,
 	StoreActions<{
 		[K in keyof Store as Store[K] extends AnyFunction ? K : never]: Store[K] extends AnyFunction ? Store[K] : never;

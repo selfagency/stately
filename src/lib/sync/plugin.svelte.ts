@@ -1,6 +1,6 @@
 import { sanitizeValue } from '../internal/sanitize.js';
 import type { StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
-import type { StateManagerPlugin } from '../root/types.js';
+import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { createBroadcastChannelTransport } from './broadcast-channel.js';
 import { parseSyncMessage } from './message-schema.js';
 import { createStorageEventTransport } from './storage-events.js';
@@ -94,13 +94,13 @@ function rememberOriginMutation(receivedMutationIds: Map<string, number>, origin
 
 export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 	options: SyncPluginOptions<Message> = {}
-): StateManagerPlugin {
+): StateManagerPlugin<StoreDefinition, SyncStore> {
 	const origin = options.origin ?? createOrigin();
 	const version = options.version ?? 1;
 	const createId = options.createId;
 	const createTimestamp = options.createTimestamp ?? (() => Date.now());
 
-	return ({ store }) => {
+	return defineStateManagerPlugin<StoreDefinition, SyncStore>(({ store }) => {
 		if (!isSyncStore(store)) {
 			return;
 		}
@@ -241,5 +241,5 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
 			writable: true
 		});
 		return undefined;
-	};
+	});
 }

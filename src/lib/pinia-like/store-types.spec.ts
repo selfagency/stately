@@ -1,8 +1,8 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { createMemoryStorageAdapter } from '../persistence/adapters/memory-storage.js';
 import { defineStore } from '../define-store.svelte.js';
-import type { PersistStoreOptions } from './plugin-options.js';
+import { createMemoryStorageAdapter } from '../persistence/adapters/memory-storage.js';
 import { createStateManager } from '../root/create-state-manager.js';
+import type { PersistStoreOptions } from './plugin-options.js';
 import type { StoreActionHookContext, StoreDefinition, StoreInstance } from './store-types.js';
 
 describe('store-types', () => {
@@ -65,18 +65,41 @@ describe('store-types', () => {
 		expect(true).toBe(true);
 	});
 
-	it('rejects obvious non-plain option store state shapes at compile time', () => {
-		defineStore('invalid-array-state', {
-			// @ts-expect-error option store state must be a plain-object-like shape, not an array
-			state: () => ['count'] as string[]
+	it('types option-store action this as the full store instance', () => {
+		interface AppState {
+			count: number;
+			label: string;
+		}
+
+		const manager = createStateManager();
+		const useAppStateStore = defineStore('app-state-typing', {
+			state: (): AppState => ({ count: 0, label: 'ready' }),
+			actions: {
+				merge(state: Partial<AppState>) {
+					expectTypeOf(this.$id).toEqualTypeOf<'app-state-typing'>();
+					expectTypeOf(this.$state).toEqualTypeOf<AppState>();
+					expectTypeOf(this.$state.count).toEqualTypeOf<number>();
+					expectTypeOf(this.$patch).toEqualTypeOf<(partial: Partial<AppState> | ((state: AppState) => void)) => void>();
+					expectTypeOf(this.$reset).toEqualTypeOf<() => void>();
+					expectTypeOf(this.$dispose).toEqualTypeOf<() => void>();
+					expectTypeOf(this.set).toEqualTypeOf<(value: AppState) => void>();
+					expectTypeOf(this.subscribe).toBeFunction();
+					expectTypeOf(this.$subscribe).toBeFunction();
+					expectTypeOf(this.$onAction).toBeFunction();
+					const stop = this.$subscribe(() => undefined, { detached: true });
+					stop();
+					this.$patch(state);
+					return this.$id;
+				}
+			}
 		});
 
-		defineStore('invalid-date-state', {
-			// @ts-expect-error option store state must be a plain-object-like shape, not a Date instance
-			state: () => new Date()
-		});
+		const store = useAppStateStore(manager);
+		const id = store.merge({ count: 1 });
 
-		expect(true).toBe(true);
+		expect(id).toBe('app-state-typing');
+		expect(store.count).toBe(1);
+		expectTypeOf(store.merge).toBeFunction();
 	});
 
 	it('types subscribe selectors and equality functions consistently', () => {

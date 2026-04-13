@@ -1,5 +1,5 @@
 import type { StoreCustomProperties, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
-import type { StateManagerPlugin } from '../root/types.js';
+import type { StateManagerPlugin, StoreDefinition } from '../root/types.js';
 import { createHistoryController, type HistoryController } from './history-controller.svelte.js';
 import { createTimeTravelController, type TimeTravelController } from './time-travel.svelte.js';
 
@@ -43,7 +43,9 @@ function snapshotOf<State extends object>(store: HistoryStore<State>): State {
 	return structuredClone($state.snapshot(store.$state)) as State;
 }
 
-export function createHistoryPlugin(): StateManagerPlugin {
+type HistoryPluginAugmentation = Pick<StoreCustomProperties, '$history' | '$timeTravel'>;
+
+export function createHistoryPlugin(): StateManagerPlugin<StoreDefinition, HistoryStore, HistoryPluginAugmentation> {
 	return ({ options, store }) => {
 		if (!isHistoryStore(store)) {
 			return;

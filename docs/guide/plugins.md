@@ -171,3 +171,7 @@ If you are authoring your own plugin, use the public types in
 - augment `StoreCustomProperties` for new store instance properties
 - prefer `defineStateManagerPlugin()` when you want compile-time checking for
   the augmentation shape the plugin returns
+
+All built-in plugins use typed return signatures with explicit augmentation
+generics, so you can use them as reference implementations for your own
+plugin authoring.
