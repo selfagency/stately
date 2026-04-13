@@ -11,6 +11,7 @@ branch: fix/coym-history-time-travel-state-typing
 
 ## Todo
 
+- [x] Address follow-up review notes from the option-store typing fix before continuing the history slice.
 - [ ] Add failing type-focused coverage for history/time-travel state preservation.
 - [ ] Update history/time-travel public types to preserve concrete state.
 - [ ] Update history plugin typing and snapshots to stop erasing state.

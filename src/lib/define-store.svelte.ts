@@ -15,6 +15,19 @@ type AnyObject = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
+type NonPlainObjectState =
+	| readonly unknown[]
+	| AnyFunction
+	| Date
+	| RegExp
+	| Map<unknown, unknown>
+	| Set<unknown>
+	| WeakMap<object, unknown>
+	| WeakSet<object>
+	| Promise<unknown>;
+
+type PlainObjectState<State extends AnyObject> = State extends NonPlainObjectState ? never : State;
+
 type GetterTree<State extends AnyObject> = StoreGetters<Record<string, (state: State) => unknown>>;
 type ActionTree = StoreActions<Record<string, AnyFunction>>;
 
@@ -27,20 +40,22 @@ export interface DefineSetupStoreOptions<Store extends AnyObject> extends Define
 
 export interface DefineStoreOptions<
 	State extends AnyObject,
-	Getters extends GetterTree<State>,
+	Getters extends GetterTree<PlainObjectState<State>>,
 	Actions extends ActionTree
 > extends DefineStoreOptionsBase<
-	StoreState<State>,
+	StoreState<PlainObjectState<State>>,
 	StoreInstance<
 		string,
-		StoreState<State>,
+		StoreState<PlainObjectState<State>>,
 		{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 		StoreActions<Actions>
 	>
 > {
-	state: () => State;
-	getters?: Getters & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
-	actions?: Actions & ThisType<State & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	state: () => PlainObjectState<State>;
+	getters?: Getters &
+		ThisType<PlainObjectState<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
+	actions?: Actions &
+		ThisType<PlainObjectState<State> & { readonly [K in keyof Getters]: ReturnType<Getters[K]> } & Actions>;
 }
 
 type SetupStoreFactory<Store extends AnyObject> = () => Store;
@@ -86,14 +101,14 @@ function assertValidStoreDefinition(
 export function defineStore<
 	Id extends string,
 	State extends AnyObject,
-	Getters extends GetterTree<State> = GetterTree<State>,
+	Getters extends GetterTree<PlainObjectState<State>> = GetterTree<PlainObjectState<State>>,
 	Actions extends ActionTree = ActionTree
 >(
 	id: Id,
 	options: DefineStoreOptions<State, Getters, Actions>
 ): PublicStoreDefinition<
 	Id,
-	StoreState<State>,
+	StoreState<PlainObjectState<State>>,
 	{ readonly [K in keyof Getters]: ReturnType<Getters[K]> },
 	StoreActions<Actions>
 >;
