@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: high
 created_at: 2026-04-13T15:11:13Z
-updated_at: 2026-04-13T15:51:38Z
+updated_at: 2026-04-13T16:02:24Z
 branch: fix/coym-history-time-travel-state-typing
 pr: 23
 ---
@@ -36,5 +36,8 @@ pr: 23
   `storeToRefs()`.
 - Addressed carry-over review feedback by tightening option-store state checks and
   restoring `defineStore(...persist...)` exclusivity coverage.
+- Updated the README and reference/guide docs so the published documentation
+  matches the current runtime contracts and typing behavior without sounding like
+  a major historical API shift.
 - Verified the branch with `pnpm run check`, `pnpm run lint`, `pnpm run test`, and
   `pnpm run build`.

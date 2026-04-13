@@ -3,9 +3,15 @@
 [![CI](https://github.com/selfagency/stately/actions/workflows/ci.yml/badge.svg)](https://github.com/selfagency/stately/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/selfagency/stately/graph/badge.svg?token=9F7ZcOIrh1)](https://codecov.io/gh/selfagency/stately)
 
-Stately is a Pinia-inspired state management library built specifically for Svelte 5 runes and SvelteKit. It provides a familiar `defineStore()` API, direct mutation ergonomics, and SSR-safe patterns, with an extensible plugin system for advanced features.
+Stately is a Pinia-inspired state management library built specifically for
+Svelte 5 runes and SvelteKit. It provides a familiar `defineStore()` API,
+direct mutation ergonomics, and SSR-safe patterns, with an extensible plugin
+system for advanced features.
 
-If you’ve used Pinia, you’ll feel at home. Stately provides a structured way to define shared state, mutate it directly, and observe changes. It includes built-in support for persistence, history, synchronization, and async orchestration without the boilerplate of manual state management.
+If you’ve used Pinia, you’ll feel at home. Stately provides a structured way to
+define shared state, mutate it directly, and observe changes. It includes
+built-in support for persistence, history, synchronization, and async
+orchestration without the boilerplate of manual state management.
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
@@ -15,7 +21,9 @@ If you’ve used Pinia, you’ll feel at home. Stately provides a structured way
 
 ## Why Stately?
 
-Stately is designed for those that need a store model that scales from simple counters to complex application workflows while maintaining Svelte 5 semantics and avoiding SSR pitfalls.
+Stately is designed for those that need a store model that scales from simple
+counters to complex application workflows while maintaining Svelte 5 semantics
+and avoiding SSR pitfalls.
 
 It bridges the gap between simple writable stores and complex state frameworks, offering an API that is powerful yet intuitive.
 
@@ -30,6 +38,7 @@ It bridges the gap between simple writable stores and complex state frameworks, 
 - **Multi-tab Sync:** Synchronize state across tabs using `BroadcastChannel`.
 - **Async Workflow:** Track loading/error states with built-in concurrency policies (restartable, drop, enqueue, etc.).
 - **Validation:** Prevent invalid state updates with pre-commit validation.
+- **Typed Plugins:** History, validation, persistence, and sync hooks preserve concrete store state types.
 - **DevTools:** A dedicated inspector drawer and Vite integration for real-time debugging.
 
 ## Installation
@@ -63,11 +72,20 @@ const counter = useCounterStore(manager);
 counter.increment();
 ```
 
-**Note for SvelteKit:** When using SSR, avoid `getDefaultStateManager()`. Instead, create a request-scoped manager and provide it via Svelte context. See the [SSR documentation](https://stately.self.agency/guide/ssr-and-sveltekit) for details.
+For option stores, `state()` must return a plain object at runtime. Stately
+rejects common non-plain shapes like arrays, `Date`, `Map`, `Set`, and promises
+at compile time for option stores, while setup stores remain the escape hatch
+for class instances and other custom prototypes.
+
+**Note for SvelteKit:** When using SSR, avoid `getDefaultStateManager()`.
+Instead, create a request-scoped manager and provide it via Svelte context. See
+the [SSR documentation](https://stately.self.agency/guide/ssr-and-sveltekit)
+for details.
 
 ## The Inspector
 
-Stately includes a development-only inspector that allows you to visualize your state, track mutations in real-time, and test history playback.
+Stately includes a development-only inspector that allows you to visualize your
+state, track mutations in real-time, and test history playback.
 
 Enable it in your `vite.config.ts`:
 
@@ -89,7 +107,8 @@ export default defineConfig({
 
 ## Advanced Usage
 
-Stately is built for real-world complexity. You can easily compose plugins to handle persistence, history, and sync in a single store:
+Stately is built for real-world complexity. You can easily compose plugins to
+handle persistence, history, and sync in a single store:
 
 ```ts
 import {
@@ -106,6 +125,11 @@ const manager = createStateManager()
 	.use(createSyncPlugin({ origin: 'app-instance' }))
 	.use(createAsyncPlugin());
 ```
+
+Plugin callbacks preserve concrete store state types through history
+snapshots, validation callbacks, persistence envelopes, and store-facing sync
+helpers, which makes interface-shaped application state much easier to keep
+fully typed.
 
 For complex workflows, use the Finite State Machine (FSM) plugin to replace "boolean soup" with explicit states:
 
@@ -160,4 +184,7 @@ Visit [stately.self.agency](https://stately.self.agency/) for the full documenta
 
 ## AI Agent Skill
 
-Stately ships an AI agent skill that helps LLM coding agents (Cursor, Windsurf, GitHub Copilot, etc.) work with the library correctly. See the [AI Agent Skill guide](https://stately.self.agency/guide/ai-agent-skill) for setup instructions.
+Stately ships an AI agent skill that helps LLM coding agents (Cursor,
+Windsurf, GitHub Copilot, etc.) work with the library correctly. See the
+[AI Agent Skill guide](https://stately.self.agency/guide/ai-agent-skill) for
+setup instructions.

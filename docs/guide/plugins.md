@@ -71,6 +71,9 @@ export const useSessionStore = defineStore('session', {
 
 Use [Persistence helpers](/reference/persistence) for the full option surface.
 
+Custom persistence hooks receive the concrete store state type, so interface
+state stays strongly typed through `serialize()` and `deserialize()`.
+
 ## History and time travel
 
 Use history when users benefit from undo and redo, or when you need replayable
@@ -119,6 +122,10 @@ The sync plugin:
 - applies a timestamp-first ordering policy with deterministic origin and
   `mutationId` tie-breakers
 - only patches known state keys
+
+If you use `createMessage` to add transport metadata, remember that the callback
+is manager-wide. Treat the incoming base payload as a generic sync message and
+perform your own narrowing if you need store-specific fields.
 
 Use [Plugins and orchestration](/reference/plugins) for the detailed conflict
 rules.
