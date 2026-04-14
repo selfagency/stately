@@ -1,5 +1,5 @@
 import { readMarker } from '../internal/marker-helpers.js';
-import type { StoreCustomProperties, StoreState } from '../pinia-like/store-types.js';
+import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 import type { ConcurrencyMode } from './concurrency.js';
