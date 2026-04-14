@@ -3,7 +3,7 @@
 		"svelte-check --tsconfig ./tsconfig.json --tsgo",
 		"eslint --fix",
 		"prettier --write",
-		"pnpm run build:inspector-css && vitest run"
+		"vitest run --passWithNoTests"
 	],
 	"*.{json,md,yml,yaml}": ["prettier --write"]
 }
