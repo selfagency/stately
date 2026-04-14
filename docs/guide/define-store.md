@@ -12,17 +12,17 @@ This is the closest equivalent to the standard Pinia style.
 import { defineStore } from '@selfagency/stately';
 
 export const useCartStore = defineStore('cart', {
-	state: () => ({ items: [] as string[] }),
-	getters: {
-		itemCount(state) {
-			return state.items.length;
-		}
-	},
-	actions: {
-		addItem(item: string) {
-			this.items.push(item);
-		}
-	}
+  state: () => ({ items: [] as string[] }),
+  getters: {
+    itemCount(state) {
+      return state.items.length;
+    }
+  },
+  actions: {
+    addItem(item: string) {
+      this.items.push(item);
+    }
+  }
 });
 ```
 
@@ -43,16 +43,16 @@ custom logic or share typed plugin configurations within the store definition.
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('preferences', {
-	setup: () => ({
-		theme: 'light' as 'light' | 'dark',
-		compact: false,
-		toggleTheme() {
-			this.theme = this.theme === 'light' ? 'dark' : 'light';
-		},
-		setCompact(value: boolean) {
-			this.compact = value;
-		}
-	})
+  setup: () => ({
+    theme: 'light' as 'light' | 'dark',
+    compact: false,
+    toggleTheme() {
+      this.theme = this.theme === 'light' ? 'dark' : 'light';
+    },
+    setCompact(value: boolean) {
+      this.compact = value;
+    }
+  })
 });
 ```
 
@@ -61,19 +61,19 @@ prototype chain.
 
 ```ts
 class CounterStore {
-	count = 0;
+  count = 0;
 
-	get doubleCount() {
-		return this.count * 2;
-	}
+  get doubleCount() {
+    return this.count * 2;
+  }
 
-	increment() {
-		this.count += 1;
-	}
+  increment() {
+    this.count += 1;
+  }
 }
 
 export const useCounterStore = defineStore('counter', {
-	setup: () => new CounterStore()
+  setup: () => new CounterStore()
 });
 ```
 
@@ -93,7 +93,7 @@ Every store instance provides a consistent set of built-in helpers:
 
 ```ts
 const unsubscribe = counter.$subscribe((mutation, state) => {
-	console.log(mutation.type, state.count);
+  console.log(mutation.type, state.count);
 });
 
 // Patch with an object
@@ -101,7 +101,7 @@ counter.$patch({ count: 3 });
 
 // Patch with a function for grouped mutations
 counter.$patch((state) => {
-	state.count += 1;
+  state.count += 1;
 });
 
 counter.$reset();
@@ -128,13 +128,13 @@ callback when a specific slice of state changes.
 
 ```ts
 const unsubscribe = counter.$subscribe(
-	(_mutation, state) => {
-		console.log('count changed to', state.count);
-	},
-	{
-		detached: true,
-		select: (state) => state.count
-	}
+  (_mutation, state) => {
+    console.log('count changed to', state.count);
+  },
+  {
+    detached: true,
+    select: (state) => state.count
+  }
 );
 ```
 
@@ -142,8 +142,8 @@ You can also provide a custom `equalityFn` for complex data types:
 
 ```ts
 store.$subscribe(callback, {
-	select: (state) => state.items,
-	equalityFn: (prev, next) => prev.length === next.length && prev.every((v, i) => v === next[i])
+  select: (state) => state.items,
+  equalityFn: (prev, next) => prev.length === next.length && prev.every((v, i) => v === next[i])
 });
 ```
 
@@ -153,12 +153,12 @@ store.$subscribe(callback, {
 
 ```ts
 store.$onAction(({ args, before }) => {
-	before(() => {
-		const amount = args[0] as number;
-		if (amount > 10) {
-			return false; // Cancels the action
-		}
-	});
+  before(() => {
+    const amount = args[0] as number;
+    if (amount > 10) {
+      return false; // Cancels the action
+    }
+  });
 });
 ```
 

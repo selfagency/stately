@@ -1,122 +1,122 @@
 export interface HistoryEntry<State extends object = object> {
-	snapshot: State;
-	timestamp: number;
+  snapshot: State;
+  timestamp: number;
 }
 
 export interface HistoryController<State extends object = object> {
-	readonly entries: HistoryEntry<State>[];
-	readonly currentIndex: number;
-	readonly canUndo: boolean;
-	readonly canRedo: boolean;
-	readonly isReplaying: boolean;
-	goTo(index: number): boolean;
-	undo(): boolean;
-	redo(): boolean;
-	record(snapshot: State): void;
-	startBatch(): void;
-	endBatch(): void;
+  readonly entries: HistoryEntry<State>[];
+  readonly currentIndex: number;
+  readonly canUndo: boolean;
+  readonly canRedo: boolean;
+  readonly isReplaying: boolean;
+  goTo(index: number): boolean;
+  undo(): boolean;
+  redo(): boolean;
+  record(snapshot: State): void;
+  startBatch(): void;
+  endBatch(): void;
 }
 
 export function createHistoryController<State extends object>(config: {
-	initialSnapshot: State;
-	limit?: number;
-	applySnapshot(snapshot: State): void;
+  initialSnapshot: State;
+  limit?: number;
+  applySnapshot(snapshot: State): void;
 }): HistoryController<State> {
-	const state = $state({
-		entries: [{ snapshot: config.initialSnapshot, timestamp: Date.now() }] as HistoryEntry<State>[],
-		index: 0,
-		replaying: false,
-		batchDepth: 0,
-		pendingSnapshot: undefined as State | undefined
-	});
-	const configuredLimit = config.limit;
-	const limit =
-		typeof configuredLimit === 'number' &&
-		Number.isFinite(configuredLimit) &&
-		Number.isInteger(configuredLimit) &&
-		configuredLimit >= 1
-			? configuredLimit
-			: 50;
+  const state = $state({
+    entries: [{ snapshot: config.initialSnapshot, timestamp: Date.now() }] as HistoryEntry<State>[],
+    index: 0,
+    replaying: false,
+    batchDepth: 0,
+    pendingSnapshot: undefined as State | undefined
+  });
+  const configuredLimit = config.limit;
+  const limit =
+    typeof configuredLimit === 'number' &&
+    Number.isFinite(configuredLimit) &&
+    Number.isInteger(configuredLimit) &&
+    configuredLimit >= 1
+      ? configuredLimit
+      : 50;
 
-	const trim = () => {
-		while (state.entries.length > limit) {
-			state.entries.shift();
-			state.index = Math.max(0, state.index - 1);
-		}
-	};
+  const trim = () => {
+    while (state.entries.length > limit) {
+      state.entries.shift();
+      state.index = Math.max(0, state.index - 1);
+    }
+  };
 
-	const commit = (snapshot: State) => {
-		state.entries.splice(state.index + 1);
-		state.entries.push({ snapshot, timestamp: Date.now() });
-		state.index = state.entries.length - 1;
-		trim();
-	};
+  const commit = (snapshot: State) => {
+    state.entries.splice(state.index + 1);
+    state.entries.push({ snapshot, timestamp: Date.now() });
+    state.index = state.entries.length - 1;
+    trim();
+  };
 
-	return {
-		get entries() {
-			return state.entries;
-		},
-		get currentIndex() {
-			return state.index;
-		},
-		get canUndo() {
-			return state.index > 0;
-		},
-		get canRedo() {
-			return state.index < state.entries.length - 1;
-		},
-		get isReplaying() {
-			return state.replaying;
-		},
-		goTo(index) {
-			if (index < 0 || index >= state.entries.length || index === state.index) {
-				return false;
-			}
+  return {
+    get entries() {
+      return state.entries;
+    },
+    get currentIndex() {
+      return state.index;
+    },
+    get canUndo() {
+      return state.index > 0;
+    },
+    get canRedo() {
+      return state.index < state.entries.length - 1;
+    },
+    get isReplaying() {
+      return state.replaying;
+    },
+    goTo(index) {
+      if (index < 0 || index >= state.entries.length || index === state.index) {
+        return false;
+      }
 
-			const previousIndex = state.index;
-			state.replaying = true;
-			state.index = index;
-			try {
-				config.applySnapshot(state.entries[state.index].snapshot);
-				return true;
-			} catch (error) {
-				state.index = previousIndex;
-				throw error;
-			} finally {
-				state.replaying = false;
-			}
-		},
-		undo() {
-			return this.goTo(state.index - 1);
-		},
-		redo() {
-			return this.goTo(state.index + 1);
-		},
-		record(snapshot) {
-			if (state.replaying) {
-				return;
-			}
+      const previousIndex = state.index;
+      state.replaying = true;
+      state.index = index;
+      try {
+        config.applySnapshot(state.entries[state.index].snapshot);
+        return true;
+      } catch (error) {
+        state.index = previousIndex;
+        throw error;
+      } finally {
+        state.replaying = false;
+      }
+    },
+    undo() {
+      return this.goTo(state.index - 1);
+    },
+    redo() {
+      return this.goTo(state.index + 1);
+    },
+    record(snapshot) {
+      if (state.replaying) {
+        return;
+      }
 
-			if (state.batchDepth > 0) {
-				state.pendingSnapshot = snapshot;
-				return;
-			}
+      if (state.batchDepth > 0) {
+        state.pendingSnapshot = snapshot;
+        return;
+      }
 
-			commit(snapshot);
-		},
-		startBatch() {
-			state.batchDepth += 1;
-		},
-		endBatch() {
-			if (state.batchDepth === 0) {
-				return;
-			}
+      commit(snapshot);
+    },
+    startBatch() {
+      state.batchDepth += 1;
+    },
+    endBatch() {
+      if (state.batchDepth === 0) {
+        return;
+      }
 
-			state.batchDepth -= 1;
-			if (state.batchDepth === 0 && state.pendingSnapshot) {
-				commit(state.pendingSnapshot);
-				state.pendingSnapshot = undefined;
-			}
-		}
-	};
+      state.batchDepth -= 1;
+      if (state.batchDepth === 0 && state.pendingSnapshot) {
+        commit(state.pendingSnapshot);
+        state.pendingSnapshot = undefined;
+      }
+    }
+  };
 }

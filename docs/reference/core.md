@@ -15,17 +15,17 @@ It supports both option stores and setup stores:
 import { defineStore } from '@selfagency/stately';
 
 export const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += 1;
-		}
-	}
+  state: () => ({ count: 0 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += 1;
+    }
+  }
 });
 ```
 
@@ -42,16 +42,16 @@ to keep updates predictable.
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('preferences', {
-	setup: () => ({
-		theme: 'light' as 'light' | 'dark',
-		compact: false,
-		toggleTheme() {
-			this.theme = this.theme === 'light' ? 'dark' : 'light';
-		},
-		setCompact(value: boolean) {
-			this.compact = value;
-		}
-	})
+  setup: () => ({
+    theme: 'light' as 'light' | 'dark',
+    compact: false,
+    toggleTheme() {
+      this.theme = this.theme === 'light' ? 'dark' : 'light';
+    },
+    setCompact(value: boolean) {
+      this.compact = value;
+    }
+  })
 });
 ```
 
@@ -59,19 +59,19 @@ Class-based setup stores are also supported:
 
 ```ts
 class CounterStore {
-	count = 0;
+  count = 0;
 
-	get doubleCount() {
-		return this.count * 2;
-	}
+  get doubleCount() {
+    return this.count * 2;
+  }
 
-	increment() {
-		this.count += 1;
-	}
+  increment() {
+    this.count += 1;
+  }
 }
 
 const useCounterStore = defineStore('counter', {
-	setup: () => new CounterStore()
+  setup: () => new CounterStore()
 });
 ```
 
@@ -96,7 +96,7 @@ import { createStateManager, defineStore } from '@selfagency/stately';
 
 const manager = createStateManager();
 const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0 })
+  state: () => ({ count: 0 })
 });
 
 const counter = useCounterStore(manager);
@@ -175,10 +175,10 @@ Every store instance exposes the same shell helpers:
 
 ```ts
 store.$subscribe((mutation, state) => {
-	// mutation.type => 'direct' | 'patch-object' | 'patch-function'
-	// mutation.storeId => current store id
-	// mutation.payload => commit metadata and optional payload
-	// state => latest store state snapshot/proxy
+  // mutation.type => 'direct' | 'patch-object' | 'patch-function'
+  // mutation.storeId => current store id
+  // mutation.payload => commit metadata and optional payload
+  // state => latest store state snapshot/proxy
 });
 ```
 
@@ -199,9 +199,9 @@ const unsubscribe = store.$subscribe(callback, { detached: true });
 
 ```ts
 store.$subscribe(callback, {
-	detached: true,
-	select: (state) => state.count,
-	equalityFn: (prev, next) => prev === next
+  detached: true,
+  select: (state) => state.count,
+  equalityFn: (prev, next) => prev === next
 });
 ```
 
@@ -213,19 +213,19 @@ store.$subscribe(callback, {
 
 ```ts
 store.$onAction(({ name, args, before, after, onError }) => {
-	before(() => {
-		if (name === 'save' && args.length === 0) {
-			return false;
-		}
-	});
+  before(() => {
+    if (name === 'save' && args.length === 0) {
+      return false;
+    }
+  });
 
-	after((result) => {
-		console.log('completed with', result);
-	});
+  after((result) => {
+    console.log('completed with', result);
+  });
 
-	onError((error) => {
-		console.error(error);
-	});
+  onError((error) => {
+    console.error(error);
+  });
 });
 ```
 
@@ -251,15 +251,15 @@ reactive `current` getter plus an `unsubscribe()` cleanup method.
 import { createExternalSubscriber } from '@selfagency/stately';
 
 const online = createExternalSubscriber({
-	getSnapshot: () => navigator.onLine,
-	subscribe(update) {
-		window.addEventListener('online', update);
-		window.addEventListener('offline', update);
-		return () => {
-			window.removeEventListener('online', update);
-			window.removeEventListener('offline', update);
-		};
-	}
+  getSnapshot: () => navigator.onLine,
+  subscribe(update) {
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }
 });
 ```
 

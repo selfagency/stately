@@ -5,5 +5,5 @@ let { children, class: className = '' } = $props<{ children?: import('svelte').S
 </script>
 
 <Dialog.Title class={cn('font-serif text-3xl font-semibold tracking-[-0.04em] text-popover-foreground', className)}>
-	{@render children?.()}
+  {@render children?.()}
 </Dialog.Title>

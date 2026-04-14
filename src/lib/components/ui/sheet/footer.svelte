@@ -4,5 +4,5 @@ let { children, class: className = '' } = $props<{ children?: import('svelte').S
 </script>
 
 <div class={cn('mt-auto flex items-center justify-end gap-3 px-6 pb-6 pt-4', className)}>
-	{@render children?.()}
+  {@render children?.()}
 </div>

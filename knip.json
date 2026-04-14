@@ -1,8 +1,8 @@
 {
-	"$schema": "https://unpkg.com/knip@6/schema.json",
-	"project": ["**/*.{js,ts}", "!**/*.{test,spec}.{js,ts}", "!**/dist/**", "!**/node_modules/**"],
-	"tags": ["-lintignore"],
-	"paths": {
-		"$lib/*": ["./src/lib/*"]
-	}
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "project": ["**/*.{js,ts}", "!**/*.{test,spec}.{js,ts}", "!**/dist/**", "!**/node_modules/**"],
+  "tags": ["-lintignore"],
+  "paths": {
+    "$lib/*": ["./src/lib/*"]
+  }
 }

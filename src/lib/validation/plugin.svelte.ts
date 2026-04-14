@@ -2,91 +2,91 @@ import type { StoreState } from '../pinia-like/store-types.js';
 import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 
 interface ValidatableStore<State extends object = StoreState> {
-	readonly $id: string;
-	$state: State;
-	$patch(patch: Partial<State> | ((state: State) => void)): void;
-	$subscribe(callback: (mutation: unknown, state: State) => void, options?: { detached?: boolean }): () => void;
+  readonly $id: string;
+  $state: State;
+  $patch(patch: Partial<State> | ((state: State) => void)): void;
+  $subscribe(callback: (mutation: unknown, state: State) => void, options?: { detached?: boolean }): () => void;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null;
+  return typeof value === 'object' && value !== null;
 }
 
 function isValidatableStore(value: unknown): value is ValidatableStore {
-	return isRecord(value) && '$state' in value && '$patch' in value;
+  return isRecord(value) && '$state' in value && '$patch' in value;
 }
 
 function readValidateOptions<State extends object>(
-	value: unknown
+  value: unknown
 ):
-	| {
-			validate: (state: State) => boolean | string;
-			onValidationError?: (error: string) => void;
-	  }
-	| undefined {
-	if (!isRecord(value) || typeof value.validate !== 'function') {
-		return undefined;
-	}
-	return {
-		validate: value.validate as (state: State) => boolean | string,
-		onValidationError:
-			typeof value.onValidationError === 'function' ? (value.onValidationError as (error: string) => void) : undefined
-	};
+  | {
+      validate: (state: State) => boolean | string;
+      onValidationError?: (error: string) => void;
+    }
+  | undefined {
+  if (!isRecord(value) || typeof value.validate !== 'function') {
+    return undefined;
+  }
+  return {
+    validate: value.validate as (state: State) => boolean | string,
+    onValidationError:
+      typeof value.onValidationError === 'function' ? (value.onValidationError as (error: string) => void) : undefined
+  };
 }
 
 declare module '../pinia-like/store-types.js' {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface DefineStoreOptionsBase<State, Store> {
-		validate?: (state: State) => boolean | string;
-		onValidationError?: (error: string) => void;
-	}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface DefineStoreOptionsBase<State, Store> {
+    validate?: (state: State) => boolean | string;
+    onValidationError?: (error: string) => void;
+  }
 }
 
 export function createValidationPlugin(): StateManagerPlugin<StoreDefinition, ValidatableStore> {
-	return defineStateManagerPlugin<StoreDefinition, ValidatableStore>(({ options, store }) => {
-		if (!isValidatableStore(store)) {
-			return;
-		}
+  return defineStateManagerPlugin<StoreDefinition, ValidatableStore>(({ options, store }) => {
+    if (!isValidatableStore(store)) {
+      return;
+    }
 
-		const config = readValidateOptions<typeof store.$state>(options);
-		if (!config) {
-			return;
-		}
+    const config = readValidateOptions<typeof store.$state>(options);
+    if (!config) {
+      return;
+    }
 
-		const validatable = store as ValidatableStore;
-		const originalPatch = validatable.$patch.bind(validatable);
+    const validatable = store as ValidatableStore;
+    const originalPatch = validatable.$patch.bind(validatable);
 
-		Object.defineProperty(store, '$patch', {
-			enumerable: false,
-			configurable: true,
-			writable: true,
-			value(patch: Partial<typeof validatable.$state> | ((state: typeof validatable.$state) => void)) {
-				const snapshot = structuredClone($state.snapshot(validatable.$state)) as typeof validatable.$state;
-				const restoreSnapshot = () => {
-					validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
-				};
+    Object.defineProperty(store, '$patch', {
+      enumerable: false,
+      configurable: true,
+      writable: true,
+      value(patch: Partial<typeof validatable.$state> | ((state: typeof validatable.$state) => void)) {
+        const snapshot = structuredClone($state.snapshot(validatable.$state)) as typeof validatable.$state;
+        const restoreSnapshot = () => {
+          validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
+        };
 
-				originalPatch(patch);
+        originalPatch(patch);
 
-				let result: boolean | string | undefined;
-				try {
-					result = config.validate(validatable.$state);
-				} catch (error) {
-					restoreSnapshot();
-					throw error;
-				}
+        let result: boolean | string | undefined;
+        try {
+          result = config.validate(validatable.$state);
+        } catch (error) {
+          restoreSnapshot();
+          throw error;
+        }
 
-				if (result === true || result === undefined) {
-					return;
-				}
+        if (result === true || result === undefined) {
+          return;
+        }
 
-				restoreSnapshot();
-				const errorMessage = typeof result === 'string' ? result : 'Validation failed';
-				if (config.onValidationError) {
-					config.onValidationError(errorMessage);
-				}
-				throw new Error(errorMessage);
-			}
-		});
-	});
+        restoreSnapshot();
+        const errorMessage = typeof result === 'string' ? result : 'Validation failed';
+        if (config.onValidationError) {
+          config.onValidationError(errorMessage);
+        }
+        throw new Error(errorMessage);
+      }
+    });
+  });
 }

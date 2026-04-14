@@ -37,16 +37,16 @@ Create the manager in a layout or component `<script>` block.
 ```svelte
 <!-- +layout.svelte -->
 <script>
-	import {
-		createHistoryPlugin,
-		createPersistencePlugin,
-		createStateManager,
-		initializeStateManagerContext
-	} from '@selfagency/stately';
+  import {
+    createHistoryPlugin,
+    createPersistencePlugin,
+    createStateManager,
+    initializeStateManagerContext
+  } from '@selfagency/stately';
 
-	const manager = createStateManager().use(createPersistencePlugin()).use(createHistoryPlugin());
+  const manager = createStateManager().use(createPersistencePlugin()).use(createHistoryPlugin());
 
-	initializeStateManagerContext(manager);
+  initializeStateManagerContext(manager);
 </script>
 
 <slot />
@@ -74,12 +74,12 @@ const counter = useCounterStore(getStateManager());
 ```ts
 // +layout.server.ts
 export async function load() {
-	return {
-		initialPreferences: {
-			theme: 'dark',
-			compact: false
-		}
-	};
+  return {
+    initialPreferences: {
+      theme: 'dark',
+      compact: false
+    }
+  };
 }
 ```
 
@@ -88,16 +88,16 @@ export async function load() {
 ```svelte
 <!-- +layout.svelte -->
 <script lang="ts">
-	import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
-	import { usePreferencesStore } from '$lib/stores/preferences.svelte';
+  import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
+  import { usePreferencesStore } from '$lib/stores/preferences.svelte';
 
-	let { data } = $props();
+  let { data } = $props();
 
-	const manager = createStateManager();
-	initializeStateManagerContext(manager);
+  const manager = createStateManager();
+  initializeStateManagerContext(manager);
 
-	const preferences = usePreferencesStore(manager);
-	preferences.$patch(data.initialPreferences);
+  const preferences = usePreferencesStore(manager);
+  preferences.$patch(data.initialPreferences);
 </script>
 
 <slot />
@@ -130,12 +130,12 @@ import { browser } from '$app/environment';
 import { createLocalStorageAdapter, createMemoryStorageAdapter } from '@selfagency/stately';
 
 const useMyStore = defineStore('my-store', {
-	state: () => ({ count: 0 }),
-	persist: {
-		adapter: browser ? createLocalStorageAdapter() : createMemoryStorageAdapter(),
-		version: 1,
-		key: 'my-store'
-	}
+  state: () => ({ count: 0 }),
+  persist: {
+    adapter: browser ? createLocalStorageAdapter() : createMemoryStorageAdapter(),
+    version: 1,
+    key: 'my-store'
+  }
 });
 ```
 

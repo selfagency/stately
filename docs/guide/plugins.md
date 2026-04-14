@@ -49,23 +49,23 @@ Stately supports:
 
 ```ts
 import {
-	createLocalStorageAdapter,
-	createLzStringCompression,
-	createPersistencePlugin,
-	createStateManager,
-	defineStore
+  createLocalStorageAdapter,
+  createLzStringCompression,
+  createPersistencePlugin,
+  createStateManager,
+  defineStore
 } from '@selfagency/stately';
 
 const manager = createStateManager().use(createPersistencePlugin());
 
 export const useSessionStore = defineStore('session', {
-	state: () => ({ theme: 'dark', token: '' }),
-	persist: {
-		adapter: createLocalStorageAdapter(),
-		version: 1,
-		omit: ['token'],
-		compression: createLzStringCompression()
-	}
+  state: () => ({ theme: 'dark', token: '' }),
+  persist: {
+    adapter: createLocalStorageAdapter(),
+    version: 1,
+    omit: ['token'],
+    compression: createLzStringCompression()
+  }
 });
 ```
 

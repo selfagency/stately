@@ -19,12 +19,12 @@ Do **not** mutate shared module state from `load`.
 ```ts
 // +layout.server.ts
 export async function load() {
-	return {
-		initialPreferences: {
-			theme: 'dark',
-			compact: false
-		}
-	};
+  return {
+    initialPreferences: {
+      theme: 'dark',
+      compact: false
+    }
+  };
 }
 ```
 
@@ -33,16 +33,16 @@ export async function load() {
 ```svelte
 <!-- +layout.svelte -->
 <script lang="ts">
-	import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
-	import { usePreferencesStore } from '$lib/stores/preferences.svelte';
+  import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
+  import { usePreferencesStore } from '$lib/stores/preferences.svelte';
 
-	let { data } = $props();
+  let { data } = $props();
 
-	const manager = createStateManager();
-	initializeStateManagerContext(manager);
+  const manager = createStateManager();
+  initializeStateManagerContext(manager);
 
-	const preferences = usePreferencesStore(manager);
-	preferences.$patch(data.initialPreferences);
+  const preferences = usePreferencesStore(manager);
+  preferences.$patch(data.initialPreferences);
 </script>
 
 <slot />

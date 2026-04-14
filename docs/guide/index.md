@@ -25,17 +25,17 @@ import { createStateManager, defineStore } from '@selfagency/stately';
 const manager = createStateManager();
 
 export const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += 1;
-		}
-	}
+  state: () => ({ count: 0 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += 1;
+    }
+  }
 });
 
 const counter = useCounterStore(manager);

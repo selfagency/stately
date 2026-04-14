@@ -9,7 +9,7 @@ export const [getStateManagerContext, setStateManagerContext] = createContext<St
  * Prefer this over singleton state when rendering through SvelteKit on the server.
  */
 export function initializeStateManagerContext(manager: StateManager = createStateManager()): StateManager {
-	return setStateManagerContext(manager);
+  return setStateManagerContext(manager);
 }
 
 export { getStateManagerContext as getStateManager, setStateManagerContext as setStateManager };

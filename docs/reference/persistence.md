@@ -58,21 +58,21 @@ Example:
 
 ```ts
 import {
-	createMemoryStorageAdapter,
-	createPersistencePlugin,
-	createStateManager,
-	defineStore
+  createMemoryStorageAdapter,
+  createPersistencePlugin,
+  createStateManager,
+  defineStore
 } from '@selfagency/stately';
 
 const manager = createStateManager().use(createPersistencePlugin());
 
 export const usePreferencesStore = defineStore('preferences', {
-	state: () => ({ theme: 'dark', compact: false }),
-	persist: {
-		adapter: createMemoryStorageAdapter(),
-		version: 1,
-		key: 'stately:preferences'
-	}
+  state: () => ({ theme: 'dark', compact: false }),
+  persist: {
+    adapter: createMemoryStorageAdapter(),
+    version: 1,
+    key: 'stately:preferences'
+  }
 });
 ```
 

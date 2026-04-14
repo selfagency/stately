@@ -4,5 +4,5 @@ let { children, class: className = '' } = $props<{ children?: import('svelte').S
 </script>
 
 <div class={cn('flex items-center gap-2', className)}>
-	{@render children?.()}
+  {@render children?.()}
 </div>

@@ -51,21 +51,21 @@ This makes validation a good fit for invariants that should never remain visible
 import { defineStore } from '@selfagency/stately';
 
 export const useProfileStore = defineStore('profile', {
-	state: () => ({ name: '', age: 18 }),
-	validate(state) {
-		if (!state.name.trim()) {
-			return 'Name is required';
-		}
+  state: () => ({ name: '', age: 18 }),
+  validate(state) {
+    if (!state.name.trim()) {
+      return 'Name is required';
+    }
 
-		if (state.age < 13) {
-			return 'Age must be at least 13';
-		}
+    if (state.age < 13) {
+      return 'Age must be at least 13';
+    }
 
-		return true;
-	},
-	onValidationError(message) {
-		console.error(message);
-	}
+    return true;
+  },
+  onValidationError(message) {
+    console.error(message);
+  }
 });
 ```
 

@@ -1,110 +1,110 @@
 import type { StateManager, StateManagerPlugin, StateManagerPluginContext, StoreDefinition } from './types.js';
 
 function isObject(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null;
+  return typeof value === 'object' && value !== null;
 }
 
 function applyDescriptorAugmentation(target: object, source: object): void {
-	const descriptors = Object.getOwnPropertyDescriptors(source);
-	for (const key of Reflect.ownKeys(descriptors)) {
-		const descriptor = descriptors[key as keyof typeof descriptors];
-		if (descriptor) {
-			Object.defineProperty(target, key, descriptor);
-		}
-	}
+  const descriptors = Object.getOwnPropertyDescriptors(source);
+  for (const key of Reflect.ownKeys(descriptors)) {
+    const descriptor = descriptors[key as keyof typeof descriptors];
+    if (descriptor) {
+      Object.defineProperty(target, key, descriptor);
+    }
+  }
 }
 
 function disposeStore(store: unknown): void {
-	if (
-		typeof store === 'object' &&
-		store !== null &&
-		'$dispose' in store &&
-		typeof (store as Record<string, unknown>).$dispose === 'function'
-	) {
-		(store as { $dispose: () => void }).$dispose();
-	}
+  if (
+    typeof store === 'object' &&
+    store !== null &&
+    '$dispose' in store &&
+    typeof (store as Record<string, unknown>).$dispose === 'function'
+  ) {
+    (store as { $dispose: () => void }).$dispose();
+  }
 }
 
 export function createStateManager(): StateManager {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const plugins: StateManagerPlugin<any, any, any>[] = [];
-	const definitions = new Map<string, StoreDefinition>();
-	const stores = new Map<string, unknown>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plugins: StateManagerPlugin<any, any, any>[] = [];
+  const definitions = new Map<string, StoreDefinition>();
+  const stores = new Map<string, unknown>();
 
-	const manager: StateManager = {
-		get plugins() {
-			return Object.freeze([...plugins]);
-		},
-		use(plugin) {
-			plugins.push(plugin);
-			return manager;
-		},
-		register(definition) {
-			const existing = definitions.get(definition.$id);
+  const manager: StateManager = {
+    get plugins() {
+      return Object.freeze([...plugins]);
+    },
+    use(plugin) {
+      plugins.push(plugin);
+      return manager;
+    },
+    register(definition) {
+      const existing = definitions.get(definition.$id);
 
-			if (existing) {
-				throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
-			}
+      if (existing) {
+        throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
+      }
 
-			definitions.set(definition.$id, definition);
-		},
-		hasDefinition(id) {
-			return definitions.has(id);
-		},
-		getDefinition<Definition extends StoreDefinition = StoreDefinition>(id: string) {
-			return definitions.get(id) as Definition | undefined;
-		},
-		hasStore(id) {
-			return stores.has(id);
-		},
-		getStore<Store = unknown>(id: string) {
-			return stores.get(id) as Store | undefined;
-		},
-		createStore(definition, factory) {
-			if (!definitions.has(definition.$id)) {
-				manager.register(definition);
-			} else if (definitions.get(definition.$id) !== definition) {
-				throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
-			}
+      definitions.set(definition.$id, definition);
+    },
+    hasDefinition(id) {
+      return definitions.has(id);
+    },
+    getDefinition<Definition extends StoreDefinition = StoreDefinition>(id: string) {
+      return definitions.get(id) as Definition | undefined;
+    },
+    hasStore(id) {
+      return stores.has(id);
+    },
+    getStore<Store = unknown>(id: string) {
+      return stores.get(id) as Store | undefined;
+    },
+    createStore(definition, factory) {
+      if (!definitions.has(definition.$id)) {
+        manager.register(definition);
+      } else if (definitions.get(definition.$id) !== definition) {
+        throw new Error(`Duplicate store definition registered for "${definition.$id}".`);
+      }
 
-			const existing = stores.get(definition.$id);
-			if (existing) {
-				return existing as ReturnType<typeof factory>;
-			}
+      const existing = stores.get(definition.$id);
+      if (existing) {
+        return existing as ReturnType<typeof factory>;
+      }
 
-			const store = factory();
+      const store = factory();
 
-			for (const plugin of plugins) {
-				const context: StateManagerPluginContext<typeof definition, typeof store> = {
-					manager,
-					definition,
-					options: definition.options,
-					store
-				};
-				const augmentation = plugin(context);
-				if (isObject(store) && isObject(augmentation)) {
-					applyDescriptorAugmentation(store, augmentation);
-				}
-			}
+      for (const plugin of plugins) {
+        const context: StateManagerPluginContext<typeof definition, typeof store> = {
+          manager,
+          definition,
+          options: definition.options,
+          store
+        };
+        const augmentation = plugin(context);
+        if (isObject(store) && isObject(augmentation)) {
+          applyDescriptorAugmentation(store, augmentation);
+        }
+      }
 
-			stores.set(definition.$id, store);
-			return store;
-		},
-		deleteStore(id) {
-			disposeStore(stores.get(id));
-			definitions.delete(id);
-			return stores.delete(id);
-		},
-		clear() {
-			for (const store of stores.values()) {
-				disposeStore(store);
-			}
-			stores.clear();
-			definitions.clear();
-		}
-	};
+      stores.set(definition.$id, store);
+      return store;
+    },
+    deleteStore(id) {
+      disposeStore(stores.get(id));
+      definitions.delete(id);
+      return stores.delete(id);
+    },
+    clear() {
+      for (const store of stores.values()) {
+        disposeStore(store);
+      }
+      stores.clear();
+      definitions.clear();
+    }
+  };
 
-	return manager;
+  return manager;
 }
 
 let defaultStateManager: StateManager | undefined;
@@ -117,19 +117,19 @@ let defaultStateManager: StateManager | undefined;
  * Svelte context instead.
  */
 export function getDefaultStateManager(): StateManager {
-	if (typeof window === 'undefined') {
-		throw new Error(
-			'getDefaultStateManager() is not available during SSR. ' +
-				'Use createStateManager() with Svelte context for request-scoped state. ' +
-				'See: https://svelte.dev/docs/svelte/svelte-context'
-		);
-	}
-	defaultStateManager ??= createStateManager();
-	return defaultStateManager;
+  if (typeof window === 'undefined') {
+    throw new Error(
+      'getDefaultStateManager() is not available during SSR. ' +
+        'Use createStateManager() with Svelte context for request-scoped state. ' +
+        'See: https://svelte.dev/docs/svelte/svelte-context'
+    );
+  }
+  defaultStateManager ??= createStateManager();
+  return defaultStateManager;
 }
 
 export function resetDefaultStateManager(): void {
-	defaultStateManager = undefined;
+  defaultStateManager = undefined;
 }
 
 export type { StateManager, StateManagerPlugin, StoreDefinition, TypedStateManagerPlugin } from './types.js';

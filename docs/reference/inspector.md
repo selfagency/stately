@@ -22,13 +22,13 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		statelyVitePlugin({
-			buttonPosition: 'right-bottom',
-			panelSide: 'right'
-		})
-	]
+  plugins: [
+    sveltekit(),
+    statelyVitePlugin({
+      buttonPosition: 'right-bottom',
+      panelSide: 'right'
+    })
+  ]
 });
 ```
 
@@ -45,9 +45,9 @@ Behavior notes:
 
 ```ts
 interface StatelyInspectorVitePluginOptions {
-	enabled?: boolean;
-	buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
-	panelSide?: 'left' | 'right';
+  enabled?: boolean;
+  buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
+  panelSide?: 'left' | 'right';
 }
 ```
 
@@ -59,8 +59,8 @@ Example:
 
 ```ts
 statelyVitePlugin({
-	buttonPosition: 'left-top',
-	panelSide: 'left'
+  buttonPosition: 'left-top',
+  panelSide: 'left'
 });
 ```
 
@@ -81,10 +81,10 @@ Props:
 
 ```ts
 interface InspectorDrawerProps {
-	hook?: StatelyInspectorHook;
-	initiallyOpen?: boolean;
-	buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
-	panelSide?: 'left' | 'right';
+  hook?: StatelyInspectorHook;
+  initiallyOpen?: boolean;
+  buttonPosition?: 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
+  panelSide?: 'left' | 'right';
 }
 ```
 
@@ -122,17 +122,17 @@ Example:
 
 ```ts
 import {
-	createStatelyInspectorHook,
-	installStatelyInspectorHook,
-	mountStatelyInspector
+  createStatelyInspectorHook,
+  installStatelyInspectorHook,
+  mountStatelyInspector
 } from '@selfagency/stately/inspector';
 
 installStatelyInspectorHook(createStatelyInspectorHook());
 
 mountStatelyInspector({
-	initiallyOpen: false,
-	buttonPosition: 'left-bottom',
-	panelSide: 'left'
+  initiallyOpen: false,
+  buttonPosition: 'left-bottom',
+  panelSide: 'left'
 });
 ```
 
@@ -180,7 +180,7 @@ intended for testing to ensure a clean slate between test cases.
 import { resetStatelyInspectorHook } from '@selfagency/stately/inspector';
 
 afterEach(() => {
-	resetStatelyInspectorHook();
+  resetStatelyInspectorHook();
 });
 ```
 
@@ -190,13 +190,13 @@ The hook returned by `createStatelyInspectorHook()` implements this interface:
 
 ```ts
 interface StatelyInspectorHook {
-	registerStore(adapter: StatelyInspectorStoreAdapter): () => void;
-	register(store: InspectableStore, timeline: TimelineReader): () => void;
-	listStores(): StatelyInspectorStoreAdapter[];
-	listNotices(): StatelyInspectorNotice[];
-	notifyNotice(notice: StatelyInspectorNotice): void;
-	clearNotices(): void;
-	subscribe(callback: () => void): () => void;
+  registerStore(adapter: StatelyInspectorStoreAdapter): () => void;
+  register(store: InspectableStore, timeline: TimelineReader): () => void;
+  listStores(): StatelyInspectorStoreAdapter[];
+  listNotices(): StatelyInspectorNotice[];
+  notifyNotice(notice: StatelyInspectorNotice): void;
+  clearNotices(): void;
+  subscribe(callback: () => void): () => void;
 }
 ```
 
@@ -214,9 +214,9 @@ interface StatelyInspectorHook {
 
 ```ts
 interface StatelyInspectorNotice {
-	message: string;
-	level: StatelyInspectorNoticeLevel;
-	timestamp: number;
+  message: string;
+  level: StatelyInspectorNoticeLevel;
+  timestamp: number;
 }
 ```
 

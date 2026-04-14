@@ -24,20 +24,20 @@ Creates a reusable store definition. Call the returned function with a manager.
 import { defineStore } from '@selfagency/stately';
 
 const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0, step: 1 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += this.step;
-		},
-		setStep(step: number) {
-			this.step = step;
-		}
-	}
+  state: () => ({ count: 0, step: 1 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += this.step;
+    },
+    setStep(step: number) {
+      this.step = step;
+    }
+  }
 });
 ```
 
@@ -45,12 +45,12 @@ const useCounterStore = defineStore('counter', {
 
 ```ts
 const usePrefsStore = defineStore('prefs', {
-	setup: () => ({
-		theme: 'light' as 'light' | 'dark',
-		toggleTheme() {
-			this.theme = this.theme === 'light' ? 'dark' : 'light';
-		}
-	})
+  setup: () => ({
+    theme: 'light' as 'light' | 'dark',
+    toggleTheme() {
+      this.theme = this.theme === 'light' ? 'dark' : 'light';
+    }
+  })
 });
 ```
 
@@ -58,17 +58,17 @@ const usePrefsStore = defineStore('prefs', {
 
 ```ts
 class CounterStore {
-	count = 0;
-	get doubleCount() {
-		return this.count * 2;
-	}
-	increment() {
-		this.count += 1;
-	}
+  count = 0;
+  get doubleCount() {
+    return this.count * 2;
+  }
+  increment() {
+    this.count += 1;
+  }
 }
 
 const useCounterStore = defineStore('counter', {
-	setup: () => new CounterStore()
+  setup: () => new CounterStore()
 });
 ```
 
@@ -109,10 +109,10 @@ SSR-safe: calls `setContext` internally. Must be called during component init.
 
 ```svelte
 <script>
-	import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
+  import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
 
-	const manager = createStateManager();
-	initializeStateManagerContext(manager);
+  const manager = createStateManager();
+  initializeStateManagerContext(manager);
 </script>
 ```
 
@@ -144,7 +144,7 @@ Apply partial object or mutation function:
 ```ts
 store.$patch({ count: 3 });
 store.$patch((state) => {
-	state.count += 1;
+  state.count += 1;
 });
 ```
 
@@ -158,15 +158,15 @@ Watch mutations. Returns unsubscribe function.
 
 ```ts
 const unsub = store.$subscribe(
-	(mutation, state) => {
-		// mutation.type: 'direct' | 'patch-object' | 'patch-function'
-		// mutation.storeId, mutation.payload
-	},
-	{
-		detached: true,
-		select: (state) => state.count,
-		equalityFn: (prev, next) => prev === next
-	}
+  (mutation, state) => {
+    // mutation.type: 'direct' | 'patch-object' | 'patch-function'
+    // mutation.storeId, mutation.payload
+  },
+  {
+    detached: true,
+    select: (state) => state.count,
+    equalityFn: (prev, next) => prev === next
+  }
 );
 ```
 
@@ -180,15 +180,15 @@ Intercept action lifecycle:
 
 ```ts
 store.$onAction(({ name, args, before, after, onError }) => {
-	before(() => {
-		if (name === 'save' && args.length === 0) return false; // cancel
-	});
-	after((result) => {
-		/* success */
-	});
-	onError((error) => {
-		/* failure */
-	});
+  before(() => {
+    if (name === 'save' && args.length === 0) return false; // cancel
+  });
+  after((result) => {
+    /* success */
+  });
+  onError((error) => {
+    /* failure */
+  });
 });
 ```
 
@@ -223,15 +223,15 @@ Bridge external event systems into Svelte reactivity:
 import { createExternalSubscriber } from '@selfagency/stately';
 
 const online = createExternalSubscriber({
-	getSnapshot: () => navigator.onLine,
-	subscribe(update) {
-		window.addEventListener('online', update);
-		window.addEventListener('offline', update);
-		return () => {
-			window.removeEventListener('online', update);
-			window.removeEventListener('offline', update);
-		};
-	}
+  getSnapshot: () => navigator.onLine,
+  subscribe(update) {
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }
 });
 // online.current is reactive
 ```
@@ -271,11 +271,11 @@ Wraps `$patch` for stores with `validate` function.
 
 ```ts
 import {
-	createLocalStorageAdapter,
-	createSessionStorageAdapter,
-	createMemoryStorageAdapter,
-	createIndexedDbAdapter,
-	createLzStringCompression
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
+  createIndexedDbAdapter,
+  createLzStringCompression
 } from '@selfagency/stately';
 ```
 
@@ -362,8 +362,8 @@ Vite plugin: `@selfagency/stately/inspector/vite`
 import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
 
 statelyVitePlugin({
-	buttonPosition: 'right-bottom',
-	panelSide: 'right'
+  buttonPosition: 'right-bottom',
+  panelSide: 'right'
 });
 ```
 

@@ -4,5 +4,5 @@ let { children, class: className = '' } = $props<{ children?: import('svelte').S
 </script>
 
 <p class={cn('text-sm leading-6 text-muted-foreground', className)}>
-	{@render children?.()}
+  {@render children?.()}
 </p>

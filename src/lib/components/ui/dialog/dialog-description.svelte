@@ -6,10 +6,10 @@ let { ref = $bindable(null), class: className, ...restProps }: DialogPrimitive.D
 </script>
 
 <DialogPrimitive.Description
-	bind:ref={ref}
-	data-slot="dialog-description"
-	class={cn(
-		'text-muted-foreground *:[a]:hover:text-foreground text-sm *:[a]:underline *:[a]:underline-offset-3',
-		className
-	)}
-	{...restProps} />
+  bind:ref={ref}
+  data-slot="dialog-description"
+  class={cn(
+    'text-muted-foreground *:[a]:hover:text-foreground text-sm *:[a]:underline *:[a]:underline-offset-3',
+    className
+  )}
+  {...restProps} />

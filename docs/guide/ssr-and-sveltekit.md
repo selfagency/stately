@@ -19,16 +19,16 @@ during component initialization** — not in a plain `.ts` module or a `load` fu
 ```svelte
 <!-- +layout.svelte -->
 <script>
-	import {
-		createHistoryPlugin,
-		createPersistencePlugin,
-		createStateManager,
-		initializeStateManagerContext
-	} from '@selfagency/stately';
+  import {
+    createHistoryPlugin,
+    createPersistencePlugin,
+    createStateManager,
+    initializeStateManagerContext
+  } from '@selfagency/stately';
 
-	// Called inside component init so that setContext works on both server and client.
-	const manager = createStateManager().use(createPersistencePlugin()).use(createHistoryPlugin());
-	initializeStateManagerContext(manager);
+  // Called inside component init so that setContext works on both server and client.
+  const manager = createStateManager().use(createPersistencePlugin()).use(createHistoryPlugin());
+  initializeStateManagerContext(manager);
 </script>
 ```
 
@@ -76,12 +76,12 @@ import { browser } from '$app/environment';
 import { createLocalStorageAdapter, createMemoryStorageAdapter } from '@selfagency/stately/persistence';
 
 const useMyStore = defineStore('my-store', {
-	state: () => ({ count: 0 }),
-	persist: {
-		adapter: browser ? createLocalStorageAdapter() : createMemoryStorageAdapter(),
-		version: 1,
-		key: 'my-store'
-	}
+  state: () => ({ count: 0 }),
+  persist: {
+    adapter: browser ? createLocalStorageAdapter() : createMemoryStorageAdapter(),
+    version: 1,
+    key: 'my-store'
+  }
 });
 ```
 

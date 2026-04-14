@@ -20,8 +20,8 @@ The plugin adds `$fsm` to matching stores.
 
 ```ts
 type FsmDefinition = {
-	initial: string;
-	states: Record<string, FsmStateDefinition>;
+  initial: string;
+  states: Record<string, FsmStateDefinition>;
 };
 ```
 
@@ -35,9 +35,9 @@ The state map. Each key is a state name. Each value is a `FsmStateDefinition`.
 
 ```ts
 type FsmStateDefinition = {
-	_enter?: (context: FsmTransitionContext) => void;
-	_exit?: (context: FsmTransitionContext) => void;
-	[event: string]: string | ((...args: unknown[]) => string | void) | undefined;
+  _enter?: (context: FsmTransitionContext) => void;
+  _exit?: (context: FsmTransitionContext) => void;
+  [event: string]: string | ((...args: unknown[]) => string | void) | undefined;
 };
 ```
 
@@ -57,10 +57,10 @@ The plugin adds this controller to the store:
 
 ```ts
 interface FsmController {
-	readonly current: string;
-	send(event: string, ...args: unknown[]): string;
-	matches(...states: string[]): boolean;
-	can(event: string): boolean;
+  readonly current: string;
+  send(event: string, ...args: unknown[]): string;
+  matches(...states: string[]): boolean;
+  can(event: string): boolean;
 }
 ```
 
@@ -88,10 +88,10 @@ Returns `true` when the current state defines the supplied event.
 
 ```ts
 interface FsmTransitionContext {
-	readonly from: string;
-	readonly to: string;
-	readonly event: string;
-	readonly args: unknown[];
+  readonly from: string;
+  readonly to: string;
+  readonly event: string;
+  readonly args: unknown[];
 }
 ```
 

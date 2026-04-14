@@ -17,21 +17,21 @@
 
 ```ts
 import {
-	createLocalStorageAdapter,
-	createPersistencePlugin,
-	createStateManager,
-	defineStore
+  createLocalStorageAdapter,
+  createPersistencePlugin,
+  createStateManager,
+  defineStore
 } from '@selfagency/stately';
 
 const manager = createStateManager().use(createPersistencePlugin());
 
 const useSessionStore = defineStore('session', {
-	state: () => ({ theme: 'dark', token: '' }),
-	persist: {
-		adapter: createLocalStorageAdapter(),
-		version: 1,
-		key: 'stately:session'
-	}
+  state: () => ({ theme: 'dark', token: '' }),
+  persist: {
+    adapter: createLocalStorageAdapter(),
+    version: 1,
+    key: 'stately:session'
+  }
 });
 ```
 
@@ -143,8 +143,8 @@ import { createHistoryPlugin, createStateManager, defineStore } from '@selfagenc
 const manager = createStateManager().use(createHistoryPlugin());
 
 const useDraftStore = defineStore('draft', {
-	state: () => ({ body: '' }),
-	history: { limit: 25 }
+  state: () => ({ body: '' }),
+  history: { limit: 25 }
 });
 ```
 
@@ -185,17 +185,17 @@ import { createFsmPlugin, createStateManager, defineStore } from '@selfagency/st
 const manager = createStateManager().use(createFsmPlugin());
 
 const useCheckoutStore = defineStore('checkout', {
-	state: () => ({ total: 0, errorMessage: '' }),
-	fsm: {
-		initial: 'idle',
-		states: {
-			idle: { begin: 'editing' },
-			editing: { submit: 'submitting', cancel: 'idle' },
-			submitting: { success: 'success', fail: 'error' },
-			error: { retry: 'submitting', reset: 'editing' },
-			success: {}
-		}
-	}
+  state: () => ({ total: 0, errorMessage: '' }),
+  fsm: {
+    initial: 'idle',
+    states: {
+      idle: { begin: 'editing' },
+      editing: { submit: 'submitting', cancel: 'idle' },
+      submitting: { success: 'success', fail: 'error' },
+      error: { retry: 'submitting', reset: 'editing' },
+      success: {}
+    }
+  }
 });
 ```
 
@@ -287,23 +287,23 @@ Behaviors:
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
 const manager = createStateManager().use(
-	createAsyncPlugin({
-		include: ['fetchData'],
-		policies: { fetchData: 'restartable' },
-		injectSignal(signal, args) {
-			return [signal, ...args];
-		}
-	})
+  createAsyncPlugin({
+    include: ['fetchData'],
+    policies: { fetchData: 'restartable' },
+    injectSignal(signal, args) {
+      return [signal, ...args];
+    }
+  })
 );
 
 const useDataStore = defineStore('data', {
-	state: () => ({ data: null }),
-	actions: {
-		async fetchData(signal: AbortSignal, id: string) {
-			const res = await fetch(`/api/data/${id}`, { signal });
-			this.data = await res.json();
-		}
-	}
+  state: () => ({ data: null }),
+  actions: {
+    async fetchData(signal: AbortSignal, id: string) {
+      const res = await fetch(`/api/data/${id}`, { signal });
+      this.data = await res.json();
+    }
+  }
 });
 ```
 
@@ -340,15 +340,15 @@ import { createStateManager, createValidationPlugin, defineStore } from '@selfag
 const manager = createStateManager().use(createValidationPlugin());
 
 const useProfileStore = defineStore('profile', {
-	state: () => ({ name: '', age: 18 }),
-	validate(state) {
-		if (!state.name.trim()) return 'Name is required';
-		if (state.age < 13) return 'Age must be at least 13';
-		return true;
-	},
-	onValidationError(message) {
-		console.error(message);
-	}
+  state: () => ({ name: '', age: 18 }),
+  validate(state) {
+    if (!state.name.trim()) return 'Name is required';
+    if (state.age < 13) return 'Age must be at least 13';
+    return true;
+  },
+  onValidationError(message) {
+    console.error(message);
+  }
 });
 ```
 
@@ -397,29 +397,29 @@ Order of `.use()` calls determines plugin application order:
 
 ```ts
 const manager = createStateManager()
-	.use(createPersistencePlugin())
-	.use(createHistoryPlugin())
-	.use(createFsmPlugin())
-	.use(createSyncPlugin({ origin: 'tab-1' }))
-	.use(
-		createAsyncPlugin({
-			include: ['fetchData'],
-			policies: { fetchData: 'restartable' }
-		})
-	)
-	.use(createValidationPlugin());
+  .use(createPersistencePlugin())
+  .use(createHistoryPlugin())
+  .use(createFsmPlugin())
+  .use(createSyncPlugin({ origin: 'tab-1' }))
+  .use(
+    createAsyncPlugin({
+      include: ['fetchData'],
+      policies: { fetchData: 'restartable' }
+    })
+  )
+  .use(createValidationPlugin());
 ```
 
 A store can opt into multiple plugins simultaneously:
 
 ```ts
 const useStore = defineStore('combined', {
-	state: () => ({ count: 0 }),
-	persist: { adapter: createLocalStorageAdapter(), version: 1 },
-	history: { limit: 50 },
-	fsm: { initial: 'idle', states: { idle: { start: 'active' }, active: {} } },
-	validate(state) {
-		return state.count >= 0 || 'Count must be non-negative';
-	}
+  state: () => ({ count: 0 }),
+  persist: { adapter: createLocalStorageAdapter(), version: 1 },
+  history: { limit: 50 },
+  fsm: { initial: 'idle', states: { idle: { start: 'active' }, active: {} } },
+  validate(state) {
+    return state.count >= 0 || 'Count must be non-negative';
+  }
 });
 ```

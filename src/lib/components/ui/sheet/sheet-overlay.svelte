@@ -6,7 +6,7 @@ let { ref = $bindable(null), class: className, ...restProps }: SheetPrimitive.Ov
 </script>
 
 <SheetPrimitive.Overlay
-	bind:ref={ref}
-	data-slot="sheet-overlay"
-	class={cn('bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50', className)}
-	{...restProps} />
+  bind:ref={ref}
+  data-slot="sheet-overlay"
+  class={cn('bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50', className)}
+  {...restProps} />

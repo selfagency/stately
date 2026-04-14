@@ -18,9 +18,9 @@ always have accurate, up-to-date context about the Stately API.
    ```jsonc
    // package.json
    {
-   	"scripts": {
-   		"prepare": "skills-npm"
-   	}
+     "scripts": {
+       "prepare": "skills-npm"
+     }
    }
    ```
 
@@ -47,8 +47,8 @@ Use a `skills-npm.config.ts` to restrict which agents or packages get skills:
 import { defineConfig } from 'skills-npm';
 
 export default defineConfig({
-	agents: ['cursor', 'windsurf'],
-	include: ['@selfagency/stately']
+  agents: ['cursor', 'windsurf'],
+  include: ['@selfagency/stately']
 });
 ```
 

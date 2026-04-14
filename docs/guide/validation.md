@@ -23,18 +23,18 @@ Define `validate` on the store options:
 import { defineStore } from '@selfagency/stately';
 
 export const useProfileStore = defineStore('profile', {
-	state: () => ({ name: '', age: 18 }),
-	validate(state) {
-		if (!state.name.trim()) {
-			return 'Name is required';
-		}
+  state: () => ({ name: '', age: 18 }),
+  validate(state) {
+    if (!state.name.trim()) {
+      return 'Name is required';
+    }
 
-		if (state.age < 13) {
-			return 'Age must be at least 13';
-		}
+    if (state.age < 13) {
+      return 'Age must be at least 13';
+    }
 
-		return true;
-	}
+    return true;
+  }
 });
 ```
 
@@ -60,17 +60,17 @@ Use `onValidationError` when the UI needs a side effect before the error is thro
 
 ```ts
 export const useProfileStore = defineStore('profile', {
-	state: () => ({ name: '', age: 18 }),
-	validate(state) {
-		if (!state.name.trim()) {
-			return 'Name is required';
-		}
+  state: () => ({ name: '', age: 18 }),
+  validate(state) {
+    if (!state.name.trim()) {
+      return 'Name is required';
+    }
 
-		return true;
-	},
-	onValidationError(message) {
-		console.error(message);
-	}
+    return true;
+  },
+  onValidationError(message) {
+    console.error(message);
+  }
 });
 ```
 

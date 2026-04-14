@@ -5,5 +5,5 @@ let { children, class: className = '' } = $props<{ children?: import('svelte').S
 </script>
 
 <Dialog.Description class={cn('text-sm leading-6 text-muted-foreground', className)}>
-	{@render children?.()}
+  {@render children?.()}
 </Dialog.Description>

@@ -24,29 +24,29 @@ export type { FsmController, FsmDefinition, FsmStateDefinition, FsmTransitionCon
 export type { HistoryController, HistoryEntry } from './history/history-controller.svelte.js';
 export type { TimeTravelController } from './history/time-travel.svelte.js';
 export type {
-	JsonArray,
-	JsonObject,
-	JsonPrimitive,
-	JsonValue,
-	PersistCompression,
-	PersistController,
-	PersistEnvelope,
-	PersistOptions,
-	PersistenceAdapter
+  JsonArray,
+  JsonObject,
+  JsonPrimitive,
+  JsonValue,
+  PersistCompression,
+  PersistController,
+  PersistEnvelope,
+  PersistOptions,
+  PersistenceAdapter
 } from './persistence/types.js';
 export type { HistoryStoreOptions, PersistStoreOptions } from './pinia-like/plugin-options.js';
 export type { StoreRef, StoreRefs } from './pinia-like/store-to-refs.svelte.js';
 export type {
-	DefineStoreOptionsBase,
-	StoreActionHookContext,
-	StoreActions,
-	StoreCustomProperties,
-	StoreCustomStateProperties,
-	StoreDefinition,
-	StoreGetters,
-	StoreInstance,
-	StoreMutationContext,
-	StoreState
+  DefineStoreOptionsBase,
+  StoreActionHookContext,
+  StoreActions,
+  StoreCustomProperties,
+  StoreCustomStateProperties,
+  StoreDefinition,
+  StoreGetters,
+  StoreInstance,
+  StoreMutationContext,
+  StoreState
 } from './pinia-like/store-types.js';
 export type { StoreSubscribeOptions } from './pinia-like/store-types.js';
 export type { StateManager, StateManagerPlugin, TypedStateManagerPlugin } from './root/types.js';

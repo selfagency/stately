@@ -26,17 +26,17 @@ import { createStateManager, defineStore } from '@selfagency/stately';
 const manager = createStateManager();
 
 const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += 1;
-		}
-	}
+  state: () => ({ count: 0 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += 1;
+    }
+  }
 });
 
 const counter = useCounterStore(manager);
@@ -49,17 +49,17 @@ counter.increment();
 
 ```ts
 defineStore('id', {
-	state: () => ({ count: 0 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += 1;
-		}
-	}
+  state: () => ({ count: 0 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += 1;
+    }
+  }
 });
 ```
 
@@ -67,12 +67,12 @@ defineStore('id', {
 
 ```ts
 defineStore('id', {
-	setup: () => ({
-		theme: 'light' as 'light' | 'dark',
-		toggleTheme() {
-			this.theme = this.theme === 'light' ? 'dark' : 'light';
-		}
-	})
+  setup: () => ({
+    theme: 'light' as 'light' | 'dark',
+    toggleTheme() {
+      this.theme = this.theme === 'light' ? 'dark' : 'light';
+    }
+  })
 });
 ```
 
@@ -101,12 +101,12 @@ Attach plugins to a manager, opt stores in via definition options:
 
 ```ts
 const manager = createStateManager()
-	.use(createPersistencePlugin())
-	.use(createHistoryPlugin())
-	.use(createFsmPlugin())
-	.use(createSyncPlugin({ origin: 'tab-1' }))
-	.use(createAsyncPlugin({ include: ['fetchData'], policies: { fetchData: 'restartable' } }))
-	.use(createValidationPlugin());
+  .use(createPersistencePlugin())
+  .use(createHistoryPlugin())
+  .use(createFsmPlugin())
+  .use(createSyncPlugin({ origin: 'tab-1' }))
+  .use(createAsyncPlugin({ include: ['fetchData'], policies: { fetchData: 'restartable' } }))
+  .use(createValidationPlugin());
 ```
 
 Each plugin only affects stores that declare the matching option (`persist`, `history`, `fsm`, `validate`).
@@ -129,9 +129,9 @@ In SvelteKit, create a **fresh manager per request** via Svelte context:
 ```svelte
 <!-- +layout.svelte -->
 <script>
-	import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
-	const manager = createStateManager();
-	initializeStateManagerContext(manager);
+  import { createStateManager, initializeStateManagerContext } from '@selfagency/stately';
+  const manager = createStateManager();
+  initializeStateManagerContext(manager);
 </script>
 ```
 

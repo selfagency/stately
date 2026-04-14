@@ -22,28 +22,28 @@ Add an `fsm` property to your store definition, including an `initial` state and
 import { defineStore } from '@selfagency/stately';
 
 export const useCheckoutStore = defineStore('checkout', {
-	state: () => ({ total: 0, errorMessage: '' }),
-	fsm: {
-		initial: 'idle',
-		states: {
-			idle: {
-				begin: 'editing'
-			},
-			editing: {
-				submit: 'submitting',
-				cancel: 'idle'
-			},
-			submitting: {
-				success: 'success',
-				fail: 'error'
-			},
-			error: {
-				retry: 'submitting',
-				reset: 'editing'
-			},
-			success: {}
-		}
-	}
+  state: () => ({ total: 0, errorMessage: '' }),
+  fsm: {
+    initial: 'idle',
+    states: {
+      idle: {
+        begin: 'editing'
+      },
+      editing: {
+        submit: 'submitting',
+        cancel: 'idle'
+      },
+      submitting: {
+        success: 'success',
+        fail: 'error'
+      },
+      error: {
+        retry: 'submitting',
+        reset: 'editing'
+      },
+      success: {}
+    }
+  }
 });
 ```
 
@@ -60,7 +60,7 @@ checkout.$fsm.send('submit');
 
 // Check the current state
 if (checkout.$fsm.matches('submitting', 'error')) {
-	// Render specific UI based on state
+  // Render specific UI based on state
 }
 ```
 

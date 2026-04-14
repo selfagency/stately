@@ -6,7 +6,7 @@ let { ref = $bindable(null), class: className, ...restProps }: SheetPrimitive.De
 </script>
 
 <SheetPrimitive.Description
-	bind:ref={ref}
-	data-slot="sheet-description"
-	class={cn('text-muted-foreground text-sm', className)}
-	{...restProps} />
+  bind:ref={ref}
+  data-slot="sheet-description"
+  class={cn('text-muted-foreground text-sm', className)}
+  {...restProps} />

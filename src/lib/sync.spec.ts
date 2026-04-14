@@ -6,382 +6,382 @@ import { createSyncPlugin } from './sync/plugin.svelte.js';
 import type { SyncMessage, SyncTransport } from './sync/types.js';
 
 describe('sync runtime', () => {
-	it('keeps stores in separate managers synchronized in both directions', () => {
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transportFactory = (): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
-			publish(message) {
-				for (const listener of listeners) {
-					listener(message);
-				}
-			},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => {
-					listeners.delete(listener);
-				};
-			},
-			destroy() {}
-		});
-		const useStore = defineStore('sync-runtime-store', {
-			state: () => ({ count: 0 }),
-			actions: {
-				increment() {
-					this.count += 1;
-				}
-			}
-		});
-		const firstManager = createStateManager().use(
-			createSyncPlugin({ origin: 'first', transports: [transportFactory()] })
-		);
-		const secondManager = createStateManager().use(
-			createSyncPlugin({ origin: 'second', transports: [transportFactory()] })
-		);
-		const first = useStore(firstManager);
-		const second = useStore(secondManager);
+  it('keeps stores in separate managers synchronized in both directions', () => {
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transportFactory = (): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
+      publish(message) {
+        for (const listener of listeners) {
+          listener(message);
+        }
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
+      },
+      destroy() {}
+    });
+    const useStore = defineStore('sync-runtime-store', {
+      state: () => ({ count: 0 }),
+      actions: {
+        increment() {
+          this.count += 1;
+        }
+      }
+    });
+    const firstManager = createStateManager().use(
+      createSyncPlugin({ origin: 'first', transports: [transportFactory()] })
+    );
+    const secondManager = createStateManager().use(
+      createSyncPlugin({ origin: 'second', transports: [transportFactory()] })
+    );
+    const first = useStore(firstManager);
+    const second = useStore(secondManager);
 
-		first.increment();
-		expect(second.count).toBe(1);
+    first.increment();
+    expect(second.count).toBe(1);
 
-		second.increment();
-		expect(first.count).toBe(2);
-	});
+    second.increment();
+    expect(first.count).toBe(2);
+  });
 
-	it('filters unknown keys from remote state during sync', () => {
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transportFactory = (): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
-			publish(message) {
-				for (const listener of listeners) {
-					listener(message);
-				}
-			},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => listeners.delete(listener);
-			},
-			destroy() {}
-		});
+  it('filters unknown keys from remote state during sync', () => {
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transportFactory = (): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
+      publish(message) {
+        for (const listener of listeners) {
+          listener(message);
+        }
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      destroy() {}
+    });
 
-		const useSmall = defineStore('sync-small', {
-			state: () => ({ count: 0 })
-		});
-		const useLarge = defineStore('sync-small', {
-			state: () => ({ count: 0, extra: 'injected', secret: 42 }),
-			actions: {
-				setAll() {
-					this.count = 99;
-					this.extra = 'malicious';
-					this.secret = 0;
-				}
-			}
-		});
+    const useSmall = defineStore('sync-small', {
+      state: () => ({ count: 0 })
+    });
+    const useLarge = defineStore('sync-small', {
+      state: () => ({ count: 0, extra: 'injected', secret: 42 }),
+      actions: {
+        setAll() {
+          this.count = 99;
+          this.extra = 'malicious';
+          this.secret = 0;
+        }
+      }
+    });
 
-		const receiverManager = createStateManager().use(
-			createSyncPlugin({ origin: 'receiver', transports: [transportFactory()] })
-		);
-		const senderManager = createStateManager().use(
-			createSyncPlugin({ origin: 'sender', transports: [transportFactory()] })
-		);
+    const receiverManager = createStateManager().use(
+      createSyncPlugin({ origin: 'receiver', transports: [transportFactory()] })
+    );
+    const senderManager = createStateManager().use(
+      createSyncPlugin({ origin: 'sender', transports: [transportFactory()] })
+    );
 
-		const receiver = useSmall(receiverManager);
-		const sender = useLarge(senderManager);
+    const receiver = useSmall(receiverManager);
+    const sender = useLarge(senderManager);
 
-		sender.setAll();
-		expect(receiver.count).toBe(99);
-		expect('extra' in receiver).toBe(false);
-		expect('secret' in receiver).toBe(false);
-	});
+    sender.setAll();
+    expect(receiver.count).toBe(99);
+    expect('extra' in receiver).toBe(false);
+    expect('secret' in receiver).toBe(false);
+  });
 
-	it('ignores stale mutations based on mutationId', () => {
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
-			publish(message) {
-				for (const listener of listeners) {
-					listener(message);
-				}
-			},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => listeners.delete(listener);
-			},
-			destroy() {}
-		};
+  it('ignores stale mutations based on mutationId', () => {
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+      publish(message) {
+        for (const listener of listeners) {
+          listener(message);
+        }
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      destroy() {}
+    };
 
-		const useStore = defineStore('sync-stale', {
-			state: () => ({ count: 0 })
-		});
-		const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
-		const store = useStore(manager);
+    const useStore = defineStore('sync-stale', {
+      state: () => ({ count: 0 })
+    });
+    const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+    const store = useStore(manager);
 
-		for (const listener of listeners) {
-			listener({
-				storeId: 'sync-stale',
-				origin: 'remote',
-				version: 1,
-				mutationId: 10,
-				timestamp: Date.now(),
-				state: { count: 5 }
-			});
-		}
-		expect(store.count).toBe(5);
+    for (const listener of listeners) {
+      listener({
+        storeId: 'sync-stale',
+        origin: 'remote',
+        version: 1,
+        mutationId: 10,
+        timestamp: Date.now(),
+        state: { count: 5 }
+      });
+    }
+    expect(store.count).toBe(5);
 
-		for (const listener of listeners) {
-			listener({
-				storeId: 'sync-stale',
-				origin: 'remote',
-				version: 1,
-				mutationId: 5,
-				timestamp: Date.now(),
-				state: { count: 999 }
-			});
-		}
-		expect(store.count).toBe(5);
-	});
+    for (const listener of listeners) {
+      listener({
+        storeId: 'sync-stale',
+        origin: 'remote',
+        version: 1,
+        mutationId: 5,
+        timestamp: Date.now(),
+        state: { count: 999 }
+      });
+    }
+    expect(store.count).toBe(5);
+  });
 
-	it('sanitizes nested reserved keys in synced payload state', () => {
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
-			publish(message) {
-				for (const listener of listeners) {
-					listener(message);
-				}
-			},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => listeners.delete(listener);
-			},
-			destroy() {}
-		};
+  it('sanitizes nested reserved keys in synced payload state', () => {
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+      publish(message) {
+        for (const listener of listeners) {
+          listener(message);
+        }
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      destroy() {}
+    };
 
-		const useStore = defineStore('sync-sanitize', {
-			state: () => ({ profile: { name: 'initial' } })
-		});
-		const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
-		const store = useStore(manager);
-		const poisonedProfile = JSON.parse('{"name":"updated","__proto__":{"polluted":true}}') as Record<string, unknown>;
+    const useStore = defineStore('sync-sanitize', {
+      state: () => ({ profile: { name: 'initial' } })
+    });
+    const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+    const store = useStore(manager);
+    const poisonedProfile = JSON.parse('{"name":"updated","__proto__":{"polluted":true}}') as Record<string, unknown>;
 
-		for (const listener of listeners) {
-			listener({
-				storeId: 'sync-sanitize',
-				origin: 'remote',
-				version: 1,
-				mutationId: 1,
-				timestamp: Date.now(),
-				state: {
-					profile: poisonedProfile
-				}
-			});
-		}
+    for (const listener of listeners) {
+      listener({
+        storeId: 'sync-sanitize',
+        origin: 'remote',
+        version: 1,
+        mutationId: 1,
+        timestamp: Date.now(),
+        state: {
+          profile: poisonedProfile
+        }
+      });
+    }
 
-		expect(store.profile).toEqual({ name: 'updated' });
-		expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
-	});
+    expect(store.profile).toEqual({ name: 'updated' });
+    expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
+  });
 
-	it('ignores messages whose origin matches the local origin (self-filter)', () => {
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
-			publish(message) {
-				for (const listener of listeners) {
-					listener(message);
-				}
-			},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => listeners.delete(listener);
-			},
-			destroy() {}
-		};
+  it('ignores messages whose origin matches the local origin (self-filter)', () => {
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+      publish(message) {
+        for (const listener of listeners) {
+          listener(message);
+        }
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      destroy() {}
+    };
 
-		const useStore = defineStore('sync-self-filter', {
-			state: () => ({ count: 0 })
-		});
-		const manager = createStateManager().use(createSyncPlugin({ origin: 'self', transports: [transport] }));
-		const store = useStore(manager);
+    const useStore = defineStore('sync-self-filter', {
+      state: () => ({ count: 0 })
+    });
+    const manager = createStateManager().use(createSyncPlugin({ origin: 'self', transports: [transport] }));
+    const store = useStore(manager);
 
-		for (const listener of listeners) {
-			listener({
-				storeId: 'sync-self-filter',
-				origin: 'self',
-				version: 1,
-				mutationId: 1,
-				timestamp: Date.now(),
-				state: { count: 99 }
-			});
-		}
+    for (const listener of listeners) {
+      listener({
+        storeId: 'sync-self-filter',
+        origin: 'self',
+        version: 1,
+        mutationId: 1,
+        timestamp: Date.now(),
+        state: { count: 99 }
+      });
+    }
 
-		expect(store.count).toBe(0);
-	});
+    expect(store.count).toBe(0);
+  });
 
-	it('calls transport destroy on store dispose', () => {
-		let destroyed = false;
-		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
-			publish() {},
-			subscribe() {
-				return () => {};
-			},
-			destroy() {
-				destroyed = true;
-			}
-		};
+  it('calls transport destroy on store dispose', () => {
+    let destroyed = false;
+    const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+      publish() {},
+      subscribe() {
+        return () => {};
+      },
+      destroy() {
+        destroyed = true;
+      }
+    };
 
-		const useStore = defineStore('sync-dispose', {
-			state: () => ({ count: 0 })
-		});
-		const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
-		const store = useStore(manager);
+    const useStore = defineStore('sync-dispose', {
+      state: () => ({ count: 0 })
+    });
+    const manager = createStateManager().use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+    const store = useStore(manager);
 
-		store.$dispose();
+    store.$dispose();
 
-		expect(destroyed).toBe(true);
-	});
+    expect(destroyed).toBe(true);
+  });
 
-	it('tracks per-origin mutation IDs independently', () => {
-		const aListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const bListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+  it('tracks per-origin mutation IDs independently', () => {
+    const aListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const bListeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
 
-		const makeTransport = (
-			senders: Set<(m: SyncMessage<Record<string, unknown>>) => void>
-		): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
-			publish(message) {
-				for (const listener of senders) {
-					listener(message);
-				}
-			},
-			subscribe(listener) {
-				senders.add(listener);
-				return () => senders.delete(listener);
-			},
-			destroy() {}
-		});
+    const makeTransport = (
+      senders: Set<(m: SyncMessage<Record<string, unknown>>) => void>
+    ): SyncTransport<SyncMessage<Record<string, unknown>>> => ({
+      publish(message) {
+        for (const listener of senders) {
+          listener(message);
+        }
+      },
+      subscribe(listener) {
+        senders.add(listener);
+        return () => senders.delete(listener);
+      },
+      destroy() {}
+    });
 
-		const useStore = defineStore('sync-per-origin', { state: () => ({ count: 0 }) });
-		const manager = createStateManager().use(
-			createSyncPlugin({ origin: 'local', transports: [makeTransport(aListeners), makeTransport(bListeners)] })
-		);
-		const store = useStore(manager);
+    const useStore = defineStore('sync-per-origin', { state: () => ({ count: 0 }) });
+    const manager = createStateManager().use(
+      createSyncPlugin({ origin: 'local', transports: [makeTransport(aListeners), makeTransport(bListeners)] })
+    );
+    const store = useStore(manager);
 
-		for (const listener of aListeners) {
-			listener({
-				storeId: 'sync-per-origin',
-				origin: 'originA',
-				version: 1,
-				mutationId: 5,
-				timestamp: Date.now(),
-				state: { count: 5 }
-			});
-		}
-		expect(store.count).toBe(5);
+    for (const listener of aListeners) {
+      listener({
+        storeId: 'sync-per-origin',
+        origin: 'originA',
+        version: 1,
+        mutationId: 5,
+        timestamp: Date.now(),
+        state: { count: 5 }
+      });
+    }
+    expect(store.count).toBe(5);
 
-		// Lower mutationId from a different origin must still apply (tracked separately)
-		for (const listener of bListeners) {
-			listener({
-				storeId: 'sync-per-origin',
-				origin: 'originB',
-				version: 1,
-				mutationId: 1,
-				timestamp: Date.now(),
-				state: { count: 6 }
-			});
-		}
-		expect(store.count).toBe(6);
-	});
+    // Lower mutationId from a different origin must still apply (tracked separately)
+    for (const listener of bListeners) {
+      listener({
+        storeId: 'sync-per-origin',
+        origin: 'originB',
+        version: 1,
+        mutationId: 1,
+        timestamp: Date.now(),
+        state: { count: 6 }
+      });
+    }
+    expect(store.count).toBe(6);
+  });
 
-	it('discards inbound messages whose version does not match the plugin version', () => {
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
-			publish() {},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => listeners.delete(listener);
-			},
-			destroy() {}
-		};
+  it('discards inbound messages whose version does not match the plugin version', () => {
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+      publish() {},
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      destroy() {}
+    };
 
-		const useStore = defineStore('sync-version-discard', { state: () => ({ count: 0 }) });
-		const manager = createStateManager().use(
-			createSyncPlugin({ origin: 'local', version: 2, transports: [transport] })
-		);
-		const store = useStore(manager);
+    const useStore = defineStore('sync-version-discard', { state: () => ({ count: 0 }) });
+    const manager = createStateManager().use(
+      createSyncPlugin({ origin: 'local', version: 2, transports: [transport] })
+    );
+    const store = useStore(manager);
 
-		// v1 message — should be discarded
-		for (const listener of listeners) {
-			listener({
-				storeId: 'sync-version-discard',
-				origin: 'remote',
-				version: 1,
-				mutationId: 1,
-				timestamp: Date.now(),
-				state: { count: 99 }
-			});
-		}
-		expect(store.count).toBe(0);
-	});
+    // v1 message — should be discarded
+    for (const listener of listeners) {
+      listener({
+        storeId: 'sync-version-discard',
+        origin: 'remote',
+        version: 1,
+        mutationId: 1,
+        timestamp: Date.now(),
+        state: { count: 99 }
+      });
+    }
+    expect(store.count).toBe(0);
+  });
 
-	it('does not publish during time-travel replay to avoid sync feedback loops', () => {
-		const published: unknown[] = [];
-		const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
-		const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
-			publish(message) {
-				published.push(message);
-			},
-			subscribe(listener) {
-				listeners.add(listener);
-				return () => listeners.delete(listener);
-			},
-			destroy() {}
-		};
+  it('does not publish during time-travel replay to avoid sync feedback loops', () => {
+    const published: unknown[] = [];
+    const listeners = new Set<(message: SyncMessage<Record<string, unknown>>) => void>();
+    const transport: SyncTransport<SyncMessage<Record<string, unknown>>> = {
+      publish(message) {
+        published.push(message);
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      destroy() {}
+    };
 
-		const manager = createStateManager()
-			.use(createHistoryPlugin())
-			.use(createSyncPlugin({ origin: 'local', transports: [transport] }));
-		const useStore = defineStore('sync-replay-suppress', {
-			state: () => ({ count: 0 }),
-			history: { limit: 10 }
-		});
-		const store = useStore(manager);
+    const manager = createStateManager()
+      .use(createHistoryPlugin())
+      .use(createSyncPlugin({ origin: 'local', transports: [transport] }));
+    const useStore = defineStore('sync-replay-suppress', {
+      state: () => ({ count: 0 }),
+      history: { limit: 10 }
+    });
+    const store = useStore(manager);
 
-		store.count = 1;
-		store.count = 2;
-		const publishedBeforeReplay = published.length;
+    store.count = 1;
+    store.count = 2;
+    const publishedBeforeReplay = published.length;
 
-		store.$timeTravel.goTo(0);
+    store.$timeTravel.goTo(0);
 
-		expect(published).toHaveLength(publishedBeforeReplay);
-		expect(store.count).toBe(0);
-	});
+    expect(published).toHaveLength(publishedBeforeReplay);
+    expect(store.count).toBe(0);
+  });
 
-	it('uses createMessage hook to extend outgoing messages without unsafe casts', () => {
-		interface ExtendedMessage extends SyncMessage {
-			sessionId: string;
-		}
+  it('uses createMessage hook to extend outgoing messages without unsafe casts', () => {
+    interface ExtendedMessage extends SyncMessage {
+      sessionId: string;
+    }
 
-		const published: ExtendedMessage[] = [];
-		const transport: SyncTransport<ExtendedMessage> = {
-			publish(message) {
-				published.push(message);
-			},
-			subscribe() {
-				return () => {};
-			},
-			destroy() {}
-		};
+    const published: ExtendedMessage[] = [];
+    const transport: SyncTransport<ExtendedMessage> = {
+      publish(message) {
+        published.push(message);
+      },
+      subscribe() {
+        return () => {};
+      },
+      destroy() {}
+    };
 
-		const useStore = defineStore('sync-create-message', {
-			state: () => ({ count: 0 })
-		});
-		const manager = createStateManager().use(
-			createSyncPlugin<ExtendedMessage>({
-				origin: 'local',
-				transports: [transport],
-				createMessage: (base) => ({ ...base, sessionId: 'abc-123' })
-			})
-		);
-		const store = useStore(manager);
+    const useStore = defineStore('sync-create-message', {
+      state: () => ({ count: 0 })
+    });
+    const manager = createStateManager().use(
+      createSyncPlugin<ExtendedMessage>({
+        origin: 'local',
+        transports: [transport],
+        createMessage: (base) => ({ ...base, sessionId: 'abc-123' })
+      })
+    );
+    const store = useStore(manager);
 
-		store.count = 1;
+    store.count = 1;
 
-		expect(published).toHaveLength(1);
-		expect(published[0].sessionId).toBe('abc-123');
-		expect(published[0].storeId).toBe('sync-create-message');
-		expect(published[0].origin).toBe('local');
-	});
+    expect(published).toHaveLength(1);
+    expect(published[0].sessionId).toBe('abc-123');
+    expect(published[0].storeId).toBe('sync-create-message');
+    expect(published[0].origin).toBe('local');
+  });
 });

@@ -32,13 +32,13 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		statelyVitePlugin({
-			buttonPosition: 'right-bottom',
-			panelSide: 'right'
-		})
-	]
+  plugins: [
+    sveltekit(),
+    statelyVitePlugin({
+      buttonPosition: 'right-bottom',
+      panelSide: 'right'
+    })
+  ]
 });
 ```
 
@@ -68,15 +68,15 @@ That lets you keep the inspector out of the way of app-specific controls during 
 
 ```ts
 statelyVitePlugin({
-	buttonPosition: 'left-top',
-	panelSide: 'left'
+  buttonPosition: 'left-top',
+  panelSide: 'left'
 });
 ```
 
 ```ts
 statelyVitePlugin({
-	buttonPosition: 'right-bottom',
-	panelSide: 'right'
+  buttonPosition: 'right-bottom',
+  panelSide: 'right'
 });
 ```
 
@@ -99,8 +99,8 @@ import { createHistoryPlugin, createStateManager, defineStore } from '@selfagenc
 const manager = createStateManager().use(createHistoryPlugin());
 
 const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0 }),
-	history: { limit: 20 }
+  state: () => ({ count: 0 }),
+  history: { limit: 20 }
 });
 
 const counter = useCounterStore(manager);
@@ -126,16 +126,16 @@ runtime manually:
 
 ```ts
 import {
-	createStatelyInspectorHook,
-	installStatelyInspectorHook,
-	mountStatelyInspector
+  createStatelyInspectorHook,
+  installStatelyInspectorHook,
+  mountStatelyInspector
 } from '@selfagency/stately/inspector';
 
 const hook = installStatelyInspectorHook(createStatelyInspectorHook());
 
 mountStatelyInspector({
-	buttonPosition: 'right-bottom',
-	panelSide: 'right'
+  buttonPosition: 'right-bottom',
+  panelSide: 'right'
 });
 ```
 

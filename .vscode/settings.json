@@ -1,4 +1,4 @@
 {
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"beans.mcp.showStartupNotification": false
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "beans.mcp.showStartupNotification": false
 }

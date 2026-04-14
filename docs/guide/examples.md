@@ -25,20 +25,20 @@ A standard implementation using `state`, `getters`, and `actions`.
 import { defineStore } from '@selfagency/stately';
 
 export const useCounterStore = defineStore('example-option-counter', {
-	state: () => ({ count: 0, step: 1 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += this.step;
-		},
-		setStep(step: number) {
-			this.step = step;
-		}
-	}
+  state: () => ({ count: 0, step: 1 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += this.step;
+    },
+    setStep(step: number) {
+      this.step = step;
+    }
+  }
 });
 ```
 
@@ -50,27 +50,27 @@ Use a setup store when you want direct control over reactivity using Svelte 5 ru
 import { defineStore } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('example-setup-preferences', {
-	setup: () => {
-		const preferences = $state({
-			theme: 'light' as 'light' | 'dark',
-			compact: false
-		});
+  setup: () => {
+    const preferences = $state({
+      theme: 'light' as 'light' | 'dark',
+      compact: false
+    });
 
-		return {
-			get theme() {
-				return preferences.theme;
-			},
-			get compact() {
-				return preferences.compact;
-			},
-			toggleTheme() {
-				preferences.theme = preferences.theme === 'light' ? 'dark' : 'light';
-			},
-			setCompact(value: boolean) {
-				preferences.compact = value;
-			}
-		};
-	}
+    return {
+      get theme() {
+        return preferences.theme;
+      },
+      get compact() {
+        return preferences.compact;
+      },
+      toggleTheme() {
+        preferences.theme = preferences.theme === 'light' ? 'dark' : 'light';
+      },
+      setCompact(value: boolean) {
+        preferences.compact = value;
+      }
+    };
+  }
 });
 ```
 
@@ -81,21 +81,21 @@ configurations, see the [SvelteKit Guide](/guide/ssr-and-sveltekit).
 
 ```ts
 import {
-	createLocalStorageAdapter,
-	createLzStringCompression,
-	createPersistencePlugin,
-	createStateManager,
-	defineStore
+  createLocalStorageAdapter,
+  createLzStringCompression,
+  createPersistencePlugin,
+  createStateManager,
+  defineStore
 } from '@selfagency/stately';
 
 export const usePreferencesStore = defineStore('example-plugin-persistence', {
-	state: () => ({ theme: 'dark', compact: false }),
-	persist: {
-		adapter: createLocalStorageAdapter(),
-		key: 'stately:store:prefs',
-		version: 1,
-		compression: createLzStringCompression()
-	}
+  state: () => ({ theme: 'dark', compact: false }),
+  persist: {
+    adapter: createLocalStorageAdapter(),
+    key: 'stately:store:prefs',
+    version: 1,
+    compression: createLzStringCompression()
+  }
 });
 
 export const persistenceManager = createStateManager().use(createPersistencePlugin());
@@ -109,13 +109,13 @@ The history plugin is ideal for features like draft editors that require undo/re
 import { createHistoryPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
 export const useDraftStore = defineStore('example-plugin-history', {
-	state: () => ({ content: '' }),
-	history: { limit: 25 },
-	actions: {
-		updateContent(text: string) {
-			this.content = text;
-		}
-	}
+  state: () => ({ content: '' }),
+  history: { limit: 25 },
+  actions: {
+    updateContent(text: string) {
+      this.content = text;
+    }
+  }
 });
 
 export const historyManager = createStateManager().use(createHistoryPlugin());
@@ -129,16 +129,16 @@ Sync state across different browser contexts (tabs or windows) using the Sync pl
 import { createStateManager, createSyncPlugin, defineStore } from '@selfagency/stately';
 
 export const usePresenceStore = defineStore('example-plugin-sync', {
-	state: () => ({ count: 0 }),
-	actions: {
-		increment() {
-			this.count += 1;
-		}
-	}
+  state: () => ({ count: 0 }),
+  actions: {
+    increment() {
+      this.count += 1;
+    }
+  }
 });
 
 export const createSyncedManager = (origin: string) =>
-	createStateManager().use(createSyncPlugin({ origin, channelName: 'stately-sync' }));
+  createStateManager().use(createSyncPlugin({ origin, channelName: 'stately-sync' }));
 ```
 
 ## Async Operations with Cancellation
@@ -149,21 +149,21 @@ Manage async actions with built-in concurrency policies like `restartable` and a
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
 export const useAsyncStore = defineStore('example-plugin-async', {
-	state: () => ({ data: null }),
-	actions: {
-		async fetchData(signal: AbortSignal, id: string) {
-			const response = await fetch(`/api/data/${id}`, { signal });
-			this.data = await response.json();
-		}
-	}
+  state: () => ({ data: null }),
+  actions: {
+    async fetchData(signal: AbortSignal, id: string) {
+      const response = await fetch(`/api/data/${id}`, { signal });
+      this.data = await response.json();
+    }
+  }
 });
 
 export const asyncManager = createStateManager().use(
-	createAsyncPlugin({
-		include: ['fetchData'],
-		policies: { fetchData: 'restartable' },
-		injectSignal: (signal, args) => [signal, ...args]
-	})
+  createAsyncPlugin({
+    include: ['fetchData'],
+    policies: { fetchData: 'restartable' },
+    injectSignal: (signal, args) => [signal, ...args]
+  })
 );
 ```
 
@@ -177,15 +177,15 @@ import { createFsmPlugin, createStateManager, defineStore } from '@selfagency/st
 const manager = createStateManager().use(createFsmPlugin());
 
 export const useWizardStore = defineStore('wizard', {
-	state: () => ({ step: 1 }),
-	fsm: {
-		initial: 'editing',
-		states: {
-			editing: { next: 'review' },
-			review: { back: 'editing', submit: 'submitted' },
-			submitted: {}
-		}
-	}
+  state: () => ({ step: 1 }),
+  fsm: {
+    initial: 'editing',
+    states: {
+      editing: { next: 'review' },
+      review: { back: 'editing', submit: 'submitted' },
+      submitted: {}
+    }
+  }
 });
 
 const wizard = useWizardStore(manager);
@@ -195,7 +195,7 @@ wizard.$fsm.send('next');
 
 // Check the current state
 if (wizard.$fsm.matches('review')) {
-	// Proceed to the review step
+  // Proceed to the review step
 }
 ```
 
@@ -209,10 +209,10 @@ import { createStateManager, createValidationPlugin, defineStore } from '@selfag
 const manager = createStateManager().use(createValidationPlugin());
 
 export const useProfileStore = defineStore('profile', {
-	state: () => ({ name: '', age: 18 }),
-	validate(state) {
-		return state.name.trim() ? true : 'Name is required';
-	}
+  state: () => ({ name: '', age: 18 }),
+  validate(state) {
+    return state.name.trim() ? true : 'Name is required';
+  }
 });
 ```
 

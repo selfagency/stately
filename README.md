@@ -61,17 +61,17 @@ import { createStateManager, defineStore } from '@selfagency/stately';
 const manager = createStateManager();
 
 export const useCounterStore = defineStore('counter', {
-	state: () => ({ count: 0 }),
-	getters: {
-		doubleCount(state) {
-			return state.count * 2;
-		}
-	},
-	actions: {
-		increment() {
-			this.count += 1;
-		}
-	}
+  state: () => ({ count: 0 }),
+  getters: {
+    doubleCount(state) {
+      return state.count * 2;
+    }
+  },
+  actions: {
+    increment() {
+      this.count += 1;
+    }
+  }
 });
 
 const counter = useCounterStore(manager);
@@ -101,13 +101,13 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { statelyVitePlugin } from '@selfagency/stately/inspector/vite';
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		statelyVitePlugin({
-			buttonPosition: 'right-bottom',
-			panelSide: 'right'
-		})
-	]
+  plugins: [
+    sveltekit(),
+    statelyVitePlugin({
+      buttonPosition: 'right-bottom',
+      panelSide: 'right'
+    })
+  ]
 });
 ```
 
@@ -118,18 +118,18 @@ handle persistence, history, and sync in a single store:
 
 ```ts
 import {
-	createAsyncPlugin,
-	createHistoryPlugin,
-	createPersistencePlugin,
-	createStateManager,
-	createSyncPlugin
+  createAsyncPlugin,
+  createHistoryPlugin,
+  createPersistencePlugin,
+  createStateManager,
+  createSyncPlugin
 } from '@selfagency/stately';
 
 const manager = createStateManager()
-	.use(createPersistencePlugin())
-	.use(createHistoryPlugin())
-	.use(createSyncPlugin({ origin: 'app-instance' }))
-	.use(createAsyncPlugin());
+  .use(createPersistencePlugin())
+  .use(createHistoryPlugin())
+  .use(createSyncPlugin({ origin: 'app-instance' }))
+  .use(createAsyncPlugin());
 ```
 
 Plugin callbacks preserve concrete store state types through history
@@ -145,15 +145,15 @@ import { createFsmPlugin, createStateManager, defineStore } from '@selfagency/st
 const manager = createStateManager().use(createFsmPlugin());
 
 export const useWizardStore = defineStore('wizard', {
-	state: () => ({ step: 1 }),
-	fsm: {
-		initial: 'editing',
-		states: {
-			editing: { next: 'review' },
-			review: { back: 'editing', submit: 'submitted' },
-			submitted: {}
-		}
-	}
+  state: () => ({ step: 1 }),
+  fsm: {
+    initial: 'editing',
+    states: {
+      editing: { next: 'review' },
+      review: { back: 'editing', submit: 'submitted' },
+      submitted: {}
+    }
+  }
 });
 
 const wizard = useWizardStore(manager);

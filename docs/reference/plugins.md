@@ -8,18 +8,18 @@ through their definition options.
 
 ```ts
 import {
-	createAsyncPlugin,
-	createHistoryPlugin,
-	createPersistencePlugin,
-	createStateManager,
-	createSyncPlugin
+  createAsyncPlugin,
+  createHistoryPlugin,
+  createPersistencePlugin,
+  createStateManager,
+  createSyncPlugin
 } from '@selfagency/stately';
 
 const manager = createStateManager()
-	.use(createPersistencePlugin())
-	.use(createHistoryPlugin())
-	.use(createSyncPlugin())
-	.use(createAsyncPlugin());
+  .use(createPersistencePlugin())
+  .use(createHistoryPlugin())
+  .use(createSyncPlugin())
+  .use(createAsyncPlugin());
 ```
 
 Each plugin augments stores only when the store definition opts into the
@@ -45,21 +45,21 @@ Key behavior:
 
 ```ts
 import {
-	createLocalStorageAdapter,
-	createPersistencePlugin,
-	createStateManager,
-	defineStore
+  createLocalStorageAdapter,
+  createPersistencePlugin,
+  createStateManager,
+  defineStore
 } from '@selfagency/stately';
 
 const manager = createStateManager().use(createPersistencePlugin());
 
 export const useSessionStore = defineStore('session', {
-	state: () => ({ theme: 'dark' }),
-	persist: {
-		adapter: createLocalStorageAdapter(),
-		key: 'stately:session',
-		version: 1
-	}
+  state: () => ({ theme: 'dark' }),
+  persist: {
+    adapter: createLocalStorageAdapter(),
+    key: 'stately:session',
+    version: 1
+  }
 });
 ```
 
@@ -106,8 +106,8 @@ import { createHistoryPlugin, createStateManager, defineStore } from '@selfagenc
 const manager = createStateManager().use(createHistoryPlugin());
 
 export const useDraftStore = defineStore('draft', {
-	state: () => ({ body: '' }),
-	history: { limit: 25 }
+  state: () => ({ body: '' }),
+  history: { limit: 25 }
 });
 ```
 
@@ -247,13 +247,13 @@ Policy guidance:
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';
 
 const manager = createStateManager().use(
-	createAsyncPlugin({
-		include: ['loadCount'],
-		policies: { loadCount: 'restartable' },
-		injectSignal(signal, args) {
-			return [signal, ...args];
-		}
-	})
+  createAsyncPlugin({
+    include: ['loadCount'],
+    policies: { loadCount: 'restartable' },
+    injectSignal(signal, args) {
+      return [signal, ...args];
+    }
+  })
 );
 ```
 

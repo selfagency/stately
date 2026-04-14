@@ -179,175 +179,175 @@ The following baseline is derived from `beans graphql --schema` and provides com
 A bean represents an issue/task in the beans tracker
 """
 type Bean {
-	"""
-	Unique identifier (NanoID)
-	"""
-	id: ID!
-	"""
-	Human-readable slug from filename
-	"""
-	slug: String
-	"""
-	Relative path from .beans/ directory
-	"""
-	path: String!
-	"""
-	Bean title
-	"""
-	title: String!
-	"""
-	Current status (draft, todo, in-progress, completed, scrapped)
-	"""
-	status: String!
-	"""
-	Bean type (milestone, epic, bug, feature, task)
-	"""
-	type: String!
-	"""
-	Priority level (critical, high, normal, low, deferred)
-	"""
-	priority: String!
-	"""
-	Tags for categorization
-	"""
-	tags: [String!]!
-	"""
-	Creation timestamp
-	"""
-	createdAt: Time!
-	"""
-	Last update timestamp
-	"""
-	updatedAt: Time!
-	"""
-	Markdown body content
-	"""
-	body: String!
-	"""
-	Content hash for optimistic concurrency control
-	"""
-	etag: String!
-	"""
-	Parent bean ID (optional, type-restricted)
-	"""
-	parentId: String
-	"""
-	IDs of beans this bean is blocking
-	"""
-	blockingIds: [String!]!
-	"""
-	IDs of beans that are blocking this bean (direct field)
-	"""
-	blockedByIds: [String!]!
-	"""
-	Beans that block this one (incoming blocking links)
-	"""
-	blockedBy(filter: BeanFilter): [Bean!]!
-	"""
-	Beans this one is blocking (resolved from blockingIds)
-	"""
-	blocking(filter: BeanFilter): [Bean!]!
-	"""
-	Parent bean (resolved from parentId)
-	"""
-	parent: Bean
-	"""
-	Child beans (beans with this as parent)
-	"""
-	children(filter: BeanFilter): [Bean!]!
+  """
+  Unique identifier (NanoID)
+  """
+  id: ID!
+  """
+  Human-readable slug from filename
+  """
+  slug: String
+  """
+  Relative path from .beans/ directory
+  """
+  path: String!
+  """
+  Bean title
+  """
+  title: String!
+  """
+  Current status (draft, todo, in-progress, completed, scrapped)
+  """
+  status: String!
+  """
+  Bean type (milestone, epic, bug, feature, task)
+  """
+  type: String!
+  """
+  Priority level (critical, high, normal, low, deferred)
+  """
+  priority: String!
+  """
+  Tags for categorization
+  """
+  tags: [String!]!
+  """
+  Creation timestamp
+  """
+  createdAt: Time!
+  """
+  Last update timestamp
+  """
+  updatedAt: Time!
+  """
+  Markdown body content
+  """
+  body: String!
+  """
+  Content hash for optimistic concurrency control
+  """
+  etag: String!
+  """
+  Parent bean ID (optional, type-restricted)
+  """
+  parentId: String
+  """
+  IDs of beans this bean is blocking
+  """
+  blockingIds: [String!]!
+  """
+  IDs of beans that are blocking this bean (direct field)
+  """
+  blockedByIds: [String!]!
+  """
+  Beans that block this one (incoming blocking links)
+  """
+  blockedBy(filter: BeanFilter): [Bean!]!
+  """
+  Beans this one is blocking (resolved from blockingIds)
+  """
+  blocking(filter: BeanFilter): [Bean!]!
+  """
+  Parent bean (resolved from parentId)
+  """
+  parent: Bean
+  """
+  Child beans (beans with this as parent)
+  """
+  children(filter: BeanFilter): [Bean!]!
 }
 """
 Filter options for querying beans
 """
 input BeanFilter {
-	"""
-	Full-text search across slug, title, and body using Bleve query syntax.
+  """
+  Full-text search across slug, title, and body using Bleve query syntax.
 
-	Examples:
-	- "login" - exact term match
-	- "login~" - fuzzy match (1 edit distance)
-	- "login~2" - fuzzy match (2 edit distance)
-	- "log*" - wildcard prefix
-	- "\"user login\"" - exact phrase
-	- "user AND login" - both terms required
-	- "user OR login" - either term
-	- "slug:auth" - search only slug field
-	- "title:login" - search only title field
-	- "body:auth" - search only body field
-	"""
-	search: String
-	"""
-	Include only beans with these statuses (OR logic)
-	"""
-	status: [String!]
-	"""
-	Exclude beans with these statuses
-	"""
-	excludeStatus: [String!]
-	"""
-	Include only beans with these types (OR logic)
-	"""
-	type: [String!]
-	"""
-	Exclude beans with these types
-	"""
-	excludeType: [String!]
-	"""
-	Include only beans with these priorities (OR logic)
-	"""
-	priority: [String!]
-	"""
-	Exclude beans with these priorities
-	"""
-	excludePriority: [String!]
-	"""
-	Include only beans with any of these tags (OR logic)
-	"""
-	tags: [String!]
-	"""
-	Exclude beans with any of these tags
-	"""
-	excludeTags: [String!]
-	"""
-	Include only beans with a parent
-	"""
-	hasParent: Boolean
-	"""
-	Include only beans with this specific parent ID
-	"""
-	parentId: String
-	"""
-	Include only beans that are blocking other beans
-	"""
-	hasBlocking: Boolean
-	"""
-	Include only beans that are blocking this specific bean ID
-	"""
-	blockingId: String
-	"""
-	Include only beans that are blocked by others (via incoming blocking links or blocked_by field)
-	"""
-	isBlocked: Boolean
-	"""
-	Include only beans that have explicit blocked-by entries
-	"""
-	hasBlockedBy: Boolean
-	"""
-	Include only beans blocked by this specific bean ID (via blocked_by field)
-	"""
-	blockedById: String
-	"""
-	Exclude beans that have a parent
-	"""
-	noParent: Boolean
-	"""
-	Exclude beans that are blocking other beans
-	"""
-	noBlocking: Boolean
-	"""
-	Exclude beans that have explicit blocked-by entries
-	"""
-	noBlockedBy: Boolean
+  Examples:
+  - "login" - exact term match
+  - "login~" - fuzzy match (1 edit distance)
+  - "login~2" - fuzzy match (2 edit distance)
+  - "log*" - wildcard prefix
+  - "\"user login\"" - exact phrase
+  - "user AND login" - both terms required
+  - "user OR login" - either term
+  - "slug:auth" - search only slug field
+  - "title:login" - search only title field
+  - "body:auth" - search only body field
+  """
+  search: String
+  """
+  Include only beans with these statuses (OR logic)
+  """
+  status: [String!]
+  """
+  Exclude beans with these statuses
+  """
+  excludeStatus: [String!]
+  """
+  Include only beans with these types (OR logic)
+  """
+  type: [String!]
+  """
+  Exclude beans with these types
+  """
+  excludeType: [String!]
+  """
+  Include only beans with these priorities (OR logic)
+  """
+  priority: [String!]
+  """
+  Exclude beans with these priorities
+  """
+  excludePriority: [String!]
+  """
+  Include only beans with any of these tags (OR logic)
+  """
+  tags: [String!]
+  """
+  Exclude beans with any of these tags
+  """
+  excludeTags: [String!]
+  """
+  Include only beans with a parent
+  """
+  hasParent: Boolean
+  """
+  Include only beans with this specific parent ID
+  """
+  parentId: String
+  """
+  Include only beans that are blocking other beans
+  """
+  hasBlocking: Boolean
+  """
+  Include only beans that are blocking this specific bean ID
+  """
+  blockingId: String
+  """
+  Include only beans that are blocked by others (via incoming blocking links or blocked_by field)
+  """
+  isBlocked: Boolean
+  """
+  Include only beans that have explicit blocked-by entries
+  """
+  hasBlockedBy: Boolean
+  """
+  Include only beans blocked by this specific bean ID (via blocked_by field)
+  """
+  blockedById: String
+  """
+  Exclude beans that have a parent
+  """
+  noParent: Boolean
+  """
+  Exclude beans that are blocking other beans
+  """
+  noBlocking: Boolean
+  """
+  Exclude beans that have explicit blocked-by entries
+  """
+  noBlockedBy: Boolean
 }
 """
 Structured body modifications applied atomically.
@@ -355,183 +355,183 @@ Operations are applied in order: all replacements sequentially, then append.
 If any operation fails, the entire mutation fails (transactional).
 """
 input BodyModification {
-	"""
-	Text replacements applied sequentially in array order.
-	Each old text must match exactly once at the time it's applied.
-	"""
-	replace: [ReplaceOperation!]
-	"""
-	Text to append after all replacements.
-	Appended with blank line separator.
-	"""
-	append: String
+  """
+  Text replacements applied sequentially in array order.
+  Each old text must match exactly once at the time it's applied.
+  """
+  replace: [ReplaceOperation!]
+  """
+  Text to append after all replacements.
+  Appended with blank line separator.
+  """
+  append: String
 }
 """
 Input for creating a new bean
 """
 input CreateBeanInput {
-	"""
-	Bean title (required)
-	"""
-	title: String!
-	"""
-	Bean type (defaults to 'task')
-	"""
-	type: String
-	"""
-	Status (defaults to 'todo')
-	"""
-	status: String
-	"""
-	Priority level (defaults to 'normal')
-	"""
-	priority: String
-	"""
-	Tags for categorization
-	"""
-	tags: [String!]
-	"""
-	Markdown body content
-	"""
-	body: String
-	"""
-	Parent bean ID (validated against type hierarchy)
-	"""
-	parent: String
-	"""
-	Bean IDs this bean is blocking
-	"""
-	blocking: [String!]
-	"""
-	Bean IDs that are blocking this bean
-	"""
-	blockedBy: [String!]
-	"""
-	Custom ID prefix (overrides config prefix for this bean)
-	"""
-	prefix: String
+  """
+  Bean title (required)
+  """
+  title: String!
+  """
+  Bean type (defaults to 'task')
+  """
+  type: String
+  """
+  Status (defaults to 'todo')
+  """
+  status: String
+  """
+  Priority level (defaults to 'normal')
+  """
+  priority: String
+  """
+  Tags for categorization
+  """
+  tags: [String!]
+  """
+  Markdown body content
+  """
+  body: String
+  """
+  Parent bean ID (validated against type hierarchy)
+  """
+  parent: String
+  """
+  Bean IDs this bean is blocking
+  """
+  blocking: [String!]
+  """
+  Bean IDs that are blocking this bean
+  """
+  blockedBy: [String!]
+  """
+  Custom ID prefix (overrides config prefix for this bean)
+  """
+  prefix: String
 }
 type Mutation {
-	"""
-	Create a new bean
-	"""
-	createBean(input: CreateBeanInput!): Bean!
-	"""
-	Update an existing bean
-	"""
-	updateBean(id: ID!, input: UpdateBeanInput!): Bean!
-	"""
-	Delete a bean by ID (automatically removes incoming links)
-	"""
-	deleteBean(id: ID!): Boolean!
-	"""
-	Set or clear the parent of a bean (validates type hierarchy)
-	"""
-	setParent(id: ID!, parentId: String, ifMatch: String): Bean!
-	"""
-	Add a bean to the blocking list
-	"""
-	addBlocking(id: ID!, targetId: ID!, ifMatch: String): Bean!
-	"""
-	Remove a bean from the blocking list
-	"""
-	removeBlocking(id: ID!, targetId: ID!, ifMatch: String): Bean!
-	"""
-	Add a bean to the blocked-by list (this bean is blocked by targetId)
-	"""
-	addBlockedBy(id: ID!, targetId: ID!, ifMatch: String): Bean!
-	"""
-	Remove a bean from the blocked-by list
-	"""
-	removeBlockedBy(id: ID!, targetId: ID!, ifMatch: String): Bean!
+  """
+  Create a new bean
+  """
+  createBean(input: CreateBeanInput!): Bean!
+  """
+  Update an existing bean
+  """
+  updateBean(id: ID!, input: UpdateBeanInput!): Bean!
+  """
+  Delete a bean by ID (automatically removes incoming links)
+  """
+  deleteBean(id: ID!): Boolean!
+  """
+  Set or clear the parent of a bean (validates type hierarchy)
+  """
+  setParent(id: ID!, parentId: String, ifMatch: String): Bean!
+  """
+  Add a bean to the blocking list
+  """
+  addBlocking(id: ID!, targetId: ID!, ifMatch: String): Bean!
+  """
+  Remove a bean from the blocking list
+  """
+  removeBlocking(id: ID!, targetId: ID!, ifMatch: String): Bean!
+  """
+  Add a bean to the blocked-by list (this bean is blocked by targetId)
+  """
+  addBlockedBy(id: ID!, targetId: ID!, ifMatch: String): Bean!
+  """
+  Remove a bean from the blocked-by list
+  """
+  removeBlockedBy(id: ID!, targetId: ID!, ifMatch: String): Bean!
 }
 type Query {
-	"""
-	Get a single bean by ID. Accepts either the full ID (e.g., "beans-abc1") or the short ID without prefix (e.g., "abc1").
-	"""
-	bean(id: ID!): Bean
-	"""
-	List beans with optional filtering
-	"""
-	beans(filter: BeanFilter): [Bean!]!
+  """
+  Get a single bean by ID. Accepts either the full ID (e.g., "beans-abc1") or the short ID without prefix (e.g., "abc1").
+  """
+  bean(id: ID!): Bean
+  """
+  List beans with optional filtering
+  """
+  beans(filter: BeanFilter): [Bean!]!
 }
 """
 A single text replacement operation.
 """
 input ReplaceOperation {
-	"""
-	Text to find (must occur exactly once, cannot be empty)
-	"""
-	old: String!
-	"""
-	Replacement text (can be empty to delete the matched text)
-	"""
-	new: String!
+  """
+  Text to find (must occur exactly once, cannot be empty)
+  """
+  old: String!
+  """
+  Replacement text (can be empty to delete the matched text)
+  """
+  new: String!
 }
 scalar Time
 """
 Input for updating an existing bean
 """
 input UpdateBeanInput {
-	"""
-	New title
-	"""
-	title: String
-	"""
-	New status
-	"""
-	status: String
-	"""
-	New type
-	"""
-	type: String
-	"""
-	New priority
-	"""
-	priority: String
-	"""
-	Replace all tags (nil preserves existing, mutually exclusive with addTags/removeTags)
-	"""
-	tags: [String!]
-	"""
-	Add tags to existing list
-	"""
-	addTags: [String!]
-	"""
-	Remove tags from existing list
-	"""
-	removeTags: [String!]
-	"""
-	New body content (full replacement, mutually exclusive with bodyMod)
-	"""
-	body: String
-	"""
-	Structured body modifications (mutually exclusive with body)
-	"""
-	bodyMod: BodyModification
-	"""
-	Set parent bean ID (null/empty to clear, validates type hierarchy)
-	"""
-	parent: String
-	"""
-	Add beans to blocking list (validates cycles and existence)
-	"""
-	addBlocking: [String!]
-	"""
-	Remove beans from blocking list
-	"""
-	removeBlocking: [String!]
-	"""
-	Add beans to blocked-by list (validates cycles and existence)
-	"""
-	addBlockedBy: [String!]
-	"""
-	Remove beans from blocked-by list
-	"""
-	removeBlockedBy: [String!]
-	"""
-	ETag for optimistic concurrency control (optional)
-	"""
-	ifMatch: String
+  """
+  New title
+  """
+  title: String
+  """
+  New status
+  """
+  status: String
+  """
+  New type
+  """
+  type: String
+  """
+  New priority
+  """
+  priority: String
+  """
+  Replace all tags (nil preserves existing, mutually exclusive with addTags/removeTags)
+  """
+  tags: [String!]
+  """
+  Add tags to existing list
+  """
+  addTags: [String!]
+  """
+  Remove tags from existing list
+  """
+  removeTags: [String!]
+  """
+  New body content (full replacement, mutually exclusive with bodyMod)
+  """
+  body: String
+  """
+  Structured body modifications (mutually exclusive with body)
+  """
+  bodyMod: BodyModification
+  """
+  Set parent bean ID (null/empty to clear, validates type hierarchy)
+  """
+  parent: String
+  """
+  Add beans to blocking list (validates cycles and existence)
+  """
+  addBlocking: [String!]
+  """
+  Remove beans from blocking list
+  """
+  removeBlocking: [String!]
+  """
+  Add beans to blocked-by list (validates cycles and existence)
+  """
+  addBlockedBy: [String!]
+  """
+  Remove beans from blocked-by list
+  """
+  removeBlockedBy: [String!]
+  """
+  ETag for optimistic concurrency control (optional)
+  """
+  ifMatch: String
 }
 ```

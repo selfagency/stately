@@ -5,5 +5,5 @@ let { open = $bindable(false), children } = $props<{ open?: boolean; children?: 
 </script>
 
 <Dialog.Root bind:open={open}>
-	{@render children?.()}
+  {@render children?.()}
 </Dialog.Root>

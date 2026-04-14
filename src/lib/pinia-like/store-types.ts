@@ -13,78 +13,78 @@ export type StoreActions<TActions extends RecordWithFunctions = RecordWithFuncti
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
 export interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
-	// plugins can augment store instances by extending this interface
+  // plugins can augment store instances by extending this interface
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
 export interface StoreCustomStateProperties<State extends StoreState = StoreState> {
-	// plugins can augment store state by extending this interface
+  // plugins can augment store state by extending this interface
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
 export interface DefineStoreOptionsBase<State extends StoreState = StoreState, Store = unknown> {
-	// plugins can augment definition options by extending this interface
+  // plugins can augment definition options by extending this interface
 }
 
 export interface StoreSubscribeOptions<State extends StoreState = StoreState, Selected = State> {
-	detached?: boolean;
-	select?: (state: State) => Selected;
-	equalityFn?: (previous: Selected, next: Selected) => boolean;
+  detached?: boolean;
+  select?: (state: State) => Selected;
+  equalityFn?: (previous: Selected, next: Selected) => boolean;
 }
 
 export interface StoreShellMethods<Id extends string, State extends StoreState, Store extends object> {
-	readonly $id: Id;
-	$state: State;
-	$patch(partial: Partial<State> | ((state: State) => void)): void;
-	$reset(): void;
-	$subscribe<Selected = State>(
-		callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
-		options?: StoreSubscribeOptions<State, Selected>
-	): () => void;
-	$onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
-	$dispose(): void;
-	subscribe(run: (value: State) => void, invalidate?: (value?: State) => void): () => void;
-	set(value: State): void;
+  readonly $id: Id;
+  $state: State;
+  $patch(partial: Partial<State> | ((state: State) => void)): void;
+  $reset(): void;
+  $subscribe<Selected = State>(
+    callback: (mutation: StoreMutationContext<Id, Store>, state: State) => void,
+    options?: StoreSubscribeOptions<State, Selected>
+  ): () => void;
+  $onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
+  $dispose(): void;
+  subscribe(run: (value: State) => void, invalidate?: (value?: State) => void): () => void;
+  set(value: State): void;
 }
 
 export type StoreInstance<
-	Id extends string,
-	State extends StoreState = StoreState,
-	Getters extends StoreGetters = StoreGetters,
-	Actions extends StoreActions = StoreActions
+  Id extends string,
+  State extends StoreState = StoreState,
+  Getters extends StoreGetters = StoreGetters,
+  Actions extends StoreActions = StoreActions
 > = State &
-	Readonly<Getters> &
-	Actions &
-	StoreCustomProperties<State, StoreInstance<Id, State, Getters, Actions>> &
-	StoreShellMethods<Id, State, StoreInstance<Id, State, Getters, Actions>>;
+  Readonly<Getters> &
+  Actions &
+  StoreCustomProperties<State, StoreInstance<Id, State, Getters, Actions>> &
+  StoreShellMethods<Id, State, StoreInstance<Id, State, Getters, Actions>>;
 
 export interface StoreDefinition<
-	Id extends string = string,
-	State extends StoreState = StoreState,
-	Getters extends StoreGetters = StoreGetters,
-	Actions extends StoreActions = StoreActions
+  Id extends string = string,
+  State extends StoreState = StoreState,
+  Getters extends StoreGetters = StoreGetters,
+  Actions extends StoreActions = StoreActions
 > {
-	readonly $id: Id;
-	(manager?: StateManager): StoreInstance<Id, State, Getters, Actions>;
+  readonly $id: Id;
+  (manager?: StateManager): StoreInstance<Id, State, Getters, Actions>;
 }
 
 export interface StoreMutationContext<Id extends string = string, Store extends object = StoreInstance<Id>> {
-	readonly storeId: Id;
-	readonly store: Store;
-	readonly type: 'direct' | 'patch-object' | 'patch-function';
-	readonly payload?: unknown;
+  readonly storeId: Id;
+  readonly store: Store;
+  readonly type: 'direct' | 'patch-object' | 'patch-function';
+  readonly payload?: unknown;
 }
 
 export interface StoreActionHookContext<
-	Store extends object = StoreInstance<string>,
-	Name extends string = string,
-	Args extends unknown[] = unknown[],
-	Result = unknown
+  Store extends object = StoreInstance<string>,
+  Name extends string = string,
+  Args extends unknown[] = unknown[],
+  Result = unknown
 > {
-	readonly name: Name;
-	readonly store: Store;
-	readonly args: Args;
-	before(callback: () => boolean | void): void;
-	after(callback: (result: Result) => void): void;
-	onError(callback: (error: unknown) => void): void;
+  readonly name: Name;
+  readonly store: Store;
+  readonly args: Args;
+  before(callback: () => boolean | void): void;
+  after(callback: (result: Result) => void): void;
+  onError(callback: (error: unknown) => void): void;
 }
