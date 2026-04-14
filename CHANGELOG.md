@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-04-14
+
+## What's Changed
+* fix(types): harden type flow, restore shell helper typing, and add type test suite by @selfagency in https://github.com/selfagency/stately/pull/25
+* feat: add interactive demo showcase for all store features by @selfagency in https://github.com/selfagency/stately/pull/27
+
+
+**Full Changelog**: https://github.com/selfagency/stately/compare/v0.1.3...v0.1.4
+
+_Source: changes from v0.1.3 to v0.1.4._
+
+
 ### Fixed
 
 - **Setup store `$state` and `$patch` now exclude action functions.** Previously,
