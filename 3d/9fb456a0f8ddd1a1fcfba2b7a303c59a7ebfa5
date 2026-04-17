@@ -1,0 +1,24 @@
+docs/public/_headers
+  h_5cf1e2c1161853 1-5
+docs/public/.well-known/mcp/server-card.json
+  h_5cf1e2c1161853 1-24
+docs/.vitepress/config.ts
+  h_5cf1e2c1161853 14-16
+docs/public/.well-known/agent-skills/index.json
+  h_5cf1e2c1161853 1-75
+docs/public/robots.txt
+  h_5cf1e2c1161853 1-29
+docs/public/.well-known/api-catalog
+  h_5cf1e2c1161853 1-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "3d9fb456a0f8ddd1a1fcfba2b7a303c59a7ebfa5",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
