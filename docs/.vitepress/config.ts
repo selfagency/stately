@@ -1,10 +1,4 @@
 import { defineConfig } from 'vitepress';
-import { promises as fs } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const title = 'Stately';
 const description =
@@ -19,26 +13,6 @@ export default defineConfig({
   lastUpdated: true,
   sitemap: {
     hostname: 'https://stately.self.agency'
-  },
-  vite: {
-    plugins: [
-      {
-        name: 'copy-well-known',
-        apply: 'build',
-        async closeBundle() {
-          // Copy .well-known directory to dist after build
-          const srcDir = join(__dirname, '..', 'public', '.well-known');
-          const destDir = join(__dirname, '..', 'dist', '.well-known');
-
-          try {
-            await fs.cp(srcDir, destDir, { recursive: true });
-            console.log('Copied .well-known directory to dist');
-          } catch (err) {
-            console.error('Error copying .well-known directory:', err);
-          }
-        }
-      }
-    ]
   },
   head: [
     ['meta', { name: 'theme-color', content: '#2563eb' }],
