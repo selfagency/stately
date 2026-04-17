@@ -1,0 +1,14 @@
+_config.yml
+  h_5cf1e2c1161853 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "f327648cc7caede09bbfdd5beca9bf95ccda5d10",
+  "prompts": {},
+  "humans": {
+    "h_5cf1e2c1161853": {
+      "author": "Daniel Sieradski"
+    }
+  }
+}
