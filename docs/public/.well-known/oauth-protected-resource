@@ -1,0 +1,16 @@
+{
+  "resource": "https://stately.self.agency",
+  "authorization_servers": [
+    "https://stately.self.agency"
+  ],
+  "scopes_supported": [
+    "read:docs",
+    "openid",
+    "profile",
+    "email"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ],
+  "resource_documentation": "https://stately.self.agency/reference/api"
+}

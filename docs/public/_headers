@@ -1,7 +1,11 @@
 # Link headers for agent discovery (RFC 8288)
 /
-  Link: </.well-known/agent-skills/index.json>; rel="agent-skills-index"
+  Link: </.well-known/api-catalog>; rel="api-catalog"
+  Link: </.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"
   Link: </reference/api>; rel="service-doc"
+  Link: </guide/>; rel="service-doc"
+  Link: </.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"
+  Link: </.well-known/agent-skills/index.json>; rel="agent-skills-index"
   Link: </guide/>; rel="documentation"
 
 /.well-known/http-message-signatures-directory
