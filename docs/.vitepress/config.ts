@@ -21,99 +21,127 @@ export default defineConfig({
     [
       'script',
       {
-        type: 'module',
-        async: true
+        type: 'module'
       },
       `
-      // Register WebMCP tools for AI agents
-      function registerWebMCPTools() {
-        if (!navigator.modelContext || typeof navigator.modelContext.registerTool !== 'function') {
+      // WebMCP tool definitions for Stately documentation
+      const STATELY_TOOLS = [
+        {
+          name: 'search-stately-docs',
+          title: 'Search Stately Documentation',
+          description: 'Search the Stately documentation for features, guides, and API references.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'Search query (e.g., "persistence", "define store", "plugins")'
+              }
+            },
+            required: ['query']
+          },
+          execute: async (input) => {
+            const query = String(input?.query || '').toLowerCase();
+            const sections = {
+              'define-store': { title: 'Define stores', url: '/guide/define-store' },
+              'plugins': { title: 'Plugins guide', url: '/guide/plugins' },
+              'persistence': { title: 'Persistence reference', url: '/reference/persistence' },
+              'history': { title: 'Plugins reference', url: '/reference/plugins' },
+              'sync': { title: 'Plugins reference', url: '/reference/plugins' },
+              'async': { title: 'Plugins reference', url: '/reference/plugins' },
+              'fsm': { title: 'FSM guide', url: '/guide/fsm' },
+              'validation': { title: 'Validation guide', url: '/guide/validation' },
+              'ssr': { title: 'SSR and SvelteKit', url: '/guide/ssr-and-sveltekit' },
+              'inspector': { title: 'Inspector guide', url: '/guide/inspector' }
+            };
+            
+            for (const [key, section] of Object.entries(sections)) {
+              if (query.includes(key) || key.includes(query)) {
+                return 'Visit: https://stately.self.agency' + section.url;
+              }
+            }
+            return 'Documentation available at https://stately.self.agency/guide/';
+          },
+          annotations: { readOnlyHint: true }
+        },
+        {
+          name: 'get-stately-feature-info',
+          title: 'Get Stately Feature Information',
+          description: 'Learn about Stately features like persistence, plugins, FSM, and validation.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              feature: {
+                type: 'string',
+                enum: ['persistence', 'plugins', 'fsm', 'validation', 'sync', 'history', 'async', 'inspector'],
+                description: 'Feature to learn about'
+              }
+            },
+            required: ['feature']
+          },
+          execute: async (input) => {
+            const info = {
+              persistence: 'Persist store state to localStorage, sessionStorage, IndexedDB, or memory with TTL, compression, and filtering.',
+              plugins: 'Tree-shakable plugin system for extending stores with persistence, history, sync, async, and custom functionality.',
+              fsm: 'Finite state machines for modeling complex workflows with type-safe state transitions.',
+              validation: 'Input validation with schema definitions integrated with store actions.',
+              sync: 'Multi-tab synchronization via BroadcastChannel and storage events.',
+              history: 'Undo/redo history with snapshots and time-travel debugging.',
+              async: 'Async orchestration with loading states, error tracking, and concurrency control.',
+              inspector: 'Browser DevTools integration for inspecting state, actions, and history.'
+            };
+            return info[input?.feature] || 'Feature not found';
+          },
+          annotations: { readOnlyHint: true }
+        }
+      ];
+
+      // Register tools with retries to handle delayed API availability
+      function attemptRegistration(attempt = 0) {
+        if (typeof navigator === 'undefined') {
           return;
         }
 
-        const tools = [
-          {
-            name: 'search-stately-docs',
-            title: 'Search Stately Documentation',
-            description: 'Search the Stately documentation for features, guides, and API references.',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                query: {
-                  type: 'string',
-                  description: 'Search query (e.g., "persistence", "define store", "plugins")'
-                }
-              },
-              required: ['query']
-            },
-            execute: async (input) => {
-              const query = String(input?.query || '').toLowerCase();
-              const sections = {
-                'define-store': { title: 'Define stores', url: '/guide/define-store' },
-                'plugins': { title: 'Plugins guide', url: '/guide/plugins' },
-                'persistence': { title: 'Persistence reference', url: '/reference/persistence' },
-                'history': { title: 'Plugins reference', url: '/reference/plugins' },
-                'sync': { title: 'Plugins reference', url: '/reference/plugins' },
-                'async': { title: 'Plugins reference', url: '/reference/plugins' },
-                'fsm': { title: 'FSM guide', url: '/guide/fsm' },
-                'validation': { title: 'Validation guide', url: '/guide/validation' },
-                'ssr': { title: 'SSR and SvelteKit', url: '/guide/ssr-and-sveltekit' },
-                'inspector': { title: 'Inspector guide', url: '/guide/inspector' }
-              };
-              
-              for (const [key, section] of Object.entries(sections)) {
-                if (query.includes(key) || key.includes(query)) {
-                  return 'Visit: https://stately.self.agency' + section.url;
-                }
-              }
-              return 'Documentation available at https://stately.self.agency/guide/';
-            },
-            annotations: { readOnlyHint: true }
-          },
-          {
-            name: 'get-stately-feature-info',
-            title: 'Get Stately Feature Information',
-            description: 'Learn about Stately features like persistence, plugins, FSM, and validation.',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                feature: {
-                  type: 'string',
-                  enum: ['persistence', 'plugins', 'fsm', 'validation', 'sync', 'history', 'async', 'inspector'],
-                  description: 'Feature to learn about'
-                }
-              },
-              required: ['feature']
-            },
-            execute: async (input) => {
-              const info = {
-                persistence: 'Persist store state to localStorage, sessionStorage, IndexedDB, or memory with TTL, compression, and filtering.',
-                plugins: 'Tree-shakable plugin system for extending stores with persistence, history, sync, async, and custom functionality.',
-                fsm: 'Finite state machines for modeling complex workflows with type-safe state transitions.',
-                validation: 'Input validation with schema definitions integrated with store actions.',
-                sync: 'Multi-tab synchronization via BroadcastChannel and storage events.',
-                history: 'Undo/redo history with snapshots and time-travel debugging.',
-                async: 'Async orchestration with loading states, error tracking, and concurrency control.',
-                inspector: 'Browser DevTools integration for inspecting state, actions, and history.'
-              };
-              return info[input?.feature] || 'Feature not found';
-            },
-            annotations: { readOnlyHint: true }
+        const modelContext = navigator.modelContext;
+        if (!modelContext || typeof modelContext.registerTool !== 'function') {
+          // Retry after delay if API not ready yet
+          if (attempt < 10) {
+            setTimeout(() => attemptRegistration(attempt + 1), 100);
           }
-        ];
+          return;
+        }
 
-        for (const tool of tools) {
+        // API is ready, register all tools
+        let registered = 0;
+        for (const tool of STATELY_TOOLS) {
           try {
-            navigator.modelContext.registerTool(tool);
+            modelContext.registerTool(tool);
+            registered++;
           } catch (error) {
             console.debug('Failed to register WebMCP tool:', error);
           }
         }
+        if (registered > 0) {
+          console.debug('Registered ' + registered + ' WebMCP tools');
+        }
       }
 
-      if (typeof window !== 'undefined') {
-        registerWebMCPTools();
+      // Start registration immediately and retry if needed
+      attemptRegistration(); for (const tool of STATELY_TOOLS) {
+          try {
+            modelContext.registerTool(tool);
+            registered++;
+          } catch (error) {
+            console.debug('Failed to register WebMCP tool:', error);
+          }
+        }
+        if (registered > 0) {
+          console.debug('Registered ' + registered + ' WebMCP tools');
+        }
       }
+
+      // Start registration immediately and retry if needed
+      attemptRegistration();
       `
     ]
   ],
