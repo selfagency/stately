@@ -1,0 +1,39 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://stately.self.agency/",
+      "links": [
+        {
+          "rel": "service-doc",
+          "href": "https://stately.self.agency/guide/",
+          "type": "text/html",
+          "title": "Stately Documentation - Getting Started Guide"
+        },
+        {
+          "rel": "service-doc",
+          "href": "https://stately.self.agency/reference/api",
+          "type": "text/html",
+          "title": "Stately API Reference - Complete API Hub"
+        },
+        {
+          "rel": "service-desc",
+          "href": "https://github.com/selfagency/stately",
+          "type": "text/html",
+          "title": "Stately GitHub Repository"
+        },
+        {
+          "rel": "alternate",
+          "href": "https://www.npmjs.com/package/@selfagency/stately",
+          "type": "text/html",
+          "title": "Stately on npm"
+        },
+        {
+          "rel": "alternate",
+          "href": "https://stately.self.agency/guide/examples",
+          "type": "text/html",
+          "title": "Code Examples and Recipes"
+        }
+      ]
+    }
+  ]
+}

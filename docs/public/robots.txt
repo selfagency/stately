@@ -1,0 +1,29 @@
+# Stately Docs - Robot directives
+# Pinia-inspired state management for Svelte 5 and SvelteKit
+
+# Default rules for all user-agents
+User-agent: *
+Allow: /
+Disallow: /search
+Disallow: /*.json$
+
+# Sitemap reference
+Sitemap: https://stately.self.agency/sitemap.xml
+
+# AI crawler rules (RFC 9309)
+# GPT and OpenAI crawlers
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic Claude Web crawler
+User-agent: Claude-Web
+Allow: /
+
+# Google extended crawling for training
+User-agent: Google-Extended
+Allow: /
+
+# Content Signals (https://contentsignals.org/)
+# Declaring content usage preferences for AI systems
+Content-Signal: ai-train=yes, search=yes, ai-input=yes

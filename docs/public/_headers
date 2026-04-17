@@ -1,0 +1,5 @@
+# Link headers for agent discovery (RFC 8288)
+/
+  Link: </.well-known/agent-skills/index.json>; rel="agent-skills-index"
+  Link: </reference/api>; rel="service-doc"
+  Link: </guide/>; rel="documentation"

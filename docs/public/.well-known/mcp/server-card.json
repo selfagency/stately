@@ -1,0 +1,24 @@
+{
+  "serverInfo": {
+    "name": "Stately State Management",
+    "version": "0.1.4",
+    "description": "Pinia-inspired state management for Svelte 5 and SvelteKit with persistence, history, sync, and async orchestration."
+  },
+  "capabilities": {
+    "resources": {
+      "subscribe": true,
+      "listResources": true
+    }
+  },
+  "documentation": {
+    "url": "https://stately.self.agency/",
+    "repository": "https://github.com/selfagency/stately"
+  },
+  "metadata": {
+    "tags": ["svelte", "sveltekit", "state-management", "store", "reactivity"],
+    "author": {
+      "name": "Self Agency",
+      "url": "https://self.agency"
+    }
+  }
+}

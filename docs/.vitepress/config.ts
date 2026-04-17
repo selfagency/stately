@@ -11,6 +11,9 @@ export default defineConfig({
   base: '/',
   cleanUrls: true,
   lastUpdated: true,
+  sitemap: {
+    hostname: 'https://stately.self.agency'
+  },
   head: [
     ['meta', { name: 'theme-color', content: '#2563eb' }],
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/stately.svg' }],

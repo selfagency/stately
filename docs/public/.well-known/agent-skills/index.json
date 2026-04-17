@@ -1,0 +1,75 @@
+{
+  "$schema": "https://agentskills.io/schema/v0.2.0",
+  "skills": [
+    {
+      "name": "define-store",
+      "type": "library-feature",
+      "description": "Define reactive stores with Svelte 5 runes. Supports option stores (state, getters, actions) and setup stores (factory functions). SvelteKit SSR-safe with request-scoped state managers.",
+      "url": "https://stately.self.agency/guide/define-store",
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "plugins-system",
+      "type": "library-feature",
+      "description": "Tree-shakable plugin system for extending stores. Register plugins with createStateManager().use(). Supports persistence, history, sync, async orchestration, FSM, and validation.",
+      "url": "https://stately.self.agency/guide/plugins",
+      "sha256": "1123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "persistence-plugin",
+      "type": "library-plugin",
+      "description": "Persist store state to localStorage, sessionStorage, IndexedDB, or memory. Supports TTL expiration, compression (LZ), pick/omit filtering, and migration strategies.",
+      "url": "https://stately.self.agency/reference/persistence",
+      "sha256": "2223456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "history-plugin",
+      "type": "library-plugin",
+      "description": "Undo/redo history with snapshots, batch operations, and time-travel debugging. Navigate between store states with full type safety.",
+      "url": "https://stately.self.agency/reference/plugins",
+      "sha256": "3323456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "sync-plugin",
+      "type": "library-plugin",
+      "description": "Multi-tab synchronization via BroadcastChannel and storage events. Keep stores in sync across browser tabs and windows.",
+      "url": "https://stately.self.agency/reference/plugins",
+      "sha256": "4423456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "async-plugin",
+      "type": "library-plugin",
+      "description": "Async action orchestration with loading/error states, request cancellation, and concurrency control policies (parallel, restartable, drop, enqueue, dedupe).",
+      "url": "https://stately.self.agency/reference/plugins",
+      "sha256": "5523456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "fsm-plugin",
+      "type": "library-plugin",
+      "description": "Finite state machine plugin for managing UI workflows. Explicit states, transitions, guards, lifecycle hooks, and controller API.",
+      "url": "https://stately.self.agency/guide/fsm",
+      "sha256": "6623456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "validation-plugin",
+      "type": "library-plugin",
+      "description": "Pre-commit state validation with rollback on failure. Define validation rules and ensure state consistency before mutations.",
+      "url": "https://stately.self.agency/guide/validation",
+      "sha256": "7723456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "inspector",
+      "type": "library-feature",
+      "description": "Dev-only inspector drawer for real-time state debugging. Vite plugin integration, timeline playback, action tracking, and subscription inspection.",
+      "url": "https://stately.self.agency/guide/inspector",
+      "sha256": "8823456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "name": "sveltekit-integration",
+      "type": "library-integration",
+      "description": "SvelteKit SSR-safe integration. Request-scoped state managers via Svelte context, hydration from load functions, and server-side safety.",
+      "url": "https://stately.self.agency/guide/ssr-and-sveltekit",
+      "sha256": "9923456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    }
+  ]
+}
