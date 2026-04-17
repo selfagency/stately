@@ -3,3 +3,6 @@
   Link: </.well-known/agent-skills/index.json>; rel="agent-skills-index"
   Link: </reference/api>; rel="service-doc"
   Link: </guide/>; rel="documentation"
+
+/.well-known/http-message-signatures-directory
+  Content-Type: application/http-message-signatures-directory+json
