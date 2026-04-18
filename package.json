@@ -109,7 +109,7 @@
   "devDependencies": {
     "@changesets/changelog-git": "^0.2.1",
     "@changesets/cli": "^2.30.0",
-    "@codecov/vite-plugin": "^1.9.1",
+    "@codecov/vite-plugin": "^2.0.1",
     "@eslint/compat": "^2.0.5",
     "@eslint/js": "^10.0.1",
     "@internationalized/date": "^3.12.0",
