@@ -1,7 +1,7 @@
 import type { DefineStoreOptions } from '../define-store.svelte.js';
 import { createStoreShell } from './store-shell.svelte.js';
 
-type AnyRecord = Record<string, unknown>;
+type AnyRecord = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
@@ -26,7 +26,7 @@ export function createOptionStore<
   Getters extends GetterTree<State>,
   Actions extends ActionTree,
   Id extends string
->(id: Id, options: DefineStoreOptions<State, Getters, Actions>): StoreFromOptions<State, Getters, Actions, Id> {
+>(id: Id, options: DefineStoreOptions<Id, State, Getters, Actions>): StoreFromOptions<State, Getters, Actions, Id> {
   const state = $state(options.state());
   const store = {} as State & {
     readonly [K in keyof Getters]: ReturnType<Getters[K]>;

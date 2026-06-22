@@ -1,6 +1,6 @@
 import { createStoreShell } from './store-shell.svelte.js';
 
-type AnyRecord = Record<string, unknown>;
+type AnyRecord = object;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
 
