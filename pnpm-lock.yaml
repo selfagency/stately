@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@lucide/svelte':
-        specifier: ^1.8.0
-        version: 1.8.0(svelte@5.55.3(@typescript-eslint/types@8.58.1))
       lz-string:
         specifier: ^1.5.0
         version: 1.5.0
@@ -159,6 +156,10 @@ importers:
       vitest-browser-svelte:
         specifier: ^2.1.1
         version: 2.1.1(svelte@5.55.3(@typescript-eslint/types@8.58.1))(vitest@4.1.4)
+    optionalDependencies:
+      '@lucide/svelte':
+        specifier: ^1.8.0
+        version: 1.8.0(svelte@5.55.3(@typescript-eslint/types@8.58.1))
 
 packages:
 
@@ -4016,6 +4017,7 @@ snapshots:
   '@lucide/svelte@1.8.0(svelte@5.55.3(@typescript-eslint/types@8.58.1))':
     dependencies:
       svelte: 5.55.3(@typescript-eslint/types@8.58.1)
+    optional: true
 
   '@manypkg/find-root@1.1.0':
     dependencies:

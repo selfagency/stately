@@ -1,0 +1,35 @@
+```xml
+<output>
+<compartments>
+<compartment start="440" end="489" title="Rebase PR #34 onto origin/main, resolve conflicts" episode_type="infra" importance="52">
+<p1>
+Branch `feature/code-review-remediation` had diverged from `origin/main` with 25 file conflicts across release workflow, package.json, and library source files. No `develop` branch exists on remote — the PR base is `main`, not `develop`. Committed the `.lintstagedrc.json` change first, then initiated a rebase onto `origin/main`.
+
+The rebase replayed 17 commits total. The first 12 were stale `develop` release/ci commits that `main` already has different versions of — all skipped. The 4 remediation commits (plus ci: add dependabot) came later. Conflicts in RELEASING.md, package.json, and scripts/release.js were resolved by taking `main`'s versions. The dependabot.yml conflict was skipped because `main` already has properly configured dependabot.
+
+Now at the first actual remediation commit — 11 files, 22 conflicts. Main switched to `useTabs: false, tabWidth: 2` formatting. Strategy: accept `--theirs` for library files (preserves our fixes), `--ours` for prettier.config.js (main's config is correct), then run Prettier after resolution. Conflict resolution staged, rebase continued to next commit.
+</p1>
+<p2>
+Rebase onto `origin/main` resolved by taking `main`'s versions for all stale release/ci files, skipping 12 stale `develop` commits. Branch base is `main`. First actual remediation commit had 11 files / 22 conflicts — resolved by accepting library files via --theirs (preserves fixes) and prettier.config.js via --ours, then running Prettier.
+</p2>
+<p3>
+PR #34 branch rebased onto `origin/main` after skipping 12 stale develop release/ci commits. Conflict resolution in the first remediation commit used --theirs for library files (preserves fixes) and --ours for prettier.config.js.
+</p3>
+<p4>origin/main rebase; skipped 12 stale develop commits; main's release workflow versions; --theirs for library files</p4>
+</compartment>
+</compartments>
+<facts>
+<CONFIG_VALUES>
+* PR #34 branch base is `main` (not `develop`); no `develop` branch exists on remote.
+</CONFIG_VALUES>
+</facts>
+<events>
+</events>
+<user_observations>
+</user_observations>
+<meta>
+<messages_processed>483-489</messages_processed>
+<unprocessed_from>490</unprocessed_from>
+</meta>
+</output>
+```
