@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createIndexedDbAdapter } from './indexeddb.js';
 import { createLocalStorageAdapter } from './local-storage.js';
 import { createMemoryStorageAdapter } from './memory-storage.js';
@@ -78,6 +78,30 @@ describe('persistence adapters', () => {
     expect(await adapter.getItem('alpha')).toBeNull();
     await adapter.clear?.();
     expect(await adapter.keys?.()).toEqual([]);
+  });
+
+  it('re-throws QuotaExceededError from localStorage adapter', async () => {
+    const limited = createStorageLike();
+    const quotaError = new DOMException('quota exceeded', 'QuotaExceededError');
+    limited.setItem = vi.fn(() => {
+      throw quotaError;
+    });
+
+    const local = createLocalStorageAdapter(limited);
+
+    await expect(local.setItem('key', 'value')).rejects.toThrow('quota exceeded');
+  });
+
+  it('re-throws QuotaExceededError from sessionStorage adapter', async () => {
+    const limited = createStorageLike();
+    const quotaError = new DOMException('quota exceeded', 'QuotaExceededError');
+    limited.setItem = vi.fn(() => {
+      throw quotaError;
+    });
+
+    const session = createSessionStorageAdapter(limited);
+
+    await expect(session.setItem('key', 'value')).rejects.toThrow('quota exceeded');
   });
 
   it('returns no-op adapters when browser storage globals are unavailable', async () => {

@@ -1,6 +1,6 @@
 import type { StoreMutationContext } from '../pinia-like/store-types.js';
 
-export interface MutationCommit<TType extends StoreMutationContext['type'] = StoreMutationContext['type']> {
+interface MutationCommit<TType extends StoreMutationContext['type'] = StoreMutationContext['type']> {
   id: number;
   storeId: string;
   type: TType;

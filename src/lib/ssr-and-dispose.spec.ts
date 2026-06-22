@@ -7,7 +7,9 @@ describe('SSR and server-side store safety', () => {
   it('creates isolated store instances per manager (no shared singleton state)', () => {
     const managerA = createStateManager();
     const managerB = createStateManager();
-    const useStore = defineStore('ssr-isolation', { state: () => ({ count: 0 }) });
+    const useStore = defineStore('ssr-isolation', {
+      state: () => ({ count: 0 })
+    });
 
     const storeA = useStore(managerA);
     const storeB = useStore(managerB);
@@ -19,7 +21,9 @@ describe('SSR and server-side store safety', () => {
   });
 
   it('does not share state between manager instances across simulated requests', () => {
-    const useStore = defineStore('ssr-request-scope', { state: () => ({ value: 'initial' }) });
+    const useStore = defineStore('ssr-request-scope', {
+      state: () => ({ value: 'initial' })
+    });
 
     const request1Manager = createStateManager();
     const request2Manager = createStateManager();
@@ -45,7 +49,9 @@ describe('SSR and server-side store safety', () => {
 
   it('creates fresh instances after dispose (simulating per-request teardown)', () => {
     const manager = createStateManager();
-    const useStore = defineStore('ssr-dispose-reset', { state: () => ({ count: 0 }) });
+    const useStore = defineStore('ssr-dispose-reset', {
+      state: () => ({ count: 0 })
+    });
 
     const store = useStore(manager);
     store.count = 99;
@@ -62,7 +68,9 @@ describe('SSR and server-side store safety', () => {
 describe('$dispose completeness', () => {
   it('stops notifying subscribers after dispose', () => {
     const manager = createStateManager();
-    const useStore = defineStore('dispose-subscribe', { state: () => ({ count: 0 }) });
+    const useStore = defineStore('dispose-subscribe', {
+      state: () => ({ count: 0 })
+    });
     const store = useStore(manager);
     const received: number[] = [];
 
@@ -101,9 +109,44 @@ describe('$dispose completeness', () => {
     expect(actionNames).toEqual(['increment']);
   });
 
+  it('fires $onDispose callbacks when $dispose is called', () => {
+    const manager = createStateManager();
+    const useStore = defineStore('dispose-onDispose', {
+      state: () => ({ count: 0 })
+    });
+    const store = useStore(manager);
+    const callback = vi.fn();
+
+    store.$onDispose(callback);
+
+    store.$dispose();
+    expect(callback).toHaveBeenCalledOnce();
+
+    // Callback should only fire once even if dispose is called again
+    store.$dispose();
+    expect(callback).toHaveBeenCalledOnce();
+  });
+
+  it('unsubscribes $onDispose callbacks via returned function', () => {
+    const manager = createStateManager();
+    const useStore = defineStore('dispose-onDispose-unsub', {
+      state: () => ({ count: 0 })
+    });
+    const store = useStore(manager);
+    const callback = vi.fn();
+
+    const unsubscribe = store.$onDispose(callback);
+    unsubscribe();
+    store.$dispose();
+
+    expect(callback).not.toHaveBeenCalled();
+  });
+
   it('is idempotent: double-dispose does not throw', () => {
     const manager = createStateManager();
-    const useStore = defineStore('dispose-idempotent', { state: () => ({ count: 0 }) });
+    const useStore = defineStore('dispose-idempotent', {
+      state: () => ({ count: 0 })
+    });
     const store = useStore(manager);
 
     store.$dispose();
@@ -118,7 +161,12 @@ describe('$dispose completeness', () => {
     // at most once regardless of how many times $dispose is called.
     const state = { x: 1 };
     const store = {} as Record<string, unknown>;
-    const shell = createStoreShell({ id: 'dispose-callback', store, state, onDispose });
+    const shell = createStoreShell({
+      id: 'dispose-callback',
+      store,
+      state,
+      onDispose
+    });
 
     shell.store.$dispose();
     shell.store.$dispose(); // second call must be a no-op

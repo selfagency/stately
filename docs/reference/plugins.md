@@ -243,6 +243,11 @@ Policy guidance:
 - `dedupe` — if an identical invocation is already running, return that same promise
   rather than starting a second request; a new invocation starts only after the first resolves
 
+Return type note: `drop` and `enqueue` can return `Promise<undefined>` when an invocation is dropped or
+queued without producing a result. TypeScript infers `Promise<Result | undefined>` for the `$async` wrapper
+type. When you need the original return type guarantee, prefer `parallel`, `restartable`, or `dedupe`, or
+handle `undefined` at the call site with optional chaining or a default fallback.
+
 ```ts
 import { createAsyncPlugin, createStateManager, defineStore } from '@selfagency/stately';
 

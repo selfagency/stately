@@ -103,8 +103,10 @@
     "validate:staged": "lint-staged"
   },
   "dependencies": {
-    "@lucide/svelte": "^1.8.0",
     "lz-string": "^1.5.0"
+  },
+  "optionalDependencies": {
+    "@lucide/svelte": "^1.8.0"
   },
   "devDependencies": {
     "@changesets/changelog-git": "^0.2.1",

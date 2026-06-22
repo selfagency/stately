@@ -56,6 +56,18 @@ export const usePreferencesStore = defineStore('preferences', {
 });
 ```
 
+### Getter / setter behavior (snapshot semantics)
+
+When a setup store property has both a **getter and a setter** (`get` + `set`), the getter is called **once** to capture the initial value. After that, the property behaves as a regular reactive state field — the getter is never re-evaluated, and subsequent writes route through the mutation pipeline.
+
+This means:
+
+- **The getter is a snapshot.** If the getter computes a value from external state or performs side effects, those run only once during setup.
+- **Only getter+setter pairs are snapshotted.** Read-only getters (without a setter) remain live `$derived`-style computed values and are re-evaluated on every read.
+- **Persistence serializes the reactive value, not the getter.** When persisting or syncing state, the snapshot value (not the getter) is written to storage.
+
+This is by design: it guarantees that persisted and synced state remains a plain data structure with no hidden getter evaluation, and it keeps the reactive core predictable. If you need a live computed value, define it as a read-only getter (no setter).
+
 Setup stores can also return class instances. Stately resolves members from both the instance properties and the
 prototype chain.
 

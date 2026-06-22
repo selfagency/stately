@@ -2,7 +2,7 @@ import type { FsmController, FsmDefinition, FsmStateDefinition, FsmTransitionCon
 
 const RESERVED_KEYS = new Set(['_enter', '_exit']);
 
-export interface InternalFsmController extends FsmController {
+interface InternalFsmController extends FsmController {
   setCurrent(state: string): void;
 }
 

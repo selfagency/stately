@@ -5,23 +5,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-export interface DeserializeSuccess<State extends object> {
+interface DeserializeSuccess<State> {
   ok: true;
   envelope: PersistEnvelope<State>;
 }
 
-export interface DeserializeFailure {
+interface DeserializeFailure {
   ok: false;
   error: string;
 }
 
-export type DeserializeResult<State extends object> = DeserializeSuccess<State> | DeserializeFailure;
+type DeserializeResult<State> = DeserializeSuccess<State> | DeserializeFailure;
 
-export function serializePersistedState<State extends object>(envelope: PersistEnvelope<State>): string {
+export function serializePersistedState<State>(envelope: PersistEnvelope<State>): string {
   return JSON.stringify(envelope);
 }
 
-export function deserializePersistedState<State extends object>(
+export function deserializePersistedState<State>(
   raw: string,
   options: PersistDeserializeOptions<State>
 ): DeserializeResult<State> {
@@ -33,7 +33,10 @@ export function deserializePersistedState<State extends object>(
   }
 
   if (!isRecord(parsed) || typeof parsed.version !== 'number' || !isRecord(parsed.state)) {
-    return { ok: false, error: 'Malformed persistence envelope: missing version or state.' };
+    return {
+      ok: false,
+      error: 'Malformed persistence envelope: missing version or state.'
+    };
   }
 
   if (parsed.version === options.version) {
