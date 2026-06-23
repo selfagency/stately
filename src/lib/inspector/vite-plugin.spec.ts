@@ -17,7 +17,8 @@ describe('statelyVitePlugin', () => {
     >();
     expectTypeOf<VirtualInspectorOptions['panelSide']>().toEqualTypeOf<'left' | 'right'>();
     expectTypeOf<VirtualInspectorOptions['enabled']>().toEqualTypeOf<boolean>();
-    expect(true).toBe(true);
+
+    expect(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX.length).toBeGreaterThan(0);
   });
 
   it('resolves virtual modules and injects the inspector loader into Vite client code', async () => {

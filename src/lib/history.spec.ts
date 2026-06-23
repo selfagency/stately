@@ -145,7 +145,7 @@ describe('history runtime', () => {
     store.$history.endBatch();
 
     // Initial snapshot + one batched entry
-    expect(store.$history.entries.length).toBe(2);
+    expect(store.$history.entries).toHaveLength(2);
     expect(store.$history.entries[1]!.snapshot).toEqual({ a: 1, b: 2 });
   });
 
@@ -190,7 +190,7 @@ describe('history runtime', () => {
     const countBefore = store.$history.entries.length;
     store.$history.record({ value: 'manual' });
 
-    expect(store.$history.entries.length).toBe(countBefore + 1);
+    expect(store.$history.entries).toHaveLength(countBefore + 1);
     expect(store.$history.entries.at(-1)!.snapshot).toEqual({
       value: 'manual'
     });

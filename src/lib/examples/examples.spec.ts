@@ -140,7 +140,7 @@ describe('example: history plugin (draft store)', () => {
     const initial = store.$history.entries.length;
     store.increment();
     store.increment();
-    expect(store.$history.entries.length).toBe(initial + 2);
+    expect(store.$history.entries).toHaveLength(initial + 2);
   });
 });
 

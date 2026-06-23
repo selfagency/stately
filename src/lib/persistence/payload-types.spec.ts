@@ -10,6 +10,7 @@ describe('payload types', () => {
     expectTypeOf<PersistedState>().toEqualTypeOf<JsonObject>();
     expectTypeOf<SyncedState>().toEqualTypeOf<JsonObject>();
     expectTypeOf<JsonObject['example']>().toEqualTypeOf<JsonValue>();
-    expect(true).toBe(true);
+
+    expect(expectTypeOf).toBeTypeOf('function');
   });
 });

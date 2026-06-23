@@ -56,13 +56,14 @@ describe('store-types', () => {
 
     const store = useInterfaceStore(manager);
 
+    expect(store.$id).toBe('interface-state-types');
+
     expectTypeOf(store.count).toEqualTypeOf<number>();
     expectTypeOf(store.label).toEqualTypeOf<string>();
     expectTypeOf(store.increment).toEqualTypeOf<() => void>();
     expectTypeOf(useInterfaceStore).toMatchTypeOf<
       StoreDefinition<'interface-state-types', InterfaceState, Record<never, never>, { increment: () => void }>
     >();
-    expect(true).toBe(true);
   });
 
   it('types option-store action this as the full store instance', () => {
@@ -119,7 +120,7 @@ describe('store-types', () => {
     });
 
     unsubscribe();
-    expect(true).toBe(true);
+    expect(typeof unsubscribe).toBe('function');
   });
 
   it('types validation and persistence options against store state', () => {
@@ -147,6 +148,8 @@ describe('store-types', () => {
     });
 
     const adapter = createMemoryStorageAdapter();
+    expect(typeof adapter.getItem).toBe('function');
+
     const invalidPersistOptions = {
       adapter,
       version: 1,
@@ -156,8 +159,6 @@ describe('store-types', () => {
 
     // Verify at compile-time that the type system rejects pick+omit together
     expectTypeOf(invalidPersistOptions).not.toMatchTypeOf<PersistStoreOptions<{ count: number; label: string }>>();
-
-    expect(true).toBe(true);
   });
 
   it('preserves strong typing for setup-store overloads', () => {
@@ -186,13 +187,15 @@ describe('store-types', () => {
     const setupStore = useSetupStore(manager);
     const setupOptionsStore = useSetupOptionsStore(manager);
 
+    expect(setupStore.$id).toBe('setup-types');
+    expect(setupOptionsStore.$id).toBe('setup-options-types');
+
     expectTypeOf(setupStore.count).toEqualTypeOf<number>();
     expectTypeOf(setupStore.label).toEqualTypeOf<string>();
     expectTypeOf(setupStore.summary).toEqualTypeOf<string>();
     expectTypeOf(setupStore.increment).toEqualTypeOf<(step: number) => number>();
     expectTypeOf(setupOptionsStore.enabled).toEqualTypeOf<boolean>();
     expectTypeOf(setupOptionsStore.toggle).toEqualTypeOf<() => boolean>();
-    expect(true).toBe(true);
   });
 
   it('exposes typed action hook context helpers', () => {
@@ -206,6 +209,7 @@ describe('store-types', () => {
     expectTypeOf<ExampleContext['name']>().toEqualTypeOf<'increment'>();
     expectTypeOf<ExampleContext['args']>().toEqualTypeOf<[number]>();
     expectTypeOf<Parameters<ExampleContext['after']>[0]>().toEqualTypeOf<(result: number) => void>();
-    expect(true).toBe(true);
+
+    expect(expectTypeOf).toBeTypeOf('function');
   });
 });

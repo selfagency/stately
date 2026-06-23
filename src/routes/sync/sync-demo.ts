@@ -46,7 +46,7 @@ function createBroadcastTransport(channelName: string): SyncTransport<SyncMessag
       channel.postMessage(message);
     },
     subscribe(listener) {
-      if (typeof globalThis.BroadcastChannel === 'undefined')
+      if (globalThis.BroadcastChannel === undefined)
         // biome-ignore lint/suspicious/noEmptyBlockStatements: noop fallback
         return () => {};
       channel = new BroadcastChannel(channelName);
