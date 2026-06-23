@@ -368,6 +368,10 @@ async function main() {
     return;
   }
 
+  // --- Auto-format everything before diffing + committing ------------------
+
+  run('pnpm', ['format']);
+
   // --- Commit + push to main -----------------------------------------------
 
   const hasChanges = run('git', ['diff', '--name-only', '--', 'package.json', 'CHANGELOG.md'], {
