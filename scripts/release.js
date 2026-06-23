@@ -218,7 +218,7 @@ async function readJson(filePath) {
 }
 
 async function writeJson(filePath, data) {
-  await writeFile(filePath, JSON.stringify(data, null, '\t') + '\n', 'utf8');
+  await writeFile(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
 
 // ---------------------------------------------------------------------------
