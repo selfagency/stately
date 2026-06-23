@@ -256,3 +256,4 @@ docs/.vitepress/dist
 
 # Generated review documents
 stately-code-review.md
+.opencode/magic-context/historian
