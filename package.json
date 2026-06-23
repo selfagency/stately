@@ -98,15 +98,11 @@
   "dependencies": {
     "lz-string": "^1.5.0"
   },
-  "optionalDependencies": {
-    "@lucide/svelte": "^1.21.0"
-  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "@changesets/changelog-git": "^0.2.1",
     "@changesets/cli": "^2.31.0",
     "@codecov/vite-plugin": "^2.0.1",
-
     "@internationalized/date": "^3.12.2",
     "@octokit/rest": "^22.0.1",
     "@shikijs/langs": "^4.2.0",
@@ -146,6 +142,9 @@
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "@lucide/svelte": "^1.21.0"
   },
   "packageManager": "pnpm@10.33.0",
   "engines": {
