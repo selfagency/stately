@@ -100,11 +100,23 @@ jobs:
             const mainBranch = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
             const mainSha = mainBranch.data.commit.sha;
 
-            const refData = await github.rest.git.getRef({
-              owner,
-              repo,
-              ref: `tags/${tagName}`,
-            });
+            // Retry getRef with exponential backoff for eventual consistency.
+            // createRef (workflow_dispatch) may not propagate the new ref
+            // immediately, causing a 404 on the very next read.
+            let refData;
+            for (let attempt = 0; attempt < 5; attempt++) {
+              try {
+                refData = await github.rest.git.getRef({
+                  owner,
+                  repo,
+                  ref: `tags/${tagName}`,
+                });
+                break;
+              } catch (e) {
+                if (e.status !== 404 || attempt === 4) throw e;
+                await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 200));
+              }
+            }
 
             const refObj = refData.data.object;
             const taggedSha =
