@@ -335,14 +335,14 @@
     min-height: 1lh;
     text-align: inherit;
   }
-::-webkit-datetime-edit {
-  display: inline-flex;
-  padding-block: 0;
-}
-::-webkit-datetime-edit-fields-wrapper {
+  ::-webkit-datetime-edit {
+    display: inline-flex;
+    padding-block: 0;
+  }
+  ::-webkit-datetime-edit-fields-wrapper {
     padding: 0;
-}
-::-webkit-datetime-edit-year-field {
+  }
+  ::-webkit-datetime-edit-year-field {
     padding-block: 0;
   }
   ::-webkit-datetime-edit-month-field {
@@ -372,11 +372,11 @@
   :-moz-ui-invalid {
     box-shadow: none;
   }
-button,
-input:where([type="button"], [type="reset"], [type="submit"]) {
-  appearance: auto;
-}
-::-webkit-inner-spin-button {
+  button,
+  input:where([type="button"], [type="reset"], [type="submit"]) {
+    appearance: auto;
+  }
+  ::-webkit-inner-spin-button {
     height: auto;
   }
   ::-webkit-outer-spin-button {
@@ -1218,24 +1218,24 @@ input:where([type="button"], [type="reset"], [type="submit"]) {
   .bg-white {
     background-color: var(--color-white);
   }
-.bg-linear-to-br {
-  --tw-gradient-position: to bottom right;
-  background-image: linear-gradient(var(--tw-gradient-stops));
-}
-@supports (background-image: linear-gradient(in lab, red, red)) {
   .bg-linear-to-br {
-    --tw-gradient-position: to bottom right in oklab;
+    --tw-gradient-position: to bottom right;
+    background-image: linear-gradient(var(--tw-gradient-stops));
   }
-}
-.bg-linear-to-t {
-  --tw-gradient-position: to top;
-  background-image: linear-gradient(var(--tw-gradient-stops));
-}
-@supports (background-image: linear-gradient(in lab, red, red)) {
+  @supports (background-image: linear-gradient(in lab, red, red)) {
+    .bg-linear-to-br {
+      --tw-gradient-position: to bottom right in oklab;
+    }
+  }
   .bg-linear-to-t {
-    --tw-gradient-position: to top in oklab;
+    --tw-gradient-position: to top;
+    background-image: linear-gradient(var(--tw-gradient-stops));
   }
-}
+  @supports (background-image: linear-gradient(in lab, red, red)) {
+    .bg-linear-to-t {
+      --tw-gradient-position: to top in oklab;
+    }
+  }
   .from-background {
     --tw-gradient-from: var(--color-background);
     --tw-gradient-stops: var(
@@ -1245,20 +1245,20 @@ input:where([type="button"], [type="reset"], [type="submit"]) {
       var(--tw-gradient-to) var(--tw-gradient-to-position)
     );
   }
-.from-primary\/6 {
-  --tw-gradient-from: #8ad4ff0f;
-  --tw-gradient-stops: var(
-    --tw-gradient-via-stops,
-    var(--tw-gradient-position),
-    var(--tw-gradient-from) var(--tw-gradient-from-position),
-    var(--tw-gradient-to) var(--tw-gradient-to-position)
-  );
-}
-@supports (color: color-mix(in lab, red, red)) {
   .from-primary\/6 {
-    --tw-gradient-from: color-mix(in oklab, var(--color-primary) 6%, transparent);
+    --tw-gradient-from: #8ad4ff0f;
+    --tw-gradient-stops: var(
+      --tw-gradient-via-stops,
+      var(--tw-gradient-position),
+      var(--tw-gradient-from) var(--tw-gradient-from-position),
+      var(--tw-gradient-to) var(--tw-gradient-to-position)
+    );
   }
-}
+  @supports (color: color-mix(in lab, red, red)) {
+    .from-primary\/6 {
+      --tw-gradient-from: color-mix(in oklab, var(--color-primary) 6%, transparent);
+    }
+  }
   .via-transparent {
     --tw-gradient-via: transparent;
     --tw-gradient-via-stops:
@@ -1266,20 +1266,20 @@ input:where([type="button"], [type="reset"], [type="submit"]) {
       var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-via-stops);
   }
-.to-secondary\/8 {
-  --tw-gradient-to: #13233514;
-  --tw-gradient-stops: var(
-    --tw-gradient-via-stops,
-    var(--tw-gradient-position),
-    var(--tw-gradient-from) var(--tw-gradient-from-position),
-    var(--tw-gradient-to) var(--tw-gradient-to-position)
-  );
-}
-@supports (color: color-mix(in lab, red, red)) {
   .to-secondary\/8 {
-    --tw-gradient-to: color-mix(in oklab, var(--color-secondary) 8%, transparent);
+    --tw-gradient-to: #13233514;
+    --tw-gradient-stops: var(
+      --tw-gradient-via-stops,
+      var(--tw-gradient-position),
+      var(--tw-gradient-from) var(--tw-gradient-from-position),
+      var(--tw-gradient-to) var(--tw-gradient-to-position)
+    );
   }
-}
+  @supports (color: color-mix(in lab, red, red)) {
+    .to-secondary\/8 {
+      --tw-gradient-to: color-mix(in oklab, var(--color-secondary) 8%, transparent);
+    }
+  }
   .to-transparent {
     --tw-gradient-to: transparent;
     --tw-gradient-stops: var(
