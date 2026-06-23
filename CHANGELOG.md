@@ -4,17 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [0.1.5] - 2026-06-23
-
-## What's Changed
-* fix: code review remediation — validation guard, storage re-throw, $onDispose, type hygiene, dep move by @selfagency in https://github.com/selfagency/stately/pull/34
-
-
-**Full Changelog**: https://github.com/selfagency/stately/compare/v0.1.4...v0.1.5
-
-_Source: changes from v0.1.4 to v0.1.5._
-
-
 ## [0.1.4] - 2026-04-14
 
 ## What's Changed
