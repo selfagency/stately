@@ -18,8 +18,8 @@ describe('Async page', () => {
     await expect.element(page.getByText('Restartable', { exact: true })).toBeVisible();
     await expect.element(page.getByText('Drop', { exact: true })).toBeVisible();
     await expect.element(page.getByText('Error state', { exact: true })).toBeVisible();
-    await expect.element(page.getByText('debounceAction', { exact: true })).toBeVisible();
-    await expect.element(page.getByText('throttleAction', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('debounceAction', { exact: true }).first()).toBeVisible();
+    await expect.element(page.getByText('throttleAction', { exact: true }).first()).toBeVisible();
   });
 
   it('shows inspector toggle button', async () => {
