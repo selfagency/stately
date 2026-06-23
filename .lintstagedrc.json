@@ -1,9 +1,8 @@
 {
   "src/lib/**/*.{js,ts,svelte}": [
+    "biome check --write --no-errors-on-unmatched .",
     "svelte-check --tsconfig ./tsconfig.json --tsgo",
-    "eslint --fix",
-    "prettier --write",
     "vitest run --passWithNoTests"
   ],
-  "*.{json,md,yml,yaml}": ["prettier --write"]
+  "*.{json,md,yml,yaml}": ["biome check --write --no-errors-on-unmatched ."]
 }

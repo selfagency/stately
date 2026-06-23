@@ -31,9 +31,7 @@
     "email": "daniel@self.agency",
     "url": "https://self.agency"
   },
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "sideEffects": ["**/*.css"],
   "type": "module",
   "exports": {
     ".": {
@@ -71,12 +69,7 @@
   },
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "!dist/**/*.test.*",
-    "!dist/**/*.spec.*",
-    "skills"
-  ],
+  "files": ["dist", "!dist/**/*.test.*", "!dist/**/*.spec.*", "skills"],
   "scripts": {
     "build": "vite build && pnpm run package:dist",
     "changeset": "changeset",
@@ -87,10 +80,10 @@
     "docs:build": "vitepress build docs",
     "docs:dev": "vitepress dev docs",
     "docs:preview": "vitepress preview docs",
-    "format": "eslint . --fix --concurrency 6 && prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "biome check --write .",
+    "format:check": "biome check .",
     "knip": "knip",
-    "lint": "eslint . --concurrency 6 && prettier --check .",
+    "lint": "biome ci .",
     "prepack": "pnpm run package:dist",
     "package:dist": "svelte-kit sync && svelte-package && node scripts/write-dist-package.js && publint",
     "prepare": "husky && svelte-kit sync || echo ''",
@@ -109,11 +102,11 @@
     "@lucide/svelte": "^1.21.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
     "@changesets/changelog-git": "^0.2.1",
     "@changesets/cli": "^2.31.0",
     "@codecov/vite-plugin": "^2.0.1",
-    "@eslint/compat": "^2.1.0",
-    "@eslint/js": "^10.0.1",
+
     "@internationalized/date": "^3.12.2",
     "@octokit/rest": "^22.0.1",
     "@shikijs/langs": "^4.2.0",
@@ -131,17 +124,11 @@
     "bits-ui": "^2.18.1",
     "clsx": "^2.1.1",
     "concurrently": "^10.0.3",
-    "eslint": "^10.5.0",
-    "eslint-plugin-svelte": "^3.19.0",
-    "globals": "^17.7.0",
     "husky": "^9.1.7",
     "knip": "^6.18.0",
     "lint-staged": "^17.0.8",
     "ora": "^9.4.1",
     "playwright": "^1.61.0",
-    "prettier": "^3.8.4",
-    "prettier-plugin-organize-attributes": "^1.0.0",
-    "prettier-plugin-svelte": "^4.1.1",
     "publint": "^0.3.21",
     "runed": "^0.37.1",
     "shiki": "^4.2.0",
@@ -152,7 +139,6 @@
     "tailwind-variants": "^3.2.2",
     "tailwindcss": "^4.3.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.0",
     "vite": "^8.0.16",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.9",

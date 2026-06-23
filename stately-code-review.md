@@ -60,10 +60,10 @@ originalPatch(patch); // ← if patch(state) throws here...
 
 let result: boolean | string | undefined;
 try {
-	result = config.validate(validatable.$state);
+  result = config.validate(validatable.$state);
 } catch (error) {
-	restoreSnapshot(); // ← ...this never runs
-	throw error;
+  restoreSnapshot(); // ← ...this never runs
+  throw error;
 }
 ```
 
@@ -74,10 +74,10 @@ try {
 
 ```ts
 try {
-	originalPatch(patch);
+  originalPatch(patch);
 } catch (error) {
-	restoreSnapshot();
-	throw error;
+  restoreSnapshot();
+  throw error;
 }
 ```
 
@@ -94,13 +94,13 @@ try {
 ```ts
 // Current behavior for a class:
 class Counter {
-	_count = 0;
-	get count() {
-		return this._count * 2;
-	} // computed getter
-	set count(v) {
-		this._count = v / 2;
-	} // side-effecting setter
+  _count = 0;
+  get count() {
+    return this._count * 2;
+  } // computed getter
+  set count(v) {
+    this._count = v / 2;
+  } // side-effecting setter
 }
 // After Stately wraps it:
 // - count initially reads as 0 (getter called once)
@@ -153,19 +153,19 @@ run(...args: Args): Promise<Result | undefined> {  // ← undefined possible
 ```ts
 const exitHook = statesMap.get(from)?._exit;
 if (typeof exitHook === 'function') {
-	exitHook(context); // ← may mutate store state
+  exitHook(context); // ← may mutate store state
 }
 
 current = nextState;
 
 try {
-	const enterHook = statesMap.get(nextState)?._enter;
-	if (typeof enterHook === 'function') {
-		enterHook(context); // ← if this throws...
-	}
+  const enterHook = statesMap.get(nextState)?._enter;
+  if (typeof enterHook === 'function') {
+    enterHook(context); // ← if this throws...
+  }
 } catch (error) {
-	current = from; // ← ...current rolls back, but _exit mutations persist
-	throw error;
+  current = from; // ← ...current rolls back, but _exit mutations persist
+  throw error;
 }
 ```
 
@@ -189,12 +189,12 @@ try {
 // Pattern repeated in 3 plugins:
 const dispose = store.$dispose.bind(store);
 Object.defineProperty(store, '$dispose', {
-	value() {
-		// plugin-specific cleanup
-		unsubscribe();
-		dispose(); // calls the previous $dispose
-	}
-	// ...
+  value() {
+    // plugin-specific cleanup
+    unsubscribe();
+    dispose(); // calls the previous $dispose
+  }
+  // ...
 });
 ```
 
@@ -288,10 +288,10 @@ use<
 
 ```ts
 const trim = () => {
-	while (state.entries.length > limit) {
-		state.entries.shift(); // O(n) per call
-		state.index = Math.max(0, state.index - 1);
-	}
+  while (state.entries.length > limit) {
+    state.entries.shift(); // O(n) per call
+    state.index = Math.max(0, state.index - 1);
+  }
 };
 ```
 
@@ -313,14 +313,14 @@ const trim = () => {
 const beforeState = cloneState(config.state); // O(n)
 // ... action runs ...
 const flushInferredDirectMutation = () => {
-	if (disposed || mutationCount !== mutationCountBeforeAction) {
-		return; // short-circuit if explicit mutation recorded
-	}
-	const afterState = cloneState(config.state); // O(n)
-	if (!isStateEqual(beforeState, afterState)) {
-		// O(n) deep compare
-		mutationQueue.recordChange({ action: String(key), inferred: true });
-	}
+  if (disposed || mutationCount !== mutationCountBeforeAction) {
+    return; // short-circuit if explicit mutation recorded
+  }
+  const afterState = cloneState(config.state); // O(n)
+  if (!isStateEqual(beforeState, afterState)) {
+    // O(n) deep compare
+    mutationQueue.recordChange({ action: String(key), inferred: true });
+  }
 };
 ```
 
@@ -342,7 +342,7 @@ const flushInferredDirectMutation = () => {
 // validation/plugin.svelte.ts:64
 const snapshot = structuredClone($state.snapshot(validatable.$state)) as typeof validatable.$state;
 const restoreSnapshot = () => {
-	validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
+  validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
 };
 ```
 
@@ -364,16 +364,16 @@ const restoreSnapshot = () => {
 
 ```ts
 function filterToKnownKeys(remote: object): Partial<typeof syncedStore.$state> | undefined {
-	const filtered: Record<string, unknown> = {};
-	for (const key of Object.keys(remote)) {
-		// Object.keys only returns own enumerable
-		if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-		if (knownStateKeys.has(key)) {
-			filtered[key] = sanitizeValue(Reflect.get(remote, key)); // ← Reflect.get follows prototype
-			hasKnownKey = true;
-		}
-	}
-	return hasKnownKey ? (filtered as Partial<typeof syncedStore.$state>) : undefined;
+  const filtered: Record<string, unknown> = {};
+  for (const key of Object.keys(remote)) {
+    // Object.keys only returns own enumerable
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    if (knownStateKeys.has(key)) {
+      filtered[key] = sanitizeValue(Reflect.get(remote, key)); // ← Reflect.get follows prototype
+      hasKnownKey = true;
+    }
+  }
+  return hasKnownKey ? (filtered as Partial<typeof syncedStore.$state>) : undefined;
 }
 ```
 
@@ -393,13 +393,13 @@ function filterToKnownKeys(remote: object): Partial<typeof syncedStore.$state> |
 
 ```ts
 try {
-	s.setItem(key, value);
+  s.setItem(key, value);
 } catch (error) {
-	if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-		reportStatelyInspectorNotice(`localStorage quota exceeded for key "${key}".`);
-		return; // ← silent failure
-	}
-	throw error;
+  if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+    reportStatelyInspectorNotice(`localStorage quota exceeded for key "${key}".`);
+    return; // ← silent failure
+  }
+  throw error;
 }
 ```
 
@@ -442,22 +442,22 @@ try {
 
 ```js
 const {
-	name,
-	version,
-	description,
-	keywords,
-	homepage,
-	bugs,
-	repository,
-	license,
-	type,
-	exports,
-	svelte,
-	types,
-	sideEffects,
-	dependencies,
-	peerDependencies,
-	publishConfig
+  name,
+  version,
+  description,
+  keywords,
+  homepage,
+  bugs,
+  repository,
+  license,
+  type,
+  exports,
+  svelte,
+  types,
+  sideEffects,
+  dependencies,
+  peerDependencies,
+  publishConfig
 } = packageJson;
 // ← engines is not destructured
 ```
@@ -577,14 +577,14 @@ WithoutChild, WithoutChildren, WithoutChildrenOrChild, WithElementRef  (shadcn u
 
 ```js
 overrides: [
-	{
-		files: '*.svelte',
-		options: {
-			// ...
-			svelteBracketNewLine: false // ← deprecated
-			// ...
-		}
-	}
+  {
+    files: '*.svelte',
+    options: {
+      // ...
+      svelteBracketNewLine: false // ← deprecated
+      // ...
+    }
+  }
 ];
 ```
 
@@ -604,7 +604,7 @@ overrides: [
 
 ```ts
 if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-	// ... warn about native Map/Set
+  // ... warn about native Map/Set
 }
 ```
 
@@ -624,12 +624,12 @@ if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
 
 ```ts
 const handleFlushError = (error: unknown) => {
-	if (persist.onError) {
-		persist.onError(error);
-	} else {
-		reportStatelyInspectorNotice(`Flush failed for store "${store.$id}": ${String(error)}`);
-		console.error(`[Stately] Persistence flush failed for store "${store.$id}":`, error);
-	}
+  if (persist.onError) {
+    persist.onError(error);
+  } else {
+    reportStatelyInspectorNotice(`Flush failed for store "${store.$id}": ${String(error)}`);
+    console.error(`[Stately] Persistence flush failed for store "${store.$id}":`, error);
+  }
 };
 ```
 

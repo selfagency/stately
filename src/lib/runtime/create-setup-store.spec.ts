@@ -105,7 +105,7 @@ describe('createSetupStore', () => {
               badProp: {
                 enumerable: true,
                 configurable: true,
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                // biome-ignore lint/suspicious/noEmptyBlockStatements: stub setter for test
                 set(_v: unknown) {}
               }
             }
@@ -116,7 +116,7 @@ describe('createSetupStore', () => {
 
   it('throws when setup factory does not return an object', () => {
     expect(() =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: intentional invalid setup for test
       createSetupStore('bad-setup', () => null as any)
     ).toThrow('Invalid setup store definition');
   });

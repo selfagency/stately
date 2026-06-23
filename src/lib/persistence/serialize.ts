@@ -1,5 +1,5 @@
-import type { PersistDeserializeOptions, PersistEnvelope } from './types.js';
 import { sanitizeValue } from '../internal/sanitize.js';
+import type { PersistDeserializeOptions, PersistEnvelope } from './types.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;

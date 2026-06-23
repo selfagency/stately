@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import type { JsonObject, JsonValue, PersistEnvelope } from './types.js';
 import type { SyncMessage } from '../sync/types.js';
+import type { JsonObject, JsonValue, PersistEnvelope } from './types.js';
 
 describe('payload types', () => {
   it('exposes JSON-safe persistence and sync payload helper types', () => {

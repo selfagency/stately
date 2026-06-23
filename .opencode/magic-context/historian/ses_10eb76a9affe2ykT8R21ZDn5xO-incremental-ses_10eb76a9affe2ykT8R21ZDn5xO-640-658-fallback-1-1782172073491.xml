@@ -1,0 +1,31 @@
+<output>
+<compartments>
+<compartment start="640" end="658" title="Investigating 16 type errors after StoreCustomProperties simplification" episode_type="investigation" importance="38">
+<p1>
+User ran `pnpm check` and reported 16 type errors on the branch. Error locations and patterns:
+- `define-store.svelte.ts:169` — `SetupStoreFactory<object>` not assignable to `SetupStoreFactory<AnyRecord>`
+- `history.spec.ts:177` — `Property 'x' does not exist on type 'object'`
+- `history/plugin.spec.ts:25,47-50` — `Property 'count'/'label' does not exist on type 'object'`
+- `persistence/serialize.ts:10,20,26` — `Type 'State' does not satisfy constraint 'object'`
+- `create-option-store.spec.ts:9,12` — Parameter `state` implicitly has `any` type
+- `create-option-store.spec.ts:18,29-30` — Property/operator issues with `AnyFunction` type on store object
+- `create-option-store.svelte.ts:29` — `DefineStoreOptions` requires 4 type arguments
+
+Agent investigated root cause: suspected the `StoreCustomProperties` non-generic change from the previous compartment (msg 600-639). Read `store-typing.svelte.ts` (both pinia-like and root variants), `define-store.svelte.ts`, `fsm/plugin.svelte.ts`, `async/plugin.svelte.ts`, and other plugin-typing files. Compared errors against `origin/main` — upstream has 126 `--tsgo` import resolution errors (all on line 1 of `.svelte.ts` files), a distinct pattern from the 16 branch errors. Ran regular svelte-check on `origin/main` without `--tsgo` for clean baseline comparison. Investigation ongoing at chunk end.
+</p1>
+<p2>
+User reported 16 type errors from pnpm check. Agent investigated whether the `StoreCustomProperties` non-generic change caused them. Errors span define-store.svelte.ts, history spec files, persistence/serialize.ts, create-option-store files. Compared against origin/main — upstream has 126 `--tsgo` import resolution errors; distinct from the 16 branch errors. Investigation in progress.
+</p2>
+<p3>
+User reported 16 type errors on the branch; agent investigated root cause — suspected StoreCustomProperties type change — and confirmed the errors are distinct from origin/main's 126 --tsgo errors. Investigation ongoing.
+</p3>
+<p4/>
+</compartment>
+</compartments>
+<facts>
+</facts>
+<meta>
+<messages_processed>640-658</messages_processed>
+<unprocessed_from>641</unprocessed_from>
+</meta>
+</output>

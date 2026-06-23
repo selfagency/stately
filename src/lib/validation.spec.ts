@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
-import { createValidationPlugin } from './validation/plugin.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
+import { createValidationPlugin } from './validation/plugin.svelte.js';
 
 describe('validation plugin', () => {
   it('rejects $patch when validate returns false', () => {

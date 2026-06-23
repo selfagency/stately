@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onMount } from 'svelte';
 import { browser } from '$app/environment';
 import { Button } from '$lib/components/ui/button/index.js';
 import * as Card from '$lib/components/ui/card/index.js';
@@ -8,7 +9,6 @@ import {
   getStatelyInspectorHook,
   installStatelyInspectorHook
 } from '$lib/inspector/hook.js';
-import { onMount } from 'svelte';
 
 if (browser) {
   installStatelyInspectorHook(getStatelyInspectorHook() ?? createStatelyInspectorHook());

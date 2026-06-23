@@ -40,7 +40,7 @@ describe('SSR and server-side store safety', () => {
   it('throws for non-plain-object state', () => {
     expect(() => {
       const useStore = defineStore('ssr-invalid-state', {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: intentional invalid state for test
         state: () => new Date() as any
       });
       useStore(createStateManager());
@@ -179,7 +179,7 @@ describe('error paths', () => {
   it('throws descriptive error for non-plain-object state', () => {
     expect(() => {
       const useStore = defineStore('error-non-plain', {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: intentional invalid state for test
         state: () => [] as any
       });
       useStore(createStateManager());

@@ -21,8 +21,10 @@ describe('history runtime', () => {
                 published.push(message);
               },
               subscribe() {
+                // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
                 return () => {};
               },
+              // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
               destroy() {}
             }
           ]

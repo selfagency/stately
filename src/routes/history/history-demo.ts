@@ -1,5 +1,5 @@
-import { createHistoryPlugin, createStateManager, defineStore } from '../../lib/index.js';
 import type { HistoryController, TimeTravelController } from '../../lib/index.js';
+import { createHistoryPlugin, createStateManager, defineStore } from '../../lib/index.js';
 
 // ---------------------------------------------------------------------------
 // Store definition — history options are part of the schema

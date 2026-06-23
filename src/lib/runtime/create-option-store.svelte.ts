@@ -2,7 +2,7 @@ import type { DefineStoreOptions } from '../define-store.svelte.js';
 import { createStoreShell } from './store-shell.svelte.js';
 
 type AnyRecord = object;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: action wrapping needs erased concrete types
 type AnyFunction = (...args: any[]) => unknown;
 
 type GetterTree<State extends AnyRecord> = Record<string, (state: State) => unknown>;

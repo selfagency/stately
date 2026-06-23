@@ -5,6 +5,7 @@ import type {
   StatelyInspectorStoreSnapshot
 } from './types.js';
 
+// biome-ignore lint/suspicious/noEmptyBlockStatements: intentionally named noop
 function noop(): void {}
 
 export function createInspectorDrawerState(config: { hook: StatelyInspectorHook }) {

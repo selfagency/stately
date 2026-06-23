@@ -12,7 +12,7 @@ import { createOptionStore } from './runtime/create-option-store.svelte.js';
 import { createSetupStore } from './runtime/create-setup-store.svelte.js';
 
 type AnyObject = object;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: action wrapping needs erased concrete types
 type AnyFunction = (...args: any[]) => unknown;
 
 type NonPlainObjectState =
@@ -47,10 +47,11 @@ type OptionStoreInstance<
   Actions extends ActionTree
 > = StoreInstance<Id, StoreState<OptionStoreStateShape<State>>, OptionStoreComputed<Getters>, StoreActions<Actions>>;
 
-export interface DefineSetupStoreOptions<Store extends AnyObject> extends DefineStoreOptionsBase<
-  StoreState<SetupStoreState<Store>>,
-  StoreInstance<string, StoreState<SetupStoreState<Store>>>
-> {
+export interface DefineSetupStoreOptions<Store extends AnyObject>
+  extends DefineStoreOptionsBase<
+    StoreState<SetupStoreState<Store>>,
+    StoreInstance<string, StoreState<SetupStoreState<Store>>>
+  > {
   setup: () => Store;
 }
 
@@ -60,9 +61,9 @@ export interface DefineStoreOptions<
   Getters extends GetterTree<OptionStoreStateShape<State>>,
   Actions extends ActionTree
 > extends DefineStoreOptionsBase<
-  StoreState<OptionStoreStateShape<State>>,
-  OptionStoreInstance<Id, State, Getters, Actions>
-> {
+    StoreState<OptionStoreStateShape<State>>,
+    OptionStoreInstance<Id, State, Getters, Actions>
+  > {
   state: () => OptionStoreStateShape<State>;
   getters?: Getters & ThisType<OptionStoreInstance<Id, State, Getters, Actions>>;
   actions?: Actions & ThisType<OptionStoreInstance<Id, State, Getters, Actions>>;

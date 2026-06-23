@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onMount } from 'svelte';
 import { browser } from '$app/environment';
 import ShowcaseSection from '$lib/components/ShowcaseSection.svelte';
 import { Button } from '$lib/components/ui/button/index.js';
@@ -9,7 +10,6 @@ import {
   getStatelyInspectorHook,
   installStatelyInspectorHook
 } from '$lib/inspector/hook.js';
-import { onMount } from 'svelte';
 import { createCoreDemo } from './core-demo.svelte.js';
 
 if (browser) {
@@ -48,7 +48,7 @@ function disposeAndRevive() {
     disposeUnsubscribe = null;
     disposeLog = 'subscription removed — store still alive';
   } else {
-    disposeUnsubscribe = optionStore.$subscribe(() => {});
+    disposeUnsubscribe = optionStore.$subscribe(() => { /* noop */ });
     disposeLog = 'subscribed — listening for mutations';
   }
 }

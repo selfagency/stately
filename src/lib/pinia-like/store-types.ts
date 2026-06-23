@@ -1,6 +1,6 @@
 import type { StateManager } from '../root/types.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: action wrapping needs erased concrete types
 type AnyFunction = (...args: any[]) => unknown;
 
 type RecordWithFunctions = Record<string, AnyFunction>;
@@ -22,7 +22,7 @@ export interface StoreCustomStateProperties {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
-export interface DefineStoreOptionsBase<State extends StoreState = StoreState, Store = unknown> {
+export interface DefineStoreOptionsBase<_State extends StoreState = StoreState, _Store = unknown> {
   // plugins can augment definition options by extending this interface
 }
 

@@ -7,8 +7,8 @@
  * @see https://vitest.dev/guide/testing-types.html
  */
 import { describe, expectTypeOf, it } from 'vitest';
-import { defineStore, storeToRefs, createStateManager } from './index.js';
-import type { StoreInstance, StoreMutationContext, StoreActionHookContext, StoreRef } from './index.js';
+import type { StoreActionHookContext, StoreInstance, StoreMutationContext, StoreRef } from './index.js';
+import { createStateManager, defineStore, storeToRefs } from './index.js';
 
 // ---------------------------------------------------------------------------
 // Option store type flow
@@ -110,7 +110,7 @@ describe('option store types', () => {
     defineStore('bad-map', { state: () => new Map() });
 
     // @ts-expect-error Functions are not valid option store state
-    defineStore('bad-fn', { state: () => () => {} });
+    defineStore('bad-fn', { state: () => () => ({}) });
   });
 });
 
@@ -344,8 +344,12 @@ describe('plugin augmentation types', () => {
       persist: {
         adapter: {
           getItem: async () => null,
-          setItem: async () => {},
-          removeItem: async () => {}
+          setItem: async () => {
+            /* noop */
+          },
+          removeItem: async () => {
+            /* noop */
+          }
         },
         version: 1
       },

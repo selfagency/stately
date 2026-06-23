@@ -1,4 +1,4 @@
-import { createConcurrencyController, type ConcurrencyMode } from './concurrency.js';
+import { type ConcurrencyMode, createConcurrencyController } from './concurrency.js';
 import { createRequestController } from './request-controller.js';
 
 export interface AsyncActionState {

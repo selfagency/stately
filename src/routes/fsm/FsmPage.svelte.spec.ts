@@ -1,6 +1,6 @@
-import { cleanup, render } from 'vitest-browser-svelte';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
+import { cleanup, render } from 'vitest-browser-svelte';
 import { disposeStatelyInspector } from '$lib/inspector/bootstrap-client.js';
 import FsmPage from './+page.svelte';
 

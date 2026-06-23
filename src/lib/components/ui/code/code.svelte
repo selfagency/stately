@@ -69,8 +69,8 @@
 </style>
 
 <script lang="ts">
-import { cn } from '$lib/utils.js';
 import { box } from 'svelte-toolbelt';
+import { cn } from '$lib/utils.js';
 import { useCode } from './code.svelte.js';
 import { codeVariants } from './index.js';
 import type { CodeRootProps } from './types.js';

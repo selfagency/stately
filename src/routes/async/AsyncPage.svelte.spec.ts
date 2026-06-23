@@ -1,7 +1,7 @@
-import { disposeStatelyInspector } from '$lib/inspector/bootstrap-client.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { cleanup, render } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
+import { cleanup, render } from 'vitest-browser-svelte';
+import { disposeStatelyInspector } from '$lib/inspector/bootstrap-client.js';
 import AsyncPage from './+page.svelte';
 
 describe('Async page', () => {

@@ -1,10 +1,10 @@
 <script lang="ts">
+
+import type { Snippet } from 'svelte';
 import { Badge } from '$lib/components/ui/badge/index.js';
 import * as Card from '$lib/components/ui/card/index.js';
 import * as Code from '$lib/components/ui/code/index.js';
 import { Window } from '$lib/components/ui/window/index.js';
-
-import type { Snippet } from 'svelte';
 
 let {
   label,

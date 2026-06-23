@@ -260,6 +260,7 @@ describe('example: sync plugin (presence store)', () => {
           receiveA = null;
         };
       },
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       destroy() {}
     };
     const transportB: SyncTransport<Msg> = {
@@ -272,6 +273,7 @@ describe('example: sync plugin (presence store)', () => {
           receiveB = null;
         };
       },
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       destroy() {}
     };
 

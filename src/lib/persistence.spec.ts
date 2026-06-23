@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noEmptyBlockStatements: stub adapters / catch handlers for tests
 import { describe, expect, it, vi } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
 import { createPersistencePlugin } from './persistence/plugin.svelte.js';

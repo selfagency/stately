@@ -247,7 +247,9 @@ describe('async runtime', () => {
     const useStore = defineStore('async-include', {
       state: () => ({}),
       actions: {
+        // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
         async trackedAction() {},
+        // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
         async untrackedAction() {}
       }
     });
