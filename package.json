@@ -1,6 +1,6 @@
 {
   "name": "@selfagency/stately",
-  "version": "0.1.5",
+  "version": "0.1.4",
   "private": false,
   "description": "Pinia-inspired state management for Svelte 5 and SvelteKit with persistence, history, sync, and async orchestration.",
   "keywords": [
@@ -31,9 +31,7 @@
     "email": "daniel@self.agency",
     "url": "https://self.agency"
   },
-  "sideEffects": [
-    "**/*.css"
-  ],
+  "sideEffects": ["**/*.css"],
   "type": "module",
   "exports": {
     ".": {
@@ -71,12 +69,7 @@
   },
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "!dist/**/*.test.*",
-    "!dist/**/*.spec.*",
-    "skills"
-  ],
+  "files": ["dist", "!dist/**/*.test.*", "!dist/**/*.spec.*", "skills"],
   "scripts": {
     "build": "vite build && pnpm run package:dist",
     "changeset": "changeset",
@@ -113,6 +106,7 @@
     "@changesets/changelog-git": "^0.2.1",
     "@changesets/cli": "^2.31.0",
     "@codecov/vite-plugin": "^2.0.1",
+
     "@internationalized/date": "^3.12.2",
     "@octokit/rest": "^22.0.1",
     "@shikijs/langs": "^4.2.0",
