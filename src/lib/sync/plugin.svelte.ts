@@ -11,6 +11,7 @@ interface SyncStore<State extends object = StoreState> {
   $state: State;
   $patch(patch: Partial<State> | ((state: State) => void)): void;
   $subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
+  $onDispose(callback: () => void): () => void;
   $dispose(): void;
 }
 
@@ -135,7 +136,9 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
       for (const key of Object.keys(remote)) {
         if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
         if (knownStateKeys.has(key)) {
-          filtered[key] = sanitizeValue(Reflect.get(remote, key));
+          filtered[key] = sanitizeValue(
+            Object.hasOwn(remote, key) ? (Object.getOwnPropertyDescriptor(remote, key)?.value as unknown) : undefined
+          );
           hasKnownKey = true;
         }
       }
@@ -188,7 +191,9 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
             applyingRemote = false;
           }
         } catch {
-          // Message parse or validation error — skip silently
+          if (import.meta.env.DEV) {
+            console.warn(`[Stately] Sync inbound message error for store "${syncedStore.$id}".`);
+          }
         }
       })
     );
@@ -219,26 +224,21 @@ export function createSyncPlugin<Message extends SyncMessage = SyncMessage>(
         try {
           transport.publish(message);
         } catch {
-          // Non-serializable or transport failure — skip silently
+          if (import.meta.env.DEV) {
+            console.warn(`[Stately] Sync transport publish failed for store "${syncedStore.$id}".`);
+          }
         }
       }
     });
 
-    const dispose = syncedStore.$dispose.bind(syncedStore);
-    Object.defineProperty(syncedStore, '$dispose', {
-      value() {
-        unsubscribeStore();
-        for (const unsubscribe of unsubscribeRemote) {
-          unsubscribe();
-        }
-        for (const transport of transports) {
-          transport.destroy();
-        }
-        dispose();
-      },
-      enumerable: false,
-      configurable: true,
-      writable: true
+    syncedStore.$onDispose(() => {
+      unsubscribeStore();
+      for (const unsubscribe of unsubscribeRemote) {
+        unsubscribe();
+      }
+      for (const transport of transports) {
+        transport.destroy();
+      }
     });
     return undefined;
   });

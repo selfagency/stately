@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { cleanup, render } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
+import { cleanup, render } from 'vitest-browser-svelte';
 import { disposeStatelyInspector } from '../../lib/inspector/bootstrap-client.js';
 import CorePage from './+page.svelte';
 

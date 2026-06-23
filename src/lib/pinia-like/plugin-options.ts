@@ -10,9 +10,8 @@ export type PersistStoreOptions<State extends object = Record<string, unknown>> 
 type PersistableState<State extends StoreState> = State;
 
 declare module './store-types.js' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface DefineStoreOptionsBase<State extends StoreState = StoreState, Store = unknown> {
-    persist?: PersistStoreOptions<PersistableState<State>>;
+  interface DefineStoreOptionsBase<_State extends object = object, _Store = unknown> {
+    persist?: PersistStoreOptions<PersistableState<_State>>;
     history?: HistoryStoreOptions;
   }
 }

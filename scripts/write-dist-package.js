@@ -10,7 +10,7 @@ const INSPECTOR_VIRTUAL_OPTIONS_SOURCE = resolve(ROOT, 'src/lib/inspector/virtua
 const INSPECTOR_VIRTUAL_OPTIONS_DEST = resolve(DIST, 'inspector/virtual-options.d.ts');
 const INSPECTOR_VITE_PLUGIN_TYPES_DEST = resolve(DIST, 'inspector/vite-plugin.d.ts');
 const INSPECTOR_VIRTUAL_REFERENCE = '/// <reference path="./virtual-options.d.ts" />';
-const TEST_OUTPUT_PATTERN = /\.(?:test|spec)(?:-d)?\.(?:d\.)?[cm]?[jt]s$/;
+const TEST_OUTPUT_PATTERN = /\.(?:test|spec)\.(?:d\.)?[cm]?[jt]s$/;
 const RELEASE_ASSETS = ['README.md', 'CHANGELOG.md', 'LICENSE.md', 'stately.svg'];
 
 async function pruneReleaseExtras(directory) {
@@ -80,7 +80,9 @@ async function writeDistPackage() {
     svelte,
     types,
     sideEffects,
+    engines,
     dependencies,
+    optionalDependencies,
     peerDependencies,
     publishConfig
   } = packageJson;
@@ -101,6 +103,7 @@ async function writeDistPackage() {
     types: rewriteDistPaths(types),
     exports: rewriteDistPaths(exports),
     sideEffects,
+    engines,
     publishConfig
   };
 
@@ -110,6 +113,10 @@ async function writeDistPackage() {
 
   if (peerDependencies && Object.keys(peerDependencies).length > 0) {
     distPackage.peerDependencies = peerDependencies;
+  }
+
+  if (optionalDependencies && Object.keys(optionalDependencies).length > 0) {
+    distPackage.optionalDependencies = optionalDependencies;
   }
 
   await writeFile(resolve(DIST, 'package.json'), `${JSON.stringify(distPackage, null, 2)}\n`, 'utf8');

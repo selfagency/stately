@@ -66,7 +66,9 @@ describe('defineStore', () => {
       async getItem() {
         return null;
       },
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       async setItem() {},
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       async removeItem() {}
     };
     const manager = createStateManager().use(({ options }) => {

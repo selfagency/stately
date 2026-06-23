@@ -8,6 +8,7 @@ interface HistoryStore<State extends object = StoreState> {
   $state: State;
   $patch(patch: Partial<State> | ((state: State) => void)): void;
   $subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
+  $onDispose(callback: () => void): () => void;
   $dispose(): void;
 }
 
@@ -16,8 +17,7 @@ interface HistoryOptions {
 }
 
 declare module '../pinia-like/store-types.js' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
+  interface StoreCustomProperties<State extends StoreState = StoreState> {
     $history: HistoryController<State>;
     $timeTravel: TimeTravelController<State>;
   }
@@ -75,15 +75,8 @@ export function createHistoryPlugin(): StateManagerPlugin<StoreDefinition, Histo
     });
     const timeTravel = createTimeTravelController({ history: controller });
 
-    const dispose = store.$dispose.bind(store);
-    Object.defineProperty(store, '$dispose', {
-      value() {
-        unsubscribeHistory();
-        dispose();
-      },
-      enumerable: false,
-      configurable: true,
-      writable: true
+    store.$onDispose(() => {
+      unsubscribeHistory();
     });
 
     return {

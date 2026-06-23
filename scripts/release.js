@@ -26,12 +26,12 @@
 // Disable husky so pre-push hooks don't re-run tests on every git push we make.
 process.env.HUSKY = '0';
 
-import { Octokit } from '@octokit/rest';
 import { spawnSync } from 'node:child_process';
 import { constants } from 'node:fs';
 import { access, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Octokit } from '@octokit/rest';
 import ora from 'ora';
 
 const __filename = fileURLToPath(import.meta.url);

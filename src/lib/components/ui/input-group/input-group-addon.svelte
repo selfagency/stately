@@ -20,8 +20,8 @@ export type InputGroupAddonAlign = VariantProps<typeof inputGroupAddonVariants>[
 </script>
 
 <script lang="ts">
-import { cn, type WithElementRef } from '$lib/utils.js';
 import type { HTMLAttributes } from 'svelte/elements';
+import { cn, type WithElementRef } from '$lib/utils.js';
 
 let {
   ref = $bindable(null),

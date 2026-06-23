@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import type { JsonObject, JsonValue, PersistEnvelope } from './types.js';
 import type { SyncMessage } from '../sync/types.js';
+import type { JsonObject, JsonValue, PersistEnvelope } from './types.js';
 
 describe('payload types', () => {
   it('exposes JSON-safe persistence and sync payload helper types', () => {
@@ -10,6 +10,7 @@ describe('payload types', () => {
     expectTypeOf<PersistedState>().toEqualTypeOf<JsonObject>();
     expectTypeOf<SyncedState>().toEqualTypeOf<JsonObject>();
     expectTypeOf<JsonObject['example']>().toEqualTypeOf<JsonValue>();
-    expect(true).toBe(true);
+
+    expect(expectTypeOf).toBeTypeOf('function');
   });
 });

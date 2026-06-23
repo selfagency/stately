@@ -11,7 +11,7 @@ import { createDevtoolsTimelineRecorder } from './devtools-timeline.svelte.js';
 import { createMutationQueue } from './mutation-queue.svelte.js';
 import { createSubscriptions } from './subscriptions.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: action wrapping needs erased concrete types
 type AnyFunction = (...args: any[]) => unknown;
 
 const statelyInspectorHookKey = Symbol.for('stately.inspector.hook');
@@ -26,6 +26,7 @@ export interface StoreShell<Id extends string, State extends StoreState, Store e
     options?: StoreSubscribeOptions<State>
   ): () => void;
   $onAction(callback: (context: StoreActionHookContext<Store, string, unknown[], unknown>) => void): () => void;
+  $onDispose(callback: () => void): () => void;
   $dispose(): void;
   subscribe(run: (value: State) => void, invalidate?: (value?: State) => void): () => void;
   set(value: State): void;
@@ -168,7 +169,7 @@ export function createStoreShell<Id extends string, State extends StoreState, St
     );
   }
 
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+  if (import.meta.env.DEV) {
     for (const [key, value] of Object.entries(config.state)) {
       if (value instanceof Map || value instanceof Set) {
         console.warn(
@@ -196,6 +197,8 @@ export function createStoreShell<Id extends string, State extends StoreState, St
     store: () => shellStore
   });
   let unregisterInspectorStore: (() => void) | undefined;
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- plain Set; iterated on dispose only, not reactive
+  const onDisposeCallbacks = new Set<() => void>();
 
   subscriptions.onAction(({ name, args, after, onError }) => {
     const action = timeline.startAction({
@@ -399,6 +402,16 @@ export function createStoreShell<Id extends string, State extends StoreState, St
         return subscriptions.onAction(callback);
       }
     },
+    $onDispose: {
+      enumerable: false,
+      configurable: false,
+      value(callback: () => void): () => void {
+        onDisposeCallbacks.add(callback);
+        return () => {
+          onDisposeCallbacks.delete(callback);
+        };
+      }
+    },
     $dispose: {
       enumerable: false,
       configurable: true,
@@ -407,6 +420,10 @@ export function createStoreShell<Id extends string, State extends StoreState, St
           return;
         }
         disposed = true;
+        for (const callback of onDisposeCallbacks) {
+          callback();
+        }
+        onDisposeCallbacks.clear();
         unregisterInspectorStore?.();
         subscriptions.clear();
         config.onDispose?.();

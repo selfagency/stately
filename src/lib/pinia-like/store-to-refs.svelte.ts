@@ -1,6 +1,6 @@
 type AnyRecord = object;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: action wrapping needs erased concrete types
 type AnyFunction = (...args: any[]) => unknown;
 
 export interface StoreRef<TValue> {

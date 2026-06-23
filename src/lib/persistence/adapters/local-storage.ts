@@ -41,7 +41,7 @@ export function createLocalStorageAdapter(storage?: StorageLike): PersistenceAda
       } catch (error) {
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
           reportStatelyInspectorNotice(`localStorage quota exceeded for key "${key}".`);
-          return;
+          throw error;
         }
         throw error;
       }

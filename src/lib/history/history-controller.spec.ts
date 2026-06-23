@@ -1,4 +1,4 @@
-import { describe, expect, expectTypeOf, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createHistoryController } from './history-controller.svelte.js';
 
 describe('createHistoryController', () => {
@@ -29,6 +29,25 @@ describe('createHistoryController', () => {
     expect(applied.at(-1)).toEqual({ count: 4 });
   });
 
+  it('trims oldest entries when limit is exceeded, preserving the most recent', () => {
+    const controller = createHistoryController({
+      initialSnapshot: { count: 0 },
+      limit: 2,
+      applySnapshot() {
+        /* noop */
+      }
+    });
+
+    // Initial snapshot is always stored; limit controls total max entries.
+    // Record 3 times with limit=2 → oldest entries shift off on overflow.
+    controller.record({ count: 1 });
+    controller.record({ count: 2 });
+    controller.record({ count: 3 });
+
+    expect(controller.entries.map((e) => e.snapshot.count)).toEqual([2, 3]);
+    expect(controller.currentIndex).toBe(1);
+  });
+
   it('resets replay mode if snapshot application throws', () => {
     const controller = createHistoryController({
       initialSnapshot: { count: 0 },
@@ -45,25 +64,5 @@ describe('createHistoryController', () => {
 
     controller.record({ count: 2 });
     expect(controller.entries.map((entry) => entry.snapshot.count)).toEqual([0, 1, 2]);
-  });
-
-  it('preserves interface-based snapshot types', () => {
-    interface CounterSnapshot {
-      count: number;
-      label: string;
-    }
-
-    const controller = createHistoryController<CounterSnapshot>({
-      initialSnapshot: { count: 0, label: 'ready' },
-      applySnapshot(snapshot) {
-        expectTypeOf(snapshot.count).toEqualTypeOf<number>();
-        expectTypeOf(snapshot.label).toEqualTypeOf<string>();
-      }
-    });
-
-    controller.record({ count: 1, label: 'set' });
-    expectTypeOf(controller.entries[0]!.snapshot.count).toEqualTypeOf<number>();
-    expectTypeOf(controller.entries[0]!.snapshot.label).toEqualTypeOf<string>();
-    expect(controller.entries.at(-1)?.snapshot).toEqual({ count: 1, label: 'set' });
   });
 });

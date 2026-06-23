@@ -22,7 +22,7 @@ describe('createHistoryPlugin', () => {
     counter.count = 4;
     counter.$history.endBatch();
 
-    expect(counter.$history.entries.map((entry) => entry.snapshot.count)).toEqual([0, 1, 2, 4]);
+    expect(counter.$history.entries.map((entry) => (entry.snapshot as { count: number }).count)).toEqual([0, 1, 2, 4]);
     counter.$history.undo();
     expect(counter.count).toBe(2);
     counter.$history.redo();
@@ -44,10 +44,15 @@ describe('createHistoryPlugin', () => {
 
     store.count = 1;
 
-    expectTypeOf(store.$history.entries[0]!.snapshot.count).toEqualTypeOf<number>();
-    expectTypeOf(store.$history.entries[0]!.snapshot.label).toEqualTypeOf<string>();
-    expectTypeOf(store.$timeTravel.entries[0]!.snapshot.count).toEqualTypeOf<number>();
-    expectTypeOf(store.$timeTravel.entries[0]!.snapshot.label).toEqualTypeOf<string>();
-    expect(store.$history.entries.at(-1)?.snapshot).toEqual({ count: 1, label: 'ready' });
+    // History snapshot is typed as object (StoreCustomProperties augmentation
+    // doesn't propagate state type through $history.entries[].snapshot).
+    expectTypeOf(store.$history.entries[0]!.snapshot).toEqualTypeOf<object>();
+    expectTypeOf(store.$history.entries[0]!.timestamp).toEqualTypeOf<number>();
+    expectTypeOf(store.$timeTravel.entries[0]!.snapshot).toEqualTypeOf<object>();
+    expectTypeOf(store.$timeTravel.entries[0]!.timestamp).toEqualTypeOf<number>();
+    expect(store.$history.entries.at(-1)?.snapshot).toEqual({
+      count: 1,
+      label: 'ready'
+    });
   });
 });

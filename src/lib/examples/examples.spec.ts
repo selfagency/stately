@@ -140,7 +140,7 @@ describe('example: history plugin (draft store)', () => {
     const initial = store.$history.entries.length;
     store.increment();
     store.increment();
-    expect(store.$history.entries.length).toBe(initial + 2);
+    expect(store.$history.entries).toHaveLength(initial + 2);
   });
 });
 
@@ -260,6 +260,7 @@ describe('example: sync plugin (presence store)', () => {
           receiveA = null;
         };
       },
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       destroy() {}
     };
     const transportB: SyncTransport<Msg> = {
@@ -272,6 +273,7 @@ describe('example: sync plugin (presence store)', () => {
           receiveB = null;
         };
       },
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       destroy() {}
     };
 

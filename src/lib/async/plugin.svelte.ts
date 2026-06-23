@@ -3,7 +3,7 @@ import type { StoreCustomProperties } from '../pinia-like/store-types.js';
 import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { ASYNC_ACTION_MARKER } from '../runtime/async-marker.js';
 import type { ConcurrencyMode } from './concurrency.js';
-import { trackAsyncAction, type AsyncActionState, type TrackAsyncActionOptions } from './track-async-action.svelte.js';
+import { type AsyncActionState, type TrackAsyncActionOptions, trackAsyncAction } from './track-async-action.svelte.js';
 
 export interface AsyncActionRegistry {
   [actionName: string]: AsyncActionState;
@@ -15,8 +15,7 @@ export interface AsyncPluginOptions extends TrackAsyncActionOptions {
 }
 
 declare module '../pinia-like/store-types.js' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
+  interface StoreCustomProperties {
     $async: AsyncActionRegistry;
   }
 }

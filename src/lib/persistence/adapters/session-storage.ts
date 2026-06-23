@@ -41,7 +41,7 @@ export function createSessionStorageAdapter(storage?: StorageLike): PersistenceA
       } catch (error) {
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
           reportStatelyInspectorNotice(`sessionStorage quota exceeded for key "${key}".`);
-          return;
+          throw error;
         }
         throw error;
       }

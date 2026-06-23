@@ -3,19 +3,19 @@ import { sanitizeValue } from '../internal/sanitize.js';
 import type { StoreCustomProperties, StoreMutationContext, StoreState } from '../pinia-like/store-types.js';
 import { defineStateManagerPlugin, type StateManagerPlugin, type StoreDefinition } from '../root/types.js';
 import { deserializePersistedState, serializePersistedState } from './serialize.js';
-import type { PersistController, PersistOptions, PersistenceAdapter } from './types.js';
+import type { PersistController, PersistenceAdapter, PersistOptions } from './types.js';
 
 interface PersistableStore<State extends object = StoreState> {
   readonly $id: string;
   $state: State;
   $patch(patch: Partial<State> | ((state: State) => void)): void;
   $subscribe(callback: (mutation: StoreMutationContext, state: State) => void): () => void;
+  $onDispose(callback: () => void): () => void;
   $dispose(): void;
 }
 
 declare module '../pinia-like/store-types.js' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
+  interface StoreCustomProperties {
     $persist: PersistController;
   }
 }
@@ -196,7 +196,10 @@ export function createPersistencePlugin(): StateManagerPlugin<
         }
 
         if (persist.ttl) {
-          encoded = JSON.stringify({ __stately_ttl: Date.now() + persist.ttl, data: encoded });
+          encoded = JSON.stringify({
+            __stately_ttl: Date.now() + persist.ttl,
+            data: encoded
+          });
         }
 
         const queuedWrite = flushQueue
@@ -294,16 +297,9 @@ export function createPersistencePlugin(): StateManagerPlugin<
         }
       });
 
-      const dispose = store.$dispose.bind(store);
-      Object.defineProperty(store, '$dispose', {
-        value() {
-          cancelDebouncedFlush();
-          unsubscribe();
-          dispose();
-        },
-        enumerable: false,
-        configurable: true,
-        writable: true
+      store.$onDispose(() => {
+        cancelDebouncedFlush();
+        unsubscribe();
       });
 
       return {

@@ -39,9 +39,10 @@ export function createHistoryController<State extends object>(config: {
       : 50;
 
   const trim = () => {
-    while (state.entries.length > limit) {
-      state.entries.shift();
-      state.index = Math.max(0, state.index - 1);
+    const overflow = state.entries.length - limit;
+    if (overflow > 0) {
+      state.entries.splice(0, overflow);
+      state.index = Math.max(0, state.index - overflow);
     }
   };
 

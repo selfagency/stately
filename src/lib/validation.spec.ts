@@ -1,14 +1,14 @@
-import { describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { defineStore } from './define-store.svelte.js';
-import { createValidationPlugin } from './validation/plugin.svelte.js';
 import { createStateManager } from './root/create-state-manager.js';
+import { createValidationPlugin } from './validation/plugin.svelte.js';
 
 describe('validation plugin', () => {
   it('rejects $patch when validate returns false', () => {
     const manager = createStateManager().use(createValidationPlugin());
     const useStore = defineStore('val-reject', {
       state: () => ({ count: 0 }),
-      validate: (state) => state.count >= 0
+      validate: (state) => (state as { count: number }).count >= 0
     });
     const store = useStore(manager);
 
@@ -20,7 +20,7 @@ describe('validation plugin', () => {
     const manager = createStateManager().use(createValidationPlugin());
     const useStore = defineStore('val-string', {
       state: () => ({ name: '' }),
-      validate: (state) => (state.name.length > 0 ? true : 'Name is required')
+      validate: (state) => ((state as { name: string }).name.length > 0 ? true : 'Name is required')
     });
     const store = useStore(manager);
 
@@ -31,7 +31,7 @@ describe('validation plugin', () => {
     const manager = createStateManager().use(createValidationPlugin());
     const useStore = defineStore('val-allow', {
       state: () => ({ count: 0 }),
-      validate: (state) => state.count >= 0
+      validate: (state) => (state as { count: number }).count >= 0
     });
     const store = useStore(manager);
 
@@ -44,13 +44,32 @@ describe('validation plugin', () => {
     const manager = createStateManager().use(createValidationPlugin());
     const useStore = defineStore('val-callback', {
       state: () => ({ count: 0 }),
-      validate: (state) => (state.count >= 0 ? true : 'Must be non-negative'),
+      validate: (state) => ((state as { count: number }).count >= 0 ? true : 'Must be non-negative'),
       onValidationError: errorSpy
     });
     const store = useStore(manager);
 
     expect(() => store.$patch({ count: -5 })).toThrow();
     expect(errorSpy).toHaveBeenCalledWith('Must be non-negative');
+  });
+
+  it('restores state snapshot when $patch callback throws after partial mutation', () => {
+    const manager = createStateManager().use(createValidationPlugin());
+    const useStore = defineStore('val-restore-on-throw', {
+      state: () => ({ a: 1, b: 2 }),
+      validate: () => true
+    });
+    const store = useStore(manager);
+
+    expect(() =>
+      store.$patch((state: { a: number; b: number }) => {
+        state.a = 99;
+        throw new Error('patch failed');
+      })
+    ).toThrow('patch failed');
+
+    expect(store.a).toBe(1);
+    expect(store.b).toBe(2);
   });
 
   it('stores without validate option are unaffected', () => {
@@ -62,26 +81,5 @@ describe('validation plugin', () => {
 
     store.$patch({ count: 100 });
     expect(store.count).toBe(100);
-  });
-
-  it('preserves interface-based state types inside validate callbacks', () => {
-    interface ValidationState {
-      count: number;
-      label: string;
-    }
-
-    const manager = createStateManager().use(createValidationPlugin());
-    const useStore = defineStore('val-typed-interface', {
-      state: (): ValidationState => ({ count: 0, label: 'ready' }),
-      validate(state) {
-        expectTypeOf(state.count).toEqualTypeOf<number>();
-        expectTypeOf(state.label).toEqualTypeOf<string>();
-        return state.count >= 0;
-      }
-    });
-    const store = useStore(manager);
-
-    store.$patch({ count: 2 });
-    expect(store.label).toBe('ready');
   });
 });

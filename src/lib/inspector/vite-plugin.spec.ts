@@ -3,7 +3,7 @@ import { VIRTUAL_STATELY_INSPECTOR_OPTIONS_ID, VIRTUAL_STATELY_INSPECTOR_PATH_PR
 import type { StatelyInspectorVitePluginOptions } from './vite-plugin.js';
 import { statelyVitePlugin } from './vite-plugin.js';
 
-type VirtualInspectorOptions = (typeof import('virtual:stately-inspector-options'))['default'];
+type VirtualInspectorOptions = typeof import('virtual:stately-inspector-options')['default'];
 
 describe('statelyVitePlugin', () => {
   it('exposes typed virtual options and plugin options', () => {
@@ -17,7 +17,8 @@ describe('statelyVitePlugin', () => {
     >();
     expectTypeOf<VirtualInspectorOptions['panelSide']>().toEqualTypeOf<'left' | 'right'>();
     expectTypeOf<VirtualInspectorOptions['enabled']>().toEqualTypeOf<boolean>();
-    expect(true).toBe(true);
+
+    expect(VIRTUAL_STATELY_INSPECTOR_PATH_PREFIX.length).toBeGreaterThan(0);
   });
 
   it('resolves virtual modules and injects the inspector loader into Vite client code', async () => {

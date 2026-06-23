@@ -1,6 +1,7 @@
 <script lang="ts">
-import { cn } from '$lib/utils.js';
 import { Dialog } from 'bits-ui';
+import { cn } from '$lib/utils.js';
+
 let { children, class: className = '' } = $props<{ children?: import('svelte').Snippet; class?: string }>();
 </script>
 

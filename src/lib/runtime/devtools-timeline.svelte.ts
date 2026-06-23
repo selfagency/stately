@@ -24,8 +24,9 @@ export function createDevtoolsTimelineRecorder(config: {
   let nextId = 1;
 
   function trimEntries(): void {
-    while (entries.length > maxEntries) {
-      entries.shift();
+    const overflow = entries.length - maxEntries;
+    if (overflow > 0) {
+      entries.splice(0, overflow);
     }
   }
 

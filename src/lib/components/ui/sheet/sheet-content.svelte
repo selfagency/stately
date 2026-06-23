@@ -3,10 +3,10 @@ export type Side = 'top' | 'right' | 'bottom' | 'left';
 </script>
 
 <script lang="ts">
-import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
 import XIcon from '@lucide/svelte/icons/x';
 import { Dialog as SheetPrimitive } from 'bits-ui';
 import type { ComponentProps, Snippet } from 'svelte';
+import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
 import SheetOverlay from './sheet-overlay.svelte';
 import SheetPortal from './sheet-portal.svelte';
 

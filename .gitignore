@@ -253,3 +253,6 @@ skills/npm-*
 docs/.vitepress/dist
 .playwright-mcp
 *.junit.xml
+
+# Generated review documents
+stately-code-review.md

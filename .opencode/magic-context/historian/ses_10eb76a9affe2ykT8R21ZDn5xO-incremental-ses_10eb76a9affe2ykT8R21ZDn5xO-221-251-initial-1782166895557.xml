@@ -1,0 +1,34 @@
+```xml
+<output>
+<compartments>
+<compartment start="177" end="251" title="Phases 4-6 completed, docs added, type errors fixed before commit" episode_type="bug,refactor,feature,docs" importance="82">
+<p1>
+Phase 4 (type hygiene), Phase 5 (@lucide/svelte → optionalDependencies), and Phase 6 (regression tests) fully executed and committed. Documentation added for Findings 2/17 (setup store getter+setter snapshotted once — Finding #2) and 3/16 (async concurrency drop/enqueue return types — Finding #3). All validation gates green (lint PASS, 50/50 tests PASS, build PASS).
+
+Final commit attempt surfaced two type errors:
+1. `src/lib/root/create-state-manager.ts:38` — removing `any` from `StateManagerPlugin` generic broke heterogeneous plugin array type: `const plugins: StateManagerPlugin[] = []` and `plugins.push(plugin)` fails type invariance when `plugin` has different type parameters. Fix: use `StateManagerPlugin<unknown, unknown, unknown>` as the array element type, allowing any plugin to be pushed.
+2. `src/lib/ssr-and-dispose.spec.ts:139` — cascading from the above fix (likely the `unsubscribe` variable type from the StateManager change).
+
+Fix applied to create-state-manager.ts:38 and spec file adjusted accordingly. Final commit proceeds once type errors resolved.
+</p1>
+<p2>
+Phases 4-6 + docs complete on `feature/code-review-remediation`. All validation green. Type error in `create-state-manager.ts:38` fixed by using `StateManagerPlugin<unknown, unknown, unknown>` for the plugins array to maintain type invariance on heterogeneous pushes. Cascading spec fix applied.
+</p2>
+<p3>
+Code review remediation finalized through Phase 6 plus documentation. Type invariance error in StateManagerPlugin heterogeneous array fixed. All validation gates passed.
+</p3>
+<p4>StateManagerPlugin unknown type; create-state-manager.ts:38; ssr-and-dispose.spec.ts:139</p4>
+</compartment>
+</compartments>
+<facts>
+</facts>
+<events>
+</events>
+<user_observations>
+</user_observations>
+<meta>
+<messages_processed>221-251</messages_processed>
+<unprocessed_from>252</unprocessed_from>
+</meta>
+</output>
+```

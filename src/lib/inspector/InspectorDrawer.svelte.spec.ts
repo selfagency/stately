@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { render } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
+import { render } from 'vitest-browser-svelte';
 import { defineStore } from '../define-store.svelte.js';
 import { createHistoryPlugin } from '../history/plugin.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';

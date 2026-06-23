@@ -8,7 +8,7 @@ import type {
 } from '../pinia-like/store-types.js';
 import { ASYNC_ACTION_MARKER } from './async-marker.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: action wrapping needs erased concrete types
 type AnyFunction = (...args: any[]) => unknown;
 
 type MutationSubscriber<Id extends string, State extends StoreState, Store extends object> = (

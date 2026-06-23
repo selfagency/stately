@@ -1,7 +1,7 @@
-import { disposeStatelyInspector } from '$lib/inspector/bootstrap-client.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { cleanup, render } from 'vitest-browser-svelte';
 import { page } from 'vitest/browser';
+import { cleanup, render } from 'vitest-browser-svelte';
+import { disposeStatelyInspector } from '$lib/inspector/bootstrap-client.js';
 import AsyncPage from './+page.svelte';
 
 describe('Async page', () => {
@@ -18,8 +18,8 @@ describe('Async page', () => {
     await expect.element(page.getByText('Restartable', { exact: true })).toBeVisible();
     await expect.element(page.getByText('Drop', { exact: true })).toBeVisible();
     await expect.element(page.getByText('Error state', { exact: true })).toBeVisible();
-    await expect.element(page.getByText('debounceAction', { exact: true })).toBeVisible();
-    await expect.element(page.getByText('throttleAction', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('debounceAction', { exact: true }).first()).toBeVisible();
+    await expect.element(page.getByText('throttleAction', { exact: true }).first()).toBeVisible();
   });
 
   it('shows inspector toggle button', async () => {

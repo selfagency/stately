@@ -1,11 +1,11 @@
 import { mount, unmount } from 'svelte';
-import InspectorDrawer from './InspectorDrawer.svelte';
 import {
   createStatelyInspectorHook,
   getStatelyInspectorHook,
   installStatelyInspectorHook,
   resetStatelyInspectorHook
 } from './hook.js';
+import InspectorDrawer from './InspectorDrawer.svelte';
 import type { StatelyInspectorButtonPosition, StatelyInspectorPanelSide } from './types.js';
 
 const statelyInspectorHostId = 'stately-inspector-host';

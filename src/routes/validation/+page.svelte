@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onMount } from 'svelte';
 import { browser } from '$app/environment';
 import ShowcaseSection from '$lib/components/ShowcaseSection.svelte';
 import { Button } from '$lib/components/ui/button/index.js';
@@ -10,7 +11,6 @@ import {
   getStatelyInspectorHook,
   installStatelyInspectorHook
 } from '$lib/inspector/hook.js';
-import { onMount } from 'svelte';
 import { createValidationDemo } from './validation-demo.svelte.js';
 
 if (browser) {

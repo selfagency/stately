@@ -15,11 +15,13 @@ function createAdapter(label: string): StatelyInspectorStoreAdapter {
       return { id: label, state: {}, timeline: [] };
     },
     subscribe() {
+      // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
       return () => {};
     },
     goToHistory() {
       return false;
     },
+    // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
     dispose() {}
   };
 }

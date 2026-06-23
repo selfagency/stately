@@ -1,0 +1,30 @@
+```xml
+<output>
+<compartments>
+<compartment start="720" end="722" title="Migrate from ESLint + Prettier to Biome" episode_type="investigation,infra" importance="75">
+<p1>
+User directed migration from ESLint + Prettier to Biome. Assistant began research by fetching Biome documentation and reading current lint/format configs (`eslint.config.mjs`, `prettier.config.js`).
+
+U: review https://biomejs.dev/linter/domains/#svelte https://biomejs.dev/guides/migrate-eslint-prettier/ https://blog.appsignal.com/2025/05/07/migrating-a-javascript-project-from-prettier-and-eslint-to-biome.html https://www.devbolt.dev/blog/biome-vs-eslint https://github.com/skrulling/vite-plugin-biome https://biomejs.dev/blog/biome-v2-3/ and then migrate the project to biome
+
+Work is mid-investigation — no conclusions or code changes at chunk end.
+</p1>
+<p2>
+User requested migration from ESLint + Prettier to Biome. Began reading current lint/format configs and fetching Biome docs. Work is in progress at chunk end.
+</p2>
+<p3>
+Migration from ESLint + Prettier to Biome investigation started; configs read, docs fetched.
+</p3>
+<p4/>
+</compartment>
+</compartments>
+<facts>
+</facts>
+<events>
+</events>
+<meta>
+<messages_processed>720-722</messages_processed>
+<unprocessed_from>720</unprocessed_from>
+</meta>
+</output>
+```

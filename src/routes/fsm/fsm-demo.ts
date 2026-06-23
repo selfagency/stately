@@ -1,5 +1,5 @@
-import { createFsmPlugin, createStateManager, defineStore } from '../../lib/index.js';
 import type { FsmController } from '../../lib/fsm/types.js';
+import { createFsmPlugin, createStateManager, defineStore } from '../../lib/index.js';
 
 // ---------------------------------------------------------------------------
 // Traffic-light FSM — simplest possible state machine demo

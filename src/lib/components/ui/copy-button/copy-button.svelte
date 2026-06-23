@@ -18,13 +18,13 @@ export type CopyButtonProps = CopyButtonPropsWithoutHTML & WithoutChildren<HTMLA
 </script>
 
 <script lang="ts">
-import Button from '$lib/components/button.svelte';
-import { UseClipboard } from '$lib/hooks/use-clipboard.svelte.js';
-import { cn } from '$lib/utils.js';
 import CheckIcon from '@lucide/svelte/icons/check';
 import CopyIcon from '@lucide/svelte/icons/copy';
 import XIcon from '@lucide/svelte/icons/x';
 import { scale } from 'svelte/transition';
+import Button from '$lib/components/button.svelte';
+import { UseClipboard } from '$lib/hooks/use-clipboard.svelte.js';
+import { cn } from '$lib/utils.js';
 
 let {
   ref = $bindable(null),

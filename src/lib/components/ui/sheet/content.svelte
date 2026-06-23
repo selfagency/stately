@@ -1,6 +1,6 @@
 <script lang="ts">
-import { cn } from '$lib/utils.js';
 import { Dialog } from 'bits-ui';
+import { cn } from '$lib/utils.js';
 
 type Side = 'top' | 'right' | 'bottom' | 'left';
 

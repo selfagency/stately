@@ -1,0 +1,26 @@
+```xml
+<output>
+<compartments>
+<compartment start="720" end="725" title="Migrate from ESLint + Prettier to Biome" episode_type="investigation,infra" importance="75">
+<p1>
+Continued the Biome migration investigation. Read Biome v2.5 release notes and migration guide docs. Read existing CI workflow (`.github/workflows/ci.yml`), `.gitignore`, and started reading lint/format configs that will be replaced. No implementation decisions or code changes yet — still in research phase.
+</p1>
+<p2>
+Biome migration investigation ongoing. Fetched Biome v2.5 docs and read existing CI/git configs. Still evaluating before any migration work begins.
+</p2>
+<p3>
+Biome migration investigation continued; CI and git configs read, docs fetched for Biome v2.5.
+</p3>
+<p4/>
+</compartment>
+</compartments>
+<facts>
+</facts>
+<events>
+</events>
+<meta>
+<messages_processed>723-725</messages_processed>
+<unprocessed_from>726</unprocessed_from>
+</meta>
+</output>
+```

@@ -11,13 +11,11 @@ interface FsmStore<State extends object = StoreState> {
 }
 
 declare module '../pinia-like/store-types.js' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface DefineStoreOptionsBase<State, Store> {
+  interface DefineStoreOptionsBase<_State extends object = object, _Store = unknown> {
     fsm?: FsmDefinition;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface StoreCustomProperties<State extends StoreState = StoreState, Store extends object = object> {
+  interface StoreCustomProperties {
     $fsm: FsmController;
   }
 }
@@ -47,7 +45,9 @@ function readFsmOptions(value: unknown): FsmDefinition | undefined {
 }
 
 const FSM_STATE_KEY = '__stately_fsm';
-type FsmPatchedState<State extends object> = State & { [FSM_STATE_KEY]?: string };
+type FsmPatchedState<State extends object> = State & {
+  [FSM_STATE_KEY]?: string;
+};
 
 type FsmPluginAugmentation = Pick<StoreCustomProperties, '$fsm'>;
 

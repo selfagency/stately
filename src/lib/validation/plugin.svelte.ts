@@ -35,9 +35,8 @@ function readValidateOptions<State extends object>(
 }
 
 declare module '../pinia-like/store-types.js' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface DefineStoreOptionsBase<State, Store> {
-    validate?: (state: State) => boolean | string;
+  interface DefineStoreOptionsBase<_State extends object = object, _Store = unknown> {
+    validate?: (state: _State) => boolean | string;
     onValidationError?: (error: string) => void;
   }
 }
@@ -66,10 +65,9 @@ export function createValidationPlugin(): StateManagerPlugin<StoreDefinition, Va
           validatable.$state = structuredClone(snapshot) as typeof validatable.$state;
         };
 
-        originalPatch(patch);
-
         let result: boolean | string | undefined;
         try {
+          originalPatch(patch);
           result = config.validate(validatable.$state);
         } catch (error) {
           restoreSnapshot();

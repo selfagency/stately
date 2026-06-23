@@ -1,5 +1,3 @@
-import type { PersistController } from '../../lib/persistence/types.js';
-
 import {
   createLzStringCompression,
   createMemoryStorageAdapter,
@@ -7,6 +5,7 @@ import {
   createStateManager,
   defineStore
 } from '../../lib/index.js';
+import type { PersistController } from '../../lib/persistence/types.js';
 
 // Base store state shapes
 type BasicState = { count: number; label: string };

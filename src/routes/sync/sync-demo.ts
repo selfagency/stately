@@ -25,6 +25,7 @@ function createSyncBus<Message>() {
           listeners.add(listener);
           return () => listeners.delete(listener);
         },
+        // biome-ignore lint/suspicious/noEmptyBlockStatements: stub
         destroy() {}
       };
     }
@@ -45,7 +46,9 @@ function createBroadcastTransport(channelName: string): SyncTransport<SyncMessag
       channel.postMessage(message);
     },
     subscribe(listener) {
-      if (typeof globalThis.BroadcastChannel === 'undefined') return () => {};
+      if (globalThis.BroadcastChannel === undefined)
+        // biome-ignore lint/suspicious/noEmptyBlockStatements: noop fallback
+        return () => {};
       channel = new BroadcastChannel(channelName);
       messageHandler = (event: MessageEvent) => listener(event.data as SyncMessage<object>);
       channel.addEventListener('message', messageHandler);

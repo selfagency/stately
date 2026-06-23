@@ -41,9 +41,7 @@ export interface StateManager {
     Definition extends StoreDefinition = StoreDefinition,
     Store = unknown,
     Augmentation extends object = DefaultPluginAugmentation<Store>
-  >(
-    plugin: StateManagerPlugin<Definition, Store, Augmentation>
-  ): StateManager;
+  >(plugin: StateManagerPlugin<Definition, Store, Augmentation>): StateManager;
   register(definition: StoreDefinition): void;
   hasDefinition(id: string): boolean;
   getDefinition<Definition extends StoreDefinition = StoreDefinition>(id: string): Definition | undefined;

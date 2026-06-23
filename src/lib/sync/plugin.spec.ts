@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noEmptyBlockStatements: transport stubs for test
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { defineStore } from '../define-store.svelte.js';
 import { createStateManager } from '../root/create-state-manager.js';
